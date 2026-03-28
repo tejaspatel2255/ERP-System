@@ -1,0 +1,18 @@
+{
+  "name": "erp-monorepo",
+  "private": true,
+  "workspaces": [
+    "erp-core",
+    "erp-server",
+    "erp-shared"
+  ],
+  "scripts": {
+    "dev:shared": "npm run watch --workspace=erp-shared",
+    "dev:server": "npm run dev --workspace=erp-server",
+    "dev:core": "npm run dev --workspace=erp-core",
+    "dev": "concurrently \"npm run dev:shared\" \"npm run dev:server\" \"npm run dev:core\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -1,0 +1,27 @@
+FAIL src/__tests__/integration/auth.test.ts
+  ● Test suite failed to run
+
+    Cannot find module 'express/lib/router/layer' from '../node_modules/express-async-errors/index.js'
+
+    Require stack:
+      D:/DONE/ERP/node_modules/express-async-errors/index.js
+      src/app.ts
+      src/__tests__/integration/auth.test.ts
+
+      1 | import 'dotenv/config';
+    > 2 | import 'express-async-errors';
+        | ^
+      3 | import express from 'express';
+      4 | import http from 'http';
+      5 | import { Server } from 'socket.io';
+
+      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)
+      at Object.<anonymous> (../node_modules/express-async-errors/index.js:1:15)
+      at Object.<anonymous> (src/app.ts:2:1)
+      at Object.<anonymous> (src/__tests__/integration/auth.test.ts:2:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        5.303 s
+Ran all test suites matching src/__tests__/integration/auth.test.ts.

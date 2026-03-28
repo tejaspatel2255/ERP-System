@@ -1,37 +1,63 @@
 # dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
-coverage
+coverage/
+jest_err.txt
+playwright-report/
+test-results/
 
 # next.js
 .next/
 out/
-build/
 
 # production and build
+build/
 dist/
 dist-tsc/
 
 # misc
 .DS_Store
 *.pem
+*.key
+*.cert
+*.crt
 
-# debug
+# debug & logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+*.log
 server_crash.log
+tsc_errors.log
 
 # env files (CRITICAL: Do not commit these)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.template
 
 # IDE
 .vscode/
 .idea/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel
+.vercel/
+
+# databases
+*.sqlite
+*.sqlite3
+*.db

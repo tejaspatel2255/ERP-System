@@ -1,45 +1,34 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const cleanEnvVar = (val: string | undefined): string | undefined => {
-    if (!val) return val;
-    return val.replace(/^["']|["']$/g, '');
-};
-
-const smtpPort = parseInt(cleanEnvVar(process.env.SMTP_PORT) || '587');
-const transporter = nodemailer.createTransport({
-    host: cleanEnvVar(process.env.SMTP_HOST) || 'smtp.gmail.com',
-    port: smtpPort,
-    secure: smtpPort === 465, // true for 465, false for other ports
-    auth: {
-        user: cleanEnvVar(process.env.SMTP_USER),
-        pass: cleanEnvVar(process.env.SMTP_PASS),
-    },
-    family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud providers like Render
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,   // 10 seconds
-    socketTimeout: 10000,     // 10 seconds
-} as any);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendOTP = async (email: string, otp: string) => {
     try {
-        const info = await transporter.sendMail({
-            from: `"ERP System" <${process.env.SMTP_USER}>`,
+        const { data, error } = await resend.emails.send({
+            from: 'ERP System <onboarding@resend.dev>',
             to: email,
-            subject: "Your Verification Code",
-            text: `Your OTP for account verification is: ${otp}. It is valid for 10 minutes.`,
+            subject: 'Your ERP Verification Code',
             html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: #4F46E5;">ERP System Verification</h2>
-                    <p>Your OTP for account verification is:</p>
-                    <h1 style="background: #F3F4F6; padding: 10px; display: inline-block; border-radius: 5px; letter-spacing: 5px;">${otp}</h1>
-                    <p>This code is valid for 10 minutes.</p>
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; color: #333;">
+                    <h2 style="color: #4F46E5; margin-bottom: 8px;">ERP System</h2>
+                    <p style="color: #6b7280; margin-top: 0;">Your verification code</p>
+                    <div style="background: #F3F4F6; border-radius: 8px; padding: 24px; text-align: center; margin: 24px 0;">
+                        <h1 style="letter-spacing: 12px; font-size: 36px; margin: 0; color: #4F46E5;">${otp}</h1>
+                    </div>
+                    <p style="color: #6b7280; font-size: 14px;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
                 </div>
             `,
         });
-        console.log("Message sent: %s", info.messageId);
+
+        if (error) {
+            console.error('Resend error:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('Email sent via Resend:', data?.id);
         return { success: true };
     } catch (error: any) {
-        console.error("Error sending email: ", error);
+        console.error('Error sending email:', error);
         return { success: false, error: error.message || error };
     }
 };

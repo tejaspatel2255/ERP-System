@@ -25,6 +25,7 @@
         "mongoose": "^9.1.6",
         "nodemailer": "^8.0.0",
         "pdfkit": "^0.16.0",
+        "resend": "^6.12.4",
         "shared": "*",
         "socket.io": "^4.8.3",
         "zod": "^4.3.6"

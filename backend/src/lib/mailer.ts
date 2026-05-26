@@ -1,12 +1,17 @@
 import nodemailer from 'nodemailer';
 
+const cleanEnvVar = (val: string | undefined): string | undefined => {
+    if (!val) return val;
+    return val.replace(/^["']|["']$/g, '');
+};
+
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
+    host: cleanEnvVar(process.env.SMTP_HOST) || 'smtp.gmail.com',
+    port: parseInt(cleanEnvVar(process.env.SMTP_PORT) || '587'),
     secure: false, // true for 465, false for other ports
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: cleanEnvVar(process.env.SMTP_USER),
+        pass: cleanEnvVar(process.env.SMTP_PASS),
     },
     family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud providers like Render
 } as any);

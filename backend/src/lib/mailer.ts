@@ -5,15 +5,19 @@ const cleanEnvVar = (val: string | undefined): string | undefined => {
     return val.replace(/^["']|["']$/g, '');
 };
 
+const smtpPort = parseInt(cleanEnvVar(process.env.SMTP_PORT) || '587');
 const transporter = nodemailer.createTransport({
     host: cleanEnvVar(process.env.SMTP_HOST) || 'smtp.gmail.com',
-    port: parseInt(cleanEnvVar(process.env.SMTP_PORT) || '587'),
-    secure: false, // true for 465, false for other ports
+    port: smtpPort,
+    secure: smtpPort === 465, // true for 465, false for other ports
     auth: {
         user: cleanEnvVar(process.env.SMTP_USER),
         pass: cleanEnvVar(process.env.SMTP_PASS),
     },
     family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud providers like Render
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,   // 10 seconds
+    socketTimeout: 10000,     // 10 seconds
 } as any);
 
 export const sendOTP = async (email: string, otp: string) => {

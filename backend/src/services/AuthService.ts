@@ -55,7 +55,10 @@ export class AuthService {
         }
 
         // 5. Send OTP via SMTP
-        await sendOTP(email, otp);
+        const mailResult = await sendOTP(email, otp);
+        if (!mailResult.success) {
+            throw new Error(`Failed to send verification email: ${mailResult.error}`);
+        }
 
         return { email };
     }
@@ -170,7 +173,10 @@ export class AuthService {
         }
 
         // Send OTP
-        await sendOTP(email, otp);
+        const mailResult = await sendOTP(email, otp);
+        if (!mailResult.success) {
+            throw new Error(`Failed to send reset email: ${mailResult.error}`);
+        }
 
         return true;
     }

@@ -29,13 +29,22 @@ export default function DashboardPage() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/stats`, {
             credentials: 'include',
         })
-            .then((res) => res.json())
+            .then(async (res) => {
+                if (!res.ok) {
+                    const text = await res.text();
+                    let errMessage = text;
+                    try { errMessage = JSON.parse(text).error; } catch(e) {}
+                    throw new Error(errMessage || 'Failed to fetch dashboard data');
+                }
+                return res.json();
+            })
             .then((data) => {
                 setData(data);
                 setLoading(false);
             })
             .catch((err) => {
                 console.error(err);
+                setData({ error: err.message });
                 setLoading(false);
             });
     }, []);
@@ -48,6 +57,7 @@ export default function DashboardPage() {
             </div>
         );
     if (!data) return <div>Error loading data</div>;
+    if (data.error) return <div style={{ color: '#ef4444', padding: '2rem', textAlign: 'center' }}>Error: {data.error}</div>;
 
     const salesChartData = {
         labels: data.sales.map((d: any) => d.date),

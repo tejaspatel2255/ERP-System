@@ -40,11 +40,13 @@ yarn-error.log*
 server_crash.log
 tsc_errors.log
 
-# env files (CRITICAL: Do not commit these)
+# env files (CRITICAL: Do not commit actual credentials)
 .env
+.env.local
 .env.*
-!.env.example
-!.env.template
+backend/.env
+frontend/.env.local
+!*.example
 
 # IDE
 .vscode/

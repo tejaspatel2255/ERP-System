@@ -1,18 +1,24 @@
 {
-  "name": "erp-monorepo",
-  "private": true,
-  "workspaces": [
-    "erp-core",
-    "erp-server",
-    "erp-shared"
-  ],
-  "scripts": {
-    "dev:shared": "npm run watch --workspace=erp-shared",
-    "dev:server": "npm run dev --workspace=erp-server",
-    "dev:core": "npm run dev --workspace=erp-core",
-    "dev": "concurrently \"npm run dev:shared\" \"npm run dev:server\" \"npm run dev:core\""
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
-  }
+    "name": "erp-monorepo",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend",
+        "shared"
+    ],
+    "scripts": {
+        "dev:shared": "npm run watch --workspace=shared",
+        "dev:server": "npm run dev --workspace=backend",
+        "dev:core": "npm run dev --workspace=frontend",
+        "dev": "concurrently \"npm run dev:shared\" \"npm run dev:server\" \"npm run dev:core\"",
+        "build:shared": "npm run build --workspace=shared",
+        "build:server": "npm run build --workspace=backend",
+        "build:core": "npm run build --workspace=frontend",
+        "build": "npm run build:shared && npm run build:server && npm run build:core",
+        "lint": "npm run lint --workspaces --if-present",
+        "format": "npx prettier --write \"**/*.{ts,tsx,json,css,md}\" --ignore-path .gitignore"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
 }

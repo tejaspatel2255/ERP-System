@@ -2,37 +2,35 @@
 
 ## Overview
 
-ERP-System is a comprehensive Enterprise Resource Planning (ERP) solution built with Next.js 14 (App Router) and TypeScript. It features a modular architecture with separate packages for the core backend, frontend, and shared utilities.
+ERP-System is a comprehensive Enterprise Resource Planning (ERP) solution built with Next.js (App Router), Node.js (Express), and Supabase (PostgreSQL). It features a modular monorepo architecture with separate packages for the backend, frontend, and shared utilities.
+
+Authentication is handled locally using Express-signed JWTs, password hashing (`bcryptjs`), and 6-digit verification codes sent via SMTP (Nodemailer).
 
 ## Features
 
-- **Next.js 14 App Router**: Modern, server-component based architecture
-- **TypeScript**: Type safety across the entire application
-- **Modular Architecture**: Separate packages for backend, frontend, and shared code
-- **Real-time Features**: WebSocket support for real-time updates
-- **AI Integration**: Built-in AI chatbot for business assistance
-- **Comprehensive Modules**:
-  - **Sales**: Sales orders, quotations, invoices
-  - **Purchase**: Purchase orders, vendor management
-  - **Inventory**: Stock management, ledger tracking
-  - **Production**: Bill of Materials (BOM), work orders
-  - **Dispatch**: Delivery challans, shipment tracking
-  - **Finance**: Accounting, journal entries, reports
-  - **HR**: Employee management, attendance, leave
-  - **Maintenance**: Asset management, maintenance scheduling
-  - **Customers**: Customer management and analytics
-  - **Settings**: System configuration and user management
+- **Next.js App Router**: Modern, component-based frontend architecture.
+- **Supabase (PostgreSQL)**: Fully relational database storage with 19 structured tables.
+- **Custom Local SMTP Authentication**: Email verification and password resets handled locally via custom SMTP OTP delivery (no cloud-managed authentication requirements).
+- **Real-time Notifications**: Socket.io integration for instant stock level updates and alerts.
+- **Comprehensive ERP Modules**:
+    - **Sales & Dispatch**: Sales orders, quotations, invoices, delivery challans, and shipment tracking.
+    - **Purchase & Inventory**: Purchase orders, vendor management, real-time stock levels, and store ledger tracking.
+    - **Production**: Bill of Materials (BOM) configurations and work orders.
+    - **Finance**: General ledger accounts, journal entries, balance reports, and tax tracking.
+    - **HR & Maintenance**: Employee registries, check-in/out attendance logs, leave requests, asset registries, and maintenance tasks.
+    - **Analytics**: Forecasting and smart restock recommendations.
 
 ## Project Structure
 
 ```
 ERP-System/
-├── erp-server/        # Backend Node.js/Express API services
-├── erp-core/          # Frontend Next.js 14 application
-├── erp-shared/        # Shared types, constants, and Zod schemas
-├── .gitignore         # Git ignore file
-├── README.md          # Project documentation
-└── package.json       # Root package.json
+├── backend/            # Express.js REST API server
+├── frontend/           # Next.js web application
+├── shared/             # Shared types, validation schemas, and configurations
+├── supabase_schema.sql # Database SQL migrations
+├── .gitignore          # Global git ignore configurations
+├── LICENSE             # MIT License file
+└── README.md           # Project documentation
 ```
 
 ## Getting Started
@@ -42,60 +40,71 @@ ERP-System/
 - Node.js 18 or higher
 - npm or yarn
 
-### Installation
+### Database Setup
+
+1. Create a project in [Supabase](https://supabase.com/).
+2. Navigate to your project's **SQL Editor** in the Supabase Dashboard.
+3. Copy the contents of the [supabase_schema.sql](supabase_schema.sql) file.
+4. Paste and execute the SQL query to create the necessary tables and RLS security policies.
+
+### Local Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/ERP-System.git
-   cd ERP-System
-   ```
+    ```bash
+    git clone https://github.com/your-username/ERP-System.git
+    cd ERP-System
+    ```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+2. **Install workspace dependencies**
+    ```bash
+    npm install
+    ```
 
-3. **Configure environment variables**
-   Create a `.env` file in the root directory (or copy `.env.example` if available):
-   ```bash
-   cp .env.example .env
-   ```
-   Update the environment variables in `.env` with your configuration.
+3. **Configure Environment Variables**
 
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
+    - **Backend setup**:
+      Create a `.env` file inside the `backend` folder:
+      ```env
+      PORT=5000
+      CLIENT_URL=http://localhost:3000
+      JWT_SECRET=your_custom_jwt_secret
 
-## Development
+      SUPABASE_URL=your_supabase_project_url
+      SUPABASE_ANON_KEY=your_supabase_anon_key
+      SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-### Running the Backend
+      SMTP_HOST=smtp.gmail.com
+      SMTP_PORT=587
+      SMTP_USER=your_email@gmail.com
+      SMTP_PASS=your_gmail_app_password
+      ```
 
-The backend is located in the `erp-server` directory.
+    - **Frontend setup**:
+      Create a `.env.local` file inside the `frontend` folder:
+      ```env
+      NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+      ```
 
-```bash
-cd erp-server
-npm install
-npm run dev
-```
+4. **Run the Development Workspace**
+    From the workspace root directory, start all components concurrently:
+    ```bash
+    npm run dev
+    ```
 
-The backend API will be available at `http://localhost:3001` (or as configured in `.env`).
+## Hosting & Deployment
 
-### Running the Frontend
+To host this application in production:
 
-The frontend is located in the `erp-core` directory.
+### 1. Frontend (Next.js)
+The frontend Next.js application can be hosted on **Vercel**.
+- Set the environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in the Vercel project settings dashboard.
 
-```bash
-cd erp-core
-npm install
-npm run dev
-```
-
-The frontend application will be available at `http://localhost:3000`.
-
-### Running Both
-
-You can run both the backend and frontend simultaneously using a tool like `concurrently` or by running them in separate terminal windows.
+### 2. Backend (Express.js)
+The backend is a stateful Express.js app that requires a persistent server connection to support WebSockets (Socket.io). 
+- **DO NOT** deploy the backend to serverless platforms like Vercel. Instead, deploy to a stateful hosting provider like **Render**, **Railway**, or a **VPS**.
+- Set all the backend environment variables in your hosting provider's dashboard.
 
 ## License
 

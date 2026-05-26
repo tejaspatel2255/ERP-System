@@ -1,0 +1,307 @@
+.layoutContainer {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: var(--surface);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarHeader {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    height: 80px;
+    /* Fixed height for consistency */
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.toggleBtn {
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggleBtn:hover {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+.nav {
+    flex: 1;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+}
+
+.navItem:hover {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    transform: translateX(4px);
+}
+
+.navItemActive {
+    background-color: rgba(var(--primary-rgb), 0.08);
+    /* Fallback */
+    background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.navItemActive:hover {
+    background-color: rgba(var(--primary-rgb), 0.12);
+    transform: none;
+}
+
+.navText {
+    font-size: 0.95rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.sidebarOpen .navText {
+    opacity: 1;
+}
+
+.logoutSection {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.logoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--error);
+    background: rgba(var(--error-rgb), 0.05);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    transition: background 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.logoutBtn:hover {
+    background: rgba(var(--error-rgb), 0.1);
+}
+
+/* Main Content Area */
+.main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 100%;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header */
+.header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 1rem;
+    z-index: 10;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+}
+
+.pageTitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.statusChip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.notificationBtn {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    padding: 0.6rem;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.notificationBtn:hover {
+    background: var(--surface);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--error);
+    color: white;
+    font-size: 0.7rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Notification Dropdown */
+.notificationDropdown {
+    position: absolute;
+    top: 130%;
+    right: -10px;
+    width: 380px;
+    z-index: 50;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+.notificationHeader {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.notificationItem {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+    transition: background 0.2s;
+    cursor: default;
+}
+
+.notificationItem:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .main {
+        padding: 1rem;
+    }
+
+    .header {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+    }
+
+    .notificationDropdown {
+        width: 300px;
+        right: -50px;
+    }
+
+    .pageTitle {
+        font-size: 0.8rem;
+    }
+
+    .statusChip {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.7rem;
+    }
+}

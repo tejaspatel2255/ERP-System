@@ -1,0 +1,120 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: grayscale(100%);
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.3);
+}
+
+/* Variants */
+.primary {
+    background: var(--primary);
+    color: white;
+    box-shadow:
+        0 4px 6px -1px rgba(var(--primary-rgb), 0.3),
+        0 2px 4px -1px rgba(var(--primary-rgb), 0.1);
+    border-color: transparent;
+}
+
+.primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    box-shadow:
+        0 10px 15px -3px rgba(var(--primary-rgb), 0.4),
+        0 4px 6px -2px rgba(var(--primary-rgb), 0.2);
+    transform: translateY(-1px);
+}
+
+.secondary {
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.secondary:hover:not(:disabled) {
+    background: var(--bg-color);
+    border-color: var(--text-muted);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.outline {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+.outline:hover:not(:disabled) {
+    background: rgba(var(--primary-rgb), 0.05);
+}
+
+.ghost {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.ghost:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-main);
+}
+
+.danger {
+    background: var(--error);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(var(--error-rgb), 0.3);
+}
+
+.danger:hover:not(:disabled) {
+    background: #dc2626;
+    /* red-600 */
+    box-shadow: 0 10px 15px -3px rgba(var(--error-rgb), 0.4);
+}
+
+/* Loader */
+.loader {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

@@ -8,7 +8,8 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
-});
+    family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud providers like Render
+} as any);
 
 export const sendOTP = async (email: string, otp: string) => {
     try {

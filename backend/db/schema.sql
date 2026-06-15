@@ -22,7 +22,7 @@ $$ language 'plpgsql';
 -- ============================================================================
 
 -- 1. Departments Table
-CREATE TABLE departments (
+CREATE TABLE IF NOT EXISTS departments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -30,7 +30,7 @@ CREATE TABLE departments (
 );
 
 -- 2. Users Table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE users (
 );
 
 -- 3. Roles Table
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -50,7 +50,7 @@ CREATE TABLE roles (
 );
 
 -- 4. User Roles (Many-to-Many)
-CREATE TABLE user_roles (
+CREATE TABLE IF NOT EXISTS user_roles (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -59,7 +59,7 @@ CREATE TABLE user_roles (
 );
 
 -- 5. Permissions Table
-CREATE TABLE permissions (
+CREATE TABLE IF NOT EXISTS permissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     module_name VARCHAR(100) NOT NULL,
     action VARCHAR(50) NOT NULL, -- view, create, edit, delete
@@ -69,7 +69,7 @@ CREATE TABLE permissions (
 );
 
 -- 6. Role Permissions (Many-to-Many)
-CREATE TABLE role_permissions (
+CREATE TABLE IF NOT EXISTS role_permissions (
     role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
     permission_id UUID REFERENCES permissions(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -78,7 +78,7 @@ CREATE TABLE role_permissions (
 );
 
 -- 7. Activity Logs Table
-CREATE TABLE activity_logs (
+CREATE TABLE IF NOT EXISTS activity_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     action VARCHAR(255) NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE activity_logs (
 );
 
 -- 7b. Refresh Tokens Table
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE refresh_tokens (
 -- ============================================================================
 
 -- 8. Item Categories
-CREATE TABLE item_categories (
+CREATE TABLE IF NOT EXISTS item_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -114,7 +114,7 @@ CREATE TABLE item_categories (
 );
 
 -- 9. Items
-CREATE TABLE items (
+CREATE TABLE IF NOT EXISTS items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     item_code VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE items (
 -- ============================================================================
 
 -- 10. Customers Table
-CREATE TABLE customers (
+CREATE TABLE IF NOT EXISTS customers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
@@ -146,7 +146,7 @@ CREATE TABLE customers (
 );
 
 -- 11. Quotations Table
-CREATE TABLE quotations (
+CREATE TABLE IF NOT EXISTS quotations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -159,7 +159,7 @@ CREATE TABLE quotations (
 );
 
 -- 12. Quotation Items
-CREATE TABLE quotation_items (
+CREATE TABLE IF NOT EXISTS quotation_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     quotation_id UUID REFERENCES quotations(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -173,7 +173,7 @@ CREATE TABLE quotation_items (
 );
 
 -- 13. Sales Orders
-CREATE TABLE sales_orders (
+CREATE TABLE IF NOT EXISTS sales_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     quotation_id UUID REFERENCES quotations(id) ON DELETE SET NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
@@ -185,7 +185,7 @@ CREATE TABLE sales_orders (
 );
 
 -- 14. Sales Order Items
-CREATE TABLE sales_order_items (
+CREATE TABLE IF NOT EXISTS sales_order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES sales_orders(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -197,7 +197,7 @@ CREATE TABLE sales_order_items (
 );
 
 -- 15. Invoices Table
-CREATE TABLE invoices (
+CREATE TABLE IF NOT EXISTS invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
@@ -211,7 +211,7 @@ CREATE TABLE invoices (
 );
 
 -- 16. Payments Table
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
     payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -228,7 +228,7 @@ CREATE TABLE payments (
 -- ============================================================================
 
 -- 17. Vendors Table
-CREATE TABLE vendors (
+CREATE TABLE IF NOT EXISTS vendors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
@@ -241,7 +241,7 @@ CREATE TABLE vendors (
 );
 
 -- 18. Purchase Orders
-CREATE TABLE purchase_orders (
+CREATE TABLE IF NOT EXISTS purchase_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     vendor_id UUID REFERENCES vendors(id) ON DELETE SET NULL,
     po_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -255,7 +255,7 @@ CREATE TABLE purchase_orders (
 );
 
 -- 19. Purchase Order Items
-CREATE TABLE purchase_order_items (
+CREATE TABLE IF NOT EXISTS purchase_order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     po_id UUID REFERENCES purchase_orders(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -267,7 +267,7 @@ CREATE TABLE purchase_order_items (
 );
 
 -- 20. Vendor Invoices
-CREATE TABLE vendor_invoices (
+CREATE TABLE IF NOT EXISTS vendor_invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     po_id UUID REFERENCES purchase_orders(id) ON DELETE SET NULL,
     vendor_id UUID REFERENCES vendors(id) ON DELETE SET NULL,
@@ -284,7 +284,7 @@ CREATE TABLE vendor_invoices (
 -- ============================================================================
 
 -- 21. Stock Transactions
-CREATE TABLE stock_transactions (
+CREATE TABLE IF NOT EXISTS stock_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     item_id UUID REFERENCES items(id) ON DELETE CASCADE,
     transaction_type VARCHAR(10) CHECK (transaction_type IN ('IN', 'OUT')),
@@ -299,7 +299,7 @@ CREATE TABLE stock_transactions (
 );
 
 -- 22. Goods Receipt Note (GRN)
-CREATE TABLE grn (
+CREATE TABLE IF NOT EXISTS grn (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     po_id UUID REFERENCES purchase_orders(id) ON DELETE SET NULL,
     received_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -310,7 +310,7 @@ CREATE TABLE grn (
 );
 
 -- 23. GRN Items
-CREATE TABLE grn_items (
+CREATE TABLE IF NOT EXISTS grn_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     grn_id UUID REFERENCES grn(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -326,7 +326,7 @@ CREATE TABLE grn_items (
 -- ============================================================================
 
 -- 24. Bill of Materials (BOM)
-CREATE TABLE bom (
+CREATE TABLE IF NOT EXISTS bom (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     finished_item_id UUID REFERENCES items(id) ON DELETE SET NULL,
     version VARCHAR(50) NOT NULL,
@@ -337,7 +337,7 @@ CREATE TABLE bom (
 );
 
 -- 25. BOM Items
-CREATE TABLE bom_items (
+CREATE TABLE IF NOT EXISTS bom_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     bom_id UUID REFERENCES bom(id) ON DELETE CASCADE,
     raw_material_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -348,7 +348,7 @@ CREATE TABLE bom_items (
 );
 
 -- 26. Work Orders
-CREATE TABLE work_orders (
+CREATE TABLE IF NOT EXISTS work_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     bom_id UUID REFERENCES bom(id) ON DELETE SET NULL,
     sales_order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
@@ -365,7 +365,7 @@ CREATE TABLE work_orders (
 );
 
 -- 27. Material Consumption
-CREATE TABLE material_consumption (
+CREATE TABLE IF NOT EXISTS material_consumption (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id UUID REFERENCES work_orders(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -377,7 +377,7 @@ CREATE TABLE material_consumption (
 );
 
 -- 28. Production Costs
-CREATE TABLE production_costs (
+CREATE TABLE IF NOT EXISTS production_costs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id UUID REFERENCES work_orders(id) ON DELETE CASCADE,
     material_cost NUMERIC(15, 2) DEFAULT 0.00,
@@ -393,7 +393,7 @@ CREATE TABLE production_costs (
 -- ============================================================================
 
 -- 29. Assets
-CREATE TABLE assets (
+CREATE TABLE IF NOT EXISTS assets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     asset_code VARCHAR(100) UNIQUE NOT NULL,
@@ -406,7 +406,7 @@ CREATE TABLE assets (
 );
 
 -- 30. Maintenance Schedules
-CREATE TABLE maintenance_schedules (
+CREATE TABLE IF NOT EXISTS maintenance_schedules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     asset_id UUID REFERENCES assets(id) ON DELETE CASCADE,
     frequency VARCHAR(50) NOT NULL, -- Daily, Weekly, Monthly, Quarterly, Annually
@@ -418,7 +418,7 @@ CREATE TABLE maintenance_schedules (
 );
 
 -- 31. Maintenance Logs
-CREATE TABLE maintenance_logs (
+CREATE TABLE IF NOT EXISTS maintenance_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     asset_id UUID REFERENCES assets(id) ON DELETE CASCADE,
     schedule_id UUID REFERENCES maintenance_schedules(id) ON DELETE SET NULL,
@@ -431,7 +431,7 @@ CREATE TABLE maintenance_logs (
 );
 
 -- 32. Issue Logs (Maintenance tickets)
-CREATE TABLE issue_logs (
+CREATE TABLE IF NOT EXISTS issue_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     asset_id UUID REFERENCES assets(id) ON DELETE CASCADE,
     reported_by UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -451,7 +451,7 @@ CREATE TABLE issue_logs (
 -- ============================================================================
 
 -- 33. QA Checklists
-CREATE TABLE qa_checklists (
+CREATE TABLE IF NOT EXISTS qa_checklists (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     product_category VARCHAR(100),
@@ -461,7 +461,7 @@ CREATE TABLE qa_checklists (
 );
 
 -- 34. QA Checklist Items
-CREATE TABLE qa_checklist_items (
+CREATE TABLE IF NOT EXISTS qa_checklist_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     checklist_id UUID REFERENCES qa_checklists(id) ON DELETE CASCADE,
     question TEXT NOT NULL,
@@ -471,7 +471,7 @@ CREATE TABLE qa_checklist_items (
 );
 
 -- 35. QA Tests
-CREATE TABLE qa_tests (
+CREATE TABLE IF NOT EXISTS qa_tests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id UUID REFERENCES work_orders(id) ON DELETE CASCADE,
     checklist_id UUID REFERENCES qa_checklists(id) ON DELETE SET NULL,
@@ -484,7 +484,7 @@ CREATE TABLE qa_tests (
 );
 
 -- 36. QA Test Results
-CREATE TABLE qa_test_results (
+CREATE TABLE IF NOT EXISTS qa_test_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     test_id UUID REFERENCES qa_tests(id) ON DELETE CASCADE,
     checklist_item_id UUID REFERENCES qa_checklist_items(id) ON DELETE CASCADE,
@@ -495,7 +495,7 @@ CREATE TABLE qa_test_results (
 );
 
 -- 37. QA Reports
-CREATE TABLE qa_reports (
+CREATE TABLE IF NOT EXISTS qa_reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     test_id UUID REFERENCES qa_tests(id) ON DELETE CASCADE,
     file_url TEXT NOT NULL,
@@ -505,7 +505,7 @@ CREATE TABLE qa_reports (
 );
 
 -- 38. QA Approvals
-CREATE TABLE qa_approvals (
+CREATE TABLE IF NOT EXISTS qa_approvals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     test_id UUID REFERENCES qa_tests(id) ON DELETE CASCADE,
     approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -521,7 +521,7 @@ CREATE TABLE qa_approvals (
 -- ============================================================================
 
 -- 39. QC Raw Material
-CREATE TABLE qc_raw_material (
+CREATE TABLE IF NOT EXISTS qc_raw_material (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     grn_id UUID REFERENCES grn(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -535,7 +535,7 @@ CREATE TABLE qc_raw_material (
 );
 
 -- 40. QC In-Process
-CREATE TABLE qc_in_process (
+CREATE TABLE IF NOT EXISTS qc_in_process (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id UUID REFERENCES work_orders(id) ON DELETE CASCADE,
     stage VARCHAR(100) NOT NULL,
@@ -548,7 +548,7 @@ CREATE TABLE qc_in_process (
 );
 
 -- 41. QC Final Product
-CREATE TABLE qc_final (
+CREATE TABLE IF NOT EXISTS qc_final (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     work_order_id UUID REFERENCES work_orders(id) ON DELETE CASCADE,
     inspected_by UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -560,7 +560,7 @@ CREATE TABLE qc_final (
 );
 
 -- 42. Non-Conformance Reports (NCR)
-CREATE TABLE ncr (
+CREATE TABLE IF NOT EXISTS ncr (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_type VARCHAR(50) NOT NULL, -- raw, in_process, final
     source_id UUID NOT NULL, -- references respective qc table ID
@@ -579,7 +579,7 @@ CREATE TABLE ncr (
 -- ============================================================================
 
 -- 43. Packing Slips
-CREATE TABLE packing_slips (
+CREATE TABLE IF NOT EXISTS packing_slips (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES sales_orders(id) ON DELETE CASCADE,
     packed_by UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -590,7 +590,7 @@ CREATE TABLE packing_slips (
 );
 
 -- 44. Packing Slip Items
-CREATE TABLE packing_slip_items (
+CREATE TABLE IF NOT EXISTS packing_slip_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     packing_slip_id UUID REFERENCES packing_slips(id) ON DELETE CASCADE,
     item_id UUID REFERENCES items(id) ON DELETE SET NULL,
@@ -601,7 +601,7 @@ CREATE TABLE packing_slip_items (
 );
 
 -- 45. Delivery Challans
-CREATE TABLE delivery_challans (
+CREATE TABLE IF NOT EXISTS delivery_challans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     packing_slip_id UUID REFERENCES packing_slips(id) ON DELETE SET NULL,
     order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
@@ -612,7 +612,7 @@ CREATE TABLE delivery_challans (
 );
 
 -- 46. Transport Details
-CREATE TABLE transport_details (
+CREATE TABLE IF NOT EXISTS transport_details (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     challan_id UUID REFERENCES delivery_challans(id) ON DELETE CASCADE,
     transporter_name VARCHAR(255) NOT NULL,
@@ -624,7 +624,7 @@ CREATE TABLE transport_details (
 );
 
 -- 47. Proof of Delivery (POD)
-CREATE TABLE proof_of_delivery (
+CREATE TABLE IF NOT EXISTS proof_of_delivery (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     challan_id UUID REFERENCES delivery_challans(id) ON DELETE CASCADE,
     delivered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -640,7 +640,7 @@ CREATE TABLE proof_of_delivery (
 -- ============================================================================
 
 -- 48. Employees Table
-CREATE TABLE employees (
+CREATE TABLE IF NOT EXISTS employees (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     emp_code VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -656,7 +656,7 @@ CREATE TABLE employees (
 );
 
 -- 49. Attendance Table
-CREATE TABLE attendance (
+CREATE TABLE IF NOT EXISTS attendance (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -669,7 +669,7 @@ CREATE TABLE attendance (
 );
 
 -- 50. Leave Types Table
-CREATE TABLE leave_types (
+CREATE TABLE IF NOT EXISTS leave_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     days_allowed_per_year INT NOT NULL,
@@ -678,7 +678,7 @@ CREATE TABLE leave_types (
 );
 
 -- 51. Leave Applications
-CREATE TABLE leave_applications (
+CREATE TABLE IF NOT EXISTS leave_applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
     leave_type_id UUID REFERENCES leave_types(id) ON DELETE SET NULL,
@@ -693,7 +693,7 @@ CREATE TABLE leave_applications (
 );
 
 -- 52. Leave Balances
-CREATE TABLE leave_balances (
+CREATE TABLE IF NOT EXISTS leave_balances (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
     leave_type_id UUID REFERENCES leave_types(id) ON DELETE CASCADE,
@@ -707,7 +707,7 @@ CREATE TABLE leave_balances (
 );
 
 -- 53. Training Sessions
-CREATE TABLE training_sessions (
+CREATE TABLE IF NOT EXISTS training_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -719,7 +719,7 @@ CREATE TABLE training_sessions (
 );
 
 -- 54. Training Attendance Table
-CREATE TABLE training_attendance (
+CREATE TABLE IF NOT EXISTS training_attendance (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES training_sessions(id) ON DELETE CASCADE,
     employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
@@ -734,7 +734,7 @@ CREATE TABLE training_attendance (
 -- ============================================================================
 
 -- 55. Design Files Table
-CREATE TABLE design_files (
+CREATE TABLE IF NOT EXISTS design_files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -747,7 +747,7 @@ CREATE TABLE design_files (
 );
 
 -- 56. Design Versions (Revision History)
-CREATE TABLE design_versions (
+CREATE TABLE IF NOT EXISTS design_versions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     design_file_id UUID REFERENCES design_files(id) ON DELETE CASCADE,
     version_number INT NOT NULL,
@@ -760,7 +760,7 @@ CREATE TABLE design_versions (
 );
 
 -- 57. Design Tasks Table
-CREATE TABLE design_tasks (
+CREATE TABLE IF NOT EXISTS design_tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -774,7 +774,7 @@ CREATE TABLE design_tasks (
 );
 
 -- 58. Design Reviews
-CREATE TABLE design_reviews (
+CREATE TABLE IF NOT EXISTS design_reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     design_file_id UUID REFERENCES design_files(id) ON DELETE CASCADE,
     version_id UUID REFERENCES design_versions(id) ON DELETE CASCADE,
@@ -787,7 +787,7 @@ CREATE TABLE design_reviews (
 );
 
 -- 59. Settings Table
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),

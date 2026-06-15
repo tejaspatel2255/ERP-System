@@ -263,4 +263,62 @@ export const me = async (req, res, next) => {
   }
 };
 
-export default { login, refresh, logout, me };
+/**
+ * Handle user registration
+ */
+export const register = async (req, res, next) => {
+  // Check validation results
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  const { name, email, password } = req.body;
+
+  try {
+    // 1. Check if email is already in use
+    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ success: false, message: 'Email is already in use.' });
+    }
+
+    // 2. Hash password
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    // 3. Create user
+    const insertUserText = `
+      INSERT INTO users (name, email, password_hash, is_active)
+      VALUES ($1, $2, $3, true)
+      RETURNING id, name, email;
+    `;
+    const userResult = await db.query(insertUserText, [name, email, hashedPassword]);
+    const newUser = userResult.rows[0];
+
+    // 4. Assign default role ('Employee')
+    let roleRes = await db.query("SELECT id FROM roles WHERE name = 'Employee'");
+    if (roleRes.rows.length === 0) {
+      roleRes = await db.query("INSERT INTO roles (name) VALUES ('Employee') RETURNING id");
+    }
+    const roleId = roleRes.rows[0].id;
+
+    await db.query(`
+      INSERT INTO user_roles (user_id, role_id)
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING;
+    `, [newUser.id, roleId]);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Registration successful! You can now log in.',
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { login, refresh, logout, me, register };

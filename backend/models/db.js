@@ -4,6 +4,9 @@ import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
+// Bypass self-signed certificate validation globally in Node
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const { Pool } = pkg;
 
 // Create the connection pool

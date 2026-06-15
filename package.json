@@ -1,0 +1,17 @@
+{
+  "name": "erp-nexus-root",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Root workspace for ERP Nexus",
+  "scripts": {
+    "install:backend": "npm install --prefix backend",
+    "install:frontend": "npm install --prefix frontend",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:shared": "echo 'No shared package build required'",
+    "build:server": "npm run install:backend",
+    "start:backend": "npm start --prefix backend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  }
+}

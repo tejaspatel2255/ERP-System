@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────
+# ROOT
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# ─────────────────────────────────────────────
+# BACKEND
+# ─────────────────────────────────────────────
+backend/.env
+backend/node_modules/
+backend/dist/
+backend/uploads/
+backend/logs/
+
+# ─────────────────────────────────────────────
+# FRONTEND
+# ─────────────────────────────────────────────
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ─────────────────────────────────────────────
+# IDE / OS
+# ─────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

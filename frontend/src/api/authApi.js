@@ -1,0 +1,28 @@
+import axiosInstance from './axiosInstance';
+
+export const loginUser = async (email, password) => {
+  const res = await axiosInstance.post('/auth/login', { email, password });
+  return res.data;
+};
+
+export const getCurrentUser = async () => {
+  const res = await axiosInstance.get('/auth/me');
+  return res.data;
+};
+
+export const logoutUser = async (refreshToken) => {
+  const res = await axiosInstance.post('/auth/logout', { refreshToken });
+  return res.data;
+};
+
+export const refreshAccessToken = async (refreshToken) => {
+  const res = await axiosInstance.post('/auth/refresh', { refreshToken });
+  return res.data;
+};
+
+export default {
+  loginUser,
+  getCurrentUser,
+  logoutUser,
+  refreshAccessToken
+};

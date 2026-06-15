@@ -2,6 +2,10 @@
 -- ERP SYSTEM DATABASE SCHEMA
 -- ============================================================================
 
+-- Drop all old and new tables to ensure a clean install
+DROP TABLE IF EXISTS profiles, customers, products, store_ledger, sales, purchases, boms, work_orders, assets, maintenance_logs, employees, attendance, leaves, accounts, transactions, alerts, audit_logs, settings, dispatches, otps, refresh_tokens CASCADE;
+DROP TABLE IF EXISTS departments, users, roles, user_roles, permissions, role_permissions, activity_logs, item_categories, items, quotations, quotation_items, sales_orders, sales_order_items, invoices, payments, vendors, purchase_orders, purchase_order_items, vendor_invoices, stock_transactions, grn, grn_items, bom, bom_items, material_consumption, production_costs, maintenance_schedules, issue_logs, qa_checklists, qa_checklist_items, qa_tests, qa_test_results, qa_reports, qa_approvals, qc_raw_material, qc_in_process, qc_final, ncr, packing_slips, packing_slip_items, delivery_challans, transport_details, proof_of_delivery, leave_types, leave_applications, leave_balances, training_sessions, training_attendance, design_files, design_versions, design_tasks, design_reviews CASCADE;
+
 -- Enable UUID generation extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 

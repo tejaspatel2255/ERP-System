@@ -1,5 +1,6 @@
 import pkg from 'pg';
 import dotenv from 'dotenv';
+import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
@@ -54,11 +55,58 @@ pool.query(`
     updated_at TIMESTAMPTZ DEFAULT NOW()
   );
 
-`).then(() => {
+`).then(async () => {
   console.log('Database schema alterations checked and applied successfully.');
+  await seedDatabase();
 }).catch((err) => {
   console.error('Failed to run sales schema migrations on startup:', err.message);
 });
+
+async function seedDatabase() {
+  try {
+    // 1. Seed Roles
+    await pool.query(`
+      INSERT INTO roles (name) VALUES ('Admin'), ('Manager'), ('Employee')
+      ON CONFLICT (name) DO NOTHING;
+    `);
+
+    // 2. Seed default department
+    const deptRes = await pool.query(`
+      INSERT INTO departments (name) VALUES ('Management')
+      ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+      RETURNING id;
+    `);
+    const deptId = deptRes.rows[0]?.id;
+
+    // 3. Seed Admin user if no users exist
+    const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
+    const userCount = parseInt(userCountRes.rows[0].count, 10);
+
+    if (userCount === 0) {
+      console.log('No users found. Seeding default Admin user...');
+      const adminPasswordHash = await bcryptjs.hash('admin123', 10);
+      
+      const userRes = await pool.query(`
+        INSERT INTO users (name, email, password_hash, is_active, department_id)
+        VALUES ('System Administrator', 'admin@erp.com', $1, true, $2)
+        RETURNING id;
+      `, [adminPasswordHash, deptId]);
+      
+      const adminUserId = userRes.rows[0].id;
+      
+      // Link admin to Admin role
+      await pool.query(`
+        INSERT INTO user_roles (user_id, role_id)
+        SELECT $1, id FROM roles WHERE name = 'Admin'
+        ON CONFLICT DO NOTHING;
+      `, [adminUserId]);
+
+      console.log('Seeded Admin user successfully: email=admin@erp.com, password=admin123');
+    }
+  } catch (error) {
+    console.error('Error seeding database:', error.message);
+  }
+}
 
 /**
  * Execute database queries

@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_default_jwt_secret_key_change_me_in_production';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback_default_jwt_refresh_secret_key_change_me_in_production';
+const JWT_SECRET = process.env.JWT_SECRET || 'nQo1OxIzJa5Rj8jlYlzhzgem6/0Axqq2ydR9phHmtegEPEHW1SviH4gEgokDuiRoSJ6sVYuegB0Pj5lzXq/TtA==';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'nQo1OxIzJa5Rj8jlYlzhzgem6/0Axqq2ydR9phHmtegEPEHW1SviH4gEgokDuiRoSJ6sVYuegB0Pj5lzXq/TtA==refresh';
 
 if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
   console.warn('⚠️ WARNING: JWT_SECRET or JWT_REFRESH_SECRET is not defined. Using fallback keys for testing.');

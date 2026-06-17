@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 
 /**
  * Reusable Table Component
@@ -9,37 +10,40 @@ import React from 'react';
  */
 const Table = ({ columns, data = [], loading = false, emptyMessage = 'No data available' }) => {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+    <div className="w-full overflow-x-auto rounded-xl border border-border-color bg-bg-card shadow-brand transition-all duration-300">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <tr className="border-b border-border-color bg-bg-secondary">
             {columns.map((col, idx) => (
               <th
                 key={col.key || idx}
-                className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-text-muted"
               >
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className="divide-y divide-border-color">
           {loading ? (
             // Skeleton Loader Rows
             Array.from({ length: 5 }).map((_, rIdx) => (
-              <tr key={rIdx} className="animate-pulse">
+              <tr key={rIdx} className="animate-pulse bg-bg-card">
                 {columns.map((_, cIdx) => (
                   <td key={cIdx} className="px-6 py-4">
-                    <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+                    <div className="h-4 bg-bg-hover rounded w-3/4"></div>
                   </td>
                 ))}
               </tr>
             ))
           ) : data.length === 0 ? (
             // Empty State Row
-            <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
-                {emptyMessage}
+            <tr className="bg-bg-card">
+              <td colSpan={columns.length} className="px-6 py-12 text-center">
+                <div className="flex flex-col items-center justify-center gap-2 text-text-muted">
+                  <AlertCircle size={28} className="stroke-[1.5]" />
+                  <span className="text-sm font-medium">{emptyMessage}</span>
+                </div>
               </td>
             </tr>
           ) : (
@@ -47,12 +51,12 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No data av
             data.map((item, rIdx) => (
               <tr
                 key={item.id || rIdx}
-                className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150 odd:bg-white dark:odd:bg-slate-900 even:bg-slate-50/30 dark:even:bg-slate-900/50"
+                className="bg-bg-card hover:bg-bg-hover transition-colors duration-200"
               >
                 {columns.map((col, cIdx) => (
                   <td
                     key={col.key || cIdx}
-                    className="px-6 py-4 text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                    className="px-6 py-4 text-sm font-medium text-text-primary whitespace-nowrap"
                   >
                     {col.render ? col.render(item, rIdx) : item[col.key]}
                   </td>

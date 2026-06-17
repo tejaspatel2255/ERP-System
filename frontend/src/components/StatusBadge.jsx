@@ -1,19 +1,54 @@
 import React from 'react';
 
-const mapStatus = (status = '') => {
+const mapStatusStyles = (status = '') => {
   const value = String(status).toLowerCase();
-  if (['draft', 'pending'].includes(value)) return 'bg-slate-200 text-slate-800';
-  if (['submitted', 'sent'].includes(value)) return 'bg-blue-100 text-blue-800';
-  if (['approved', 'active', 'completed', 'pass', 'paid', 'resolved'].includes(value)) return 'bg-emerald-100 text-emerald-800';
-  if (['rejected', 'fail', 'cancelled', 'overdue', 'critical'].includes(value)) return 'bg-red-100 text-red-800';
-  if (['in progress', 'partial', 'partial payment'].includes(value)) return 'bg-orange-100 text-orange-800';
-  if (['scheduled', 'open'].includes(value)) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-slate-200 text-slate-800';
+  
+  // Active/Success/Approved/Paid
+  if (['active', 'success', 'approved', 'paid', 'completed', 'pass', 'resolved'].includes(value)) {
+    return {
+      backgroundColor: 'rgba(16, 185, 129, 0.15)',
+      color: '#10b981'
+    };
+  }
+  
+  // Warning/Pending/Draft
+  if (['warning', 'pending', 'draft', 'scheduled', 'open'].includes(value)) {
+    return {
+      backgroundColor: 'rgba(245, 158, 11, 0.15)',
+      color: '#f59e0b'
+    };
+  }
+
+  // Danger/Rejected/Overdue
+  if (['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical'].includes(value)) {
+    return {
+      backgroundColor: 'rgba(239, 68, 68, 0.15)',
+      color: '#ef4444'
+    };
+  }
+
+  // Info/Processing
+  return {
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    color: '#6366f1'
+  };
 };
 
 export default function StatusBadge({ status }) {
+  const styles = mapStatusStyles(status);
+  
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${mapStatus(status)}`}>
+    <span 
+      className="inline-flex items-center justify-center text-center"
+      style={{
+        borderRadius: '20px',
+        padding: '4px 12px',
+        fontSize: '12px',
+        fontWeight: '600',
+        lineHeight: '1.2',
+        ...styles
+      }}
+    >
       {status}
     </span>
   );

@@ -62,7 +62,9 @@ const route = (path, element, module) => (
 
 export default function App() {
   return (
-    <Routes>
+    <div className="animate-fadeIn min-h-screen bg-bg-primary">
+      <Routes>
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
@@ -117,5 +119,7 @@ export default function App() {
       <Route path="/print/purchase-order/:id" element={<PrintPurchaseOrder />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </div>
   );
 }
+

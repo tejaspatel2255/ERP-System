@@ -267,25 +267,25 @@ export const me = async (req, res, next) => {
  * Handle user registration
  */
 export const register = async (req, res, next) => {
-  // Check validation results
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, errors: errors.array() });
-  }
-
-  const { name, email, password } = req.body;
-
   try {
-    // 1. Check if email is already in use
-    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ success: false, message: 'Email is already in use.' });
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    // 2. Hash password
-    const hashedPassword = await bcryptjs.hash(password, 10);
+    const { name, email, password } = req.body;
 
-    // 3. Create user
+    // 1. Check if email already exists
+    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ success: false, message: 'Email already exists.' });
+    }
+
+    // 2. Hash password with bcryptjs saltRounds 12
+    const hashedPassword = await bcryptjs.hash(password, 12);
+
+    // 3. Insert new user into users table
     const insertUserText = `
       INSERT INTO users (name, email, password_hash, is_active)
       VALUES ($1, $2, $3, true)
@@ -307,9 +307,11 @@ export const register = async (req, res, next) => {
       ON CONFLICT DO NOTHING;
     `, [newUser.id, roleId]);
 
+    // 5. Return success message with user id
     return res.status(201).json({
       success: true,
-      message: 'Registration successful! You can now log in.',
+      message: 'Registration successful!',
+      userId: newUser.id,
       user: {
         id: newUser.id,
         name: newUser.name,
@@ -317,7 +319,12 @@ export const register = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('Registration error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Registration failed.',
+      error: error.message
+    });
   }
 };
 

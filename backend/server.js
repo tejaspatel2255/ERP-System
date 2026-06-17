@@ -1,3 +1,17 @@
+import { createRequire } from 'module';
+const nativeRequire = createRequire(import.meta.url);
+import db from './models/db.js';
+
+const require = (id) => {
+  if (id === './models/db' || id === './models/db.js') {
+    return db;
+  }
+  return nativeRequire(id);
+};
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+require('dotenv').config();
+
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -47,6 +61,16 @@ if (process.env.NODE_ENV === 'development') {
 // Parse incoming JSON and URL-encoded requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check route
+app.get('/health', async (req, res) => {
+  try {
+    await require('./models/db').query('SELECT 1');
+    res.json({ status: 'ok', database: 'connected' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', database: 'disconnected', error: err.message });
+  }
+});
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);

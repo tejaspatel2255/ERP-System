@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { login, refresh, logout, me, register } from '../controllers/authController.js';
+import { login, refresh, logout, me, register, seedAdmin } from '../controllers/authController.js';
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -37,6 +37,7 @@ const tokenValidation = [
 ];
 
 // Auth Routes
+router.get('/seed', seedAdmin);
 router.post('/login', loginValidation, login);
 router.post('/register', registerValidation, register);
 router.post('/refresh', tokenValidation, refresh);

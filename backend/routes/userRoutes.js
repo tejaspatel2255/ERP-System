@@ -15,7 +15,10 @@ import {
   getRoles,
   createRole,
   setRolePermissions,
-  getActivityLogs
+  getActivityLogs,
+  getPendingUsers,
+  approveUser,
+  rejectUser
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -47,6 +50,10 @@ const createRoleValidation = [
 router.use(verifyToken);
 
 // User Routes
+router.get('/users/pending', requirePermission('auth', 'view'), getPendingUsers);
+router.patch('/users/:id/approve', requirePermission('auth', 'edit'), approveUser);
+router.delete('/users/:id/reject', requirePermission('auth', 'edit'), rejectUser);
+
 router.get('/users', requirePermission('auth', 'view'), getUsers);
 router.post('/users', requirePermission('auth', 'create'), createUserValidation, createUser);
 router.get('/users/:id', requirePermission('auth', 'view'), getUserById);

@@ -123,6 +123,33 @@ export const getActivityLogs = async (filters = {}) => {
   return response.data;
 };
 
+/**
+ * Fetch list of pending users (is_active = FALSE)
+ */
+export const getPendingUsers = async () => {
+  const response = await axiosInstance.get('/users/pending');
+  return response.data;
+};
+
+/**
+ * Approve a pending user and assign role (+ optional department)
+ * @param {string} id - User UUID
+ * @param {Object} data - { role_id, department_id }
+ */
+export const approveUser = async (id, data) => {
+  const response = await axiosInstance.patch(`/users/${id}/approve`, data);
+  return response.data;
+};
+
+/**
+ * Reject and delete a pending user registration
+ * @param {string} id - User UUID
+ */
+export const rejectUser = async (id) => {
+  const response = await axiosInstance.delete(`/users/${id}/reject`);
+  return response.data;
+};
+
 export default {
   getUsers,
   createUser,
@@ -135,5 +162,8 @@ export default {
   setRolePermissions,
   getDepartments,
   createDepartment,
-  getActivityLogs
+  getActivityLogs,
+  getPendingUsers,
+  approveUser,
+  rejectUser
 };

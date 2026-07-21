@@ -557,6 +557,115 @@ export const getActivityLogs = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/users/pending
+ * List all pending users (is_active = FALSE)
+ */
+export const getPendingUsers = async (req, res, next) => {
+  try {
+    const queryText = `
+      SELECT u.id, u.name, u.email, u.is_active, u.created_at, u.department_id, d.name AS department_name
+      FROM users u
+      LEFT JOIN departments d ON u.department_id = d.id
+      WHERE u.is_active = FALSE
+      ORDER BY u.created_at DESC
+    `;
+    const result = await db.query(queryText);
+
+    return res.status(200).json({
+      success: true,
+      users: result.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PATCH /api/users/:id/approve
+ * Approve pending user, set is_active = TRUE and assign role (+ optional department)
+ */
+export const approveUser = async (req, res, next) => {
+  const { id } = req.params;
+  const { role_id, role_name, department_id } = req.body;
+
+  try {
+    // 1. Verify user exists
+    const userCheck = await db.query(`SELECT id, email, name FROM users WHERE id = $1`, [id]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // 2. Update is_active to TRUE (and department_id if provided)
+    let updateQuery = `UPDATE users SET is_active = TRUE`;
+    const queryParams = [id];
+
+    if (department_id) {
+      queryParams.push(department_id);
+      updateQuery += `, department_id = $${queryParams.length}`;
+    }
+
+    updateQuery += ` WHERE id = $1 RETURNING id, name, email, is_active, department_id;`;
+    const updateResult = await db.query(updateQuery, queryParams);
+    const updatedUser = updateResult.rows[0];
+
+    // 3. Assign role if specified
+    const targetRole = role_id || role_name;
+    if (targetRole) {
+      const findRoleText = `SELECT id FROM roles WHERE id::text = $1 OR name = $1`;
+      const roleResult = await db.query(findRoleText, [targetRole]);
+
+      if (roleResult.rows.length > 0) {
+        const selectedRoleId = roleResult.rows[0].id;
+        await db.query(`DELETE FROM user_roles WHERE user_id = $1`, [id]);
+        await db.query(
+          `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [id, selectedRoleId]
+        );
+      }
+    }
+
+    // 4. Log Activity
+    await logActivity(req.user.id, 'APPROVE_USER', 'users', id, req);
+
+    return res.status(200).json({
+      success: true,
+      message: 'User approved and activated successfully.',
+      user: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/users/:id/reject
+ * Reject and delete a pending user registration
+ */
+export const rejectUser = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const userCheck = await db.query(`SELECT id, email, name FROM users WHERE id = $1`, [id]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Delete user (cascade handles user_roles)
+    await db.query(`DELETE FROM users WHERE id = $1`, [id]);
+
+    // Log Activity
+    await logActivity(req.user.id, 'REJECT_USER', 'users', id, req);
+
+    return res.status(200).json({
+      success: true,
+      message: 'User registration rejected and user account removed.'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getUsers,
   getUserById,
@@ -570,5 +679,8 @@ export default {
   getRoles,
   createRole,
   setRolePermissions,
-  getActivityLogs
+  getActivityLogs,
+  getPendingUsers,
+  approveUser,
+  rejectUser
 };

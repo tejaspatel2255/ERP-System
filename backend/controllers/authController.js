@@ -48,7 +48,11 @@ export const login = async (req, res, next) => {
 
     // 2. Check if user account is active
     if (!user.is_active) {
-      return res.status(403).json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+      return res.status(403).json({
+        success: false,
+        code: 'ACCOUNT_PENDING_APPROVAL',
+        message: 'Your account is pending admin approval. An administrator must approve your account and assign a role before you can access the system.'
+      });
     }
 
     // 3. Compare password hash
@@ -246,6 +250,14 @@ export const me = async (req, res, next) => {
 
     const user = userResult.rows[0];
 
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        code: 'ACCOUNT_PENDING_APPROVAL',
+        message: 'Your account is pending admin approval.'
+      });
+    }
+
     // Fetch roles
     const rolesQueryText = `
       SELECT r.name 
@@ -298,32 +310,20 @@ export const register = async (req, res, next) => {
     // 2. Hash password with bcryptjs saltRounds 12
     const hashedPassword = await bcryptjs.hash(password, 12);
 
-    // 3. Insert new user into users table
+    // 3. Insert new user into users table with is_active = false (pending approval)
     const insertUserText = `
       INSERT INTO users (name, email, password_hash, is_active)
-      VALUES ($1, $2, $3, true)
+      VALUES ($1, $2, $3, false)
       RETURNING id, name, email;
     `;
     const userResult = await db.query(insertUserText, [name, email, hashedPassword]);
     const newUser = userResult.rows[0];
 
-    // 4. Assign default role ('Employee')
-    let roleRes = await db.query("SELECT id FROM roles WHERE name = 'Employee'");
-    if (roleRes.rows.length === 0) {
-      roleRes = await db.query("INSERT INTO roles (name) VALUES ('Employee') RETURNING id");
-    }
-    const roleId = roleRes.rows[0].id;
-
-    await db.query(`
-      INSERT INTO user_roles (user_id, role_id)
-      VALUES ($1, $2)
-      ON CONFLICT DO NOTHING;
-    `, [newUser.id, roleId]);
-
-    // 5. Return success message with user id
+    // 4. Return success message (no tokens, pending approval)
     return res.status(201).json({
       success: true,
-      message: 'Registration successful!',
+      code: 'ACCOUNT_PENDING_APPROVAL',
+      message: 'Your account has been created and is pending admin approval. You will be notified once an administrator approves your account.',
       userId: newUser.id,
       user: {
         id: newUser.id,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Clock } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -9,16 +10,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPendingApproval(false);
+
     try {
       await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials.');
+      if (err.response?.data?.code === 'ACCOUNT_PENDING_APPROVAL') {
+        setPendingApproval(true);
+      } else {
+        setError(err.response?.data?.message || 'Invalid credentials.');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,7 +43,19 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-400">Sign in to access your ERP workspace.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        {pendingApproval && (
+          <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200">
+            <div className="flex items-center gap-3 font-semibold text-amber-300">
+              <Clock size={20} className="shrink-0" />
+              <span>Account Pending Approval</span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-slate-300">
+              Your account has been created and is pending administrator review and role assignment. You will be able to log in once access is granted.
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-300">Email</label>
             <input
@@ -58,7 +78,13 @@ export default function LoginPage() {
               required
             />
           </div>
-          {error && <div className="rounded-xl border border-red-500/40 bg-red-950/80 px-4 py-3 text-sm text-red-200">{error}</div>}
+
+          {error && !pendingApproval && (
+            <div className="rounded-xl border border-red-500/40 bg-red-950/80 px-4 py-3 text-sm text-red-200">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}

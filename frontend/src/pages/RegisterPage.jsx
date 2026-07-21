@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../api/authApi';
 import toast from 'react-hot-toast';
+import { Clock, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,14 +30,41 @@ export default function RegisterPage() {
 
     try {
       await registerUser(name, email, password);
-      toast.success('Registration successful! You can now log in.');
-      navigate('/login');
+      toast.success('Registration submitted! Pending admin approval.');
+      setIsSubmitted(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_40%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] px-4 text-slate-100">
+        <div className="w-full max-w-md rounded-3xl border border-amber-500/30 bg-slate-950/90 p-8 text-center shadow-2xl backdrop-blur">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+            <Clock size={36} />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Registration Pending Approval</h1>
+          <p className="mt-3 text-sm text-slate-300 leading-relaxed">
+            Your account for <span className="font-semibold text-cyan-400">{email}</span> has been created successfully.
+          </p>
+          <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-left text-xs text-amber-200">
+            An administrator must review your registration and assign a role to your account before you can access ERP modules.
+          </div>
+          <div className="mt-6">
+            <Link
+              to="/login"
+              className="inline-block w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
+            >
+              Return to Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_40%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] px-4 text-slate-100">
@@ -45,7 +74,7 @@ export default function RegisterPage() {
             ERP
           </div>
           <h1 className="text-3xl font-black">Create account</h1>
-          <p className="mt-2 text-sm text-slate-400">Get started with your free ERP account.</p>
+          <p className="mt-2 text-sm text-slate-400">Get started with your ERP account.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">

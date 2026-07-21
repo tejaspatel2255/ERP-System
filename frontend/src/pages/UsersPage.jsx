@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import SearchBar from '../components/SearchBar';
 import { useRole } from '../context/RoleContext';
+import { Clock, CheckCircle, XCircle, UserCheck, AlertTriangle } from 'lucide-react';
 import {
   getUsers,
   createUser,
@@ -12,7 +13,10 @@ import {
   getRoles,
   getDepartments,
   getUserActivity,
-  assignUserRoles
+  assignUserRoles,
+  getPendingUsers,
+  approveUser,
+  rejectUser
 } from '../api/userApi';
 
 const UsersPage = () => {
@@ -20,10 +24,15 @@ const UsersPage = () => {
 
   // State Management
   const [users, setUsers] = useState([]);
+  const [pendingUsers, setPendingUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pendingLoading, setPendingLoading] = useState(false);
   
+  // Pending Approval Action States (map user.id -> selectedRoleId)
+  const [selectedPendingRoles, setSelectedPendingRoles] = useState({});
+
   // Filtering & Pagination
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState('');
@@ -47,11 +56,26 @@ const UsersPage = () => {
     email: '',
     password: '',
     department_id: '',
-    roles: [], // names or ids
+    roles: [],
     is_active: true
   });
 
-  // Fetch Users
+  // Fetch Pending Users
+  const fetchPending = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const data = await getPendingUsers();
+      if (data.success) {
+        setPendingUsers(data.users);
+      }
+    } catch (err) {
+      // ignore if user doesn't have permission
+    } finally {
+      setPendingLoading(false);
+    }
+  }, []);
+
+  // Fetch Active Users List
   const fetchUsersList = useCallback(async () => {
     setLoading(true);
     try {
@@ -79,19 +103,54 @@ const UsersPage = () => {
     const fetchMetadata = async () => {
       try {
         const [rolesData, deptsData] = await Promise.all([getRoles(), getDepartments()]);
-        if (rolesData.success) setRoles(rolesData.roles);
+        if (rolesData.success) {
+          setRoles(rolesData.roles);
+        }
         if (deptsData.success) setDepartments(deptsData.departments);
       } catch (err) {
         toast.error('Failed to load roles/departments metadata.');
       }
     };
     fetchMetadata();
-  }, []);
+    fetchPending();
+  }, [fetchPending]);
 
   // Sync users list with state changes
   useEffect(() => {
     fetchUsersList();
   }, [fetchUsersList]);
+
+  // Handle Approve Pending User
+  const handleApprove = async (userId) => {
+    const roleId = selectedPendingRoles[userId] || (roles[0]?.id || roles[0]?.name);
+    if (!roleId) {
+      return toast.error('Please select a role to assign before approving.');
+    }
+
+    try {
+      await approveUser(userId, { role_id: roleId });
+      toast.success('User approved and role assigned successfully!');
+      fetchPending();
+      fetchUsersList();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve user.');
+    }
+  };
+
+  // Handle Reject Pending User
+  const handleReject = async (userId) => {
+    if (!window.confirm('Are you sure you want to reject and remove this registration request?')) {
+      return;
+    }
+
+    try {
+      await rejectUser(userId);
+      toast.success('Registration request rejected.');
+      fetchPending();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject registration.');
+    }
+  };
 
   // Open Modal for Create
   const handleOpenCreate = () => {
@@ -113,7 +172,7 @@ const UsersPage = () => {
     setFormData({
       name: user.name,
       email: user.email,
-      password: '', // password can't be updated here
+      password: '',
       department_id: user.department_id || '',
       roles: user.roles || [],
       is_active: user.is_active
@@ -148,7 +207,6 @@ const UsersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!formData.name.trim()) return toast.error('Full Name is required.');
     if (!formData.email.trim()) return toast.error('Email is required.');
     if (!editingUser && !formData.password) return toast.error('Password is required.');
@@ -157,7 +215,6 @@ const UsersPage = () => {
 
     try {
       if (editingUser) {
-        // 1. Update basic details
         await updateUser(editingUser.id, {
           name: formData.name,
           email: formData.email,
@@ -165,12 +222,9 @@ const UsersPage = () => {
           is_active: formData.is_active
         });
 
-        // 2. Assign roles
         await assignUserRoles(editingUser.id, formData.roles);
-        
         toast.success('User updated successfully.');
       } else {
-        // Create user (roles included in creation backend endpoint)
         await createUser({
           name: formData.name,
           email: formData.email,
@@ -304,7 +358,7 @@ const UsersPage = () => {
             User Accounts
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Manage your organization's user accounts, departments, and roles.
+            Manage your organization's user accounts, approvals, departments, and roles.
           </p>
         </div>
         
@@ -317,6 +371,70 @@ const UsersPage = () => {
           </button>
         )}
       </div>
+
+      {/* PENDING APPROVALS SECTION */}
+      {pendingUsers.length > 0 && (
+        <div className="mb-8 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
+                <Clock size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  Pending Account Approvals
+                  <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-slate-950">
+                    {pendingUsers.length}
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Self-registered users awaiting admin review and role assignment.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="divide-y divide-amber-200/60 dark:divide-amber-900/30">
+            {pendingUsers.map((pUser) => (
+              <div key={pUser.id} className="py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <div className="font-semibold text-slate-900 dark:text-white text-sm">{pUser.name}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{pUser.email} &bull; Registered {new Date(pUser.created_at).toLocaleDateString()}</div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Select Role Dropdown */}
+                  <select
+                    value={selectedPendingRoles[pUser.id] || (roles[0]?.id || '')}
+                    onChange={(e) => setSelectedPendingRoles(prev => ({ ...prev, [pUser.id]: e.target.value }))}
+                    className="rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 py-1.5 px-3 text-xs text-slate-900 dark:text-white shadow-xs focus:outline-none focus:border-amber-500"
+                  >
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => handleApprove(pUser.id)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-500 transition-colors shadow-xs"
+                  >
+                    <CheckCircle size={14} />
+                    Approve
+                  </button>
+
+                  <button
+                    onClick={() => handleReject(pUser.id)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 transition-colors shadow-xs"
+                  >
+                    <XCircle size={14} />
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filters & Search Grid */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">

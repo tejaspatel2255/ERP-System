@@ -9,14 +9,34 @@ const require = (id) => {
   return nativeRequire(id);
 };
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Startup Environment Variable Validation
+const requiredEnvVars = [
+  'DATABASE_URL',
+  'JWT_SECRET',
+  'JWT_REFRESH_SECRET',
+  'SUPABASE_URL',
+  'CLIENT_URL'
+];
+
+const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_KEY) {
+  missingEnvVars.push('SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_KEY)');
+}
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ FATAL: Missing required environment variables:');
+  missingEnvVars.forEach((varName) => console.error(`   - ${varName}`));
+  console.error('Please configure these variables in your environment or .env file before starting the application.');
+  process.exit(1);
+}
 
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 
 // Import central error handler
 import { errorHandler } from './middleware/errorHandler.js';
@@ -36,8 +56,6 @@ import hrRoutes from './routes/hr.js';
 import designRoutes from './routes/design.js';
 import dashboardRoutes from './routes/dashboard.js';
 import settingsRoutes from './routes/settingsRoutes.js';
-
-dotenv.config();
 
 const app = express();
 

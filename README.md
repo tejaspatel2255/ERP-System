@@ -1,6 +1,6 @@
-# ERP Nexus — Web-Based Enterprise Resource Planning System
+# ERP Nexus — Production-Grade Enterprise Resource Planning System
 
-A full-stack, modular ERP system built with **React + Vite** (frontend) and **Node.js + Express + PostgreSQL** (backend). Covers 12 operational modules from Sales to Dispatch, with role-based access control, real-time dashboards, and print-ready document views.
+A full-stack, modular ERP system built with **React + Vite** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to Dispatch, hardened with httpOnly Cookie authentication, Content Security Policy, rate limiting, and role-based access control.
 
 ---
 
@@ -8,44 +8,55 @@ A full-stack, modular ERP system built with **React + Vite** (frontend) and **No
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18, Vite, Tailwind CSS, Recharts, Lucide React |
-| Backend | Node.js, Express.js (ESM) |
-| Database | PostgreSQL (via Supabase or self-hosted) |
-| Auth | JWT (access + refresh tokens), bcryptjs |
-| Storage | Supabase Storage (design files, POD uploads) |
-| HTTP Client | Axios (with interceptor-based token refresh) |
+| **Frontend** | React 18, Vite, Vanilla CSS Design System, Recharts, Lucide Icons |
+| **Backend** | Node.js, Express.js (ESM), Helmet (CSP), Rate Limiter, Cookie-Parser |
+| **Database** | PostgreSQL (Supabase / Self-hosted pg pool) |
+| **Auth** | JWT (in-memory access token + httpOnly refresh cookie), bcryptjs |
+| **Storage** | Supabase Storage (Design files, Proof-of-Delivery, QA reports) |
+| **HTTP Client** | Axios (with credentials & automated background token refresh) |
 
 ---
 
-## 🗂️ Modules
+## 🗂️ Core Modules
 
-| # | Module | Features |
-|---|--------|---------|
-| 1 | **Auth & Users** | Login, JWT refresh, roles, permissions, activity logs |
-| 2 | **Sales** | Customers, Quotations → Orders → Invoices, reports |
-| 3 | **Purchase** | Vendors, Purchase Orders (approval workflow), Vendor Invoices, analytics |
-| 4 | **Store / Inventory** | Item master, GRN (stock in), stock issue, ledger, low-stock alerts |
-| 5 | **Production** | Bill of Materials (versioned), Work Orders, schedule, costing |
-| 6 | **Maintenance** | Assets, PM schedules, issue logs |
-| 7 | **Quality Assurance** | Checklists, QA tests, report upload, approval workflow |
-| 8 | **Quality Control** | Raw material QC, in-process QC, final QC, NCR management |
-| 9 | **Dispatch** | Packing slips (QC-gated), delivery challans, transport logging, POD upload |
-| 10 | **HR** | Employee directory, attendance grid, leave management, self-service portal, training sessions |
-| 11 | **Design** | File versioning (CAD/PDF), design tasks (Kanban), review & approval workflow |
-| 12 | **Dashboard** | Live KPI cards, sales trend chart, inventory pie chart, recent activity feed |
+| # | Module | Features & Capabilities |
+|---|--------|------------------------|
+| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, activity audit logs |
+| 2 | **Sales** | Customers, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Payments |
+| 3 | **Purchase** | Vendors, Purchase Orders (`po_no`), Approval Workflow, Vendor Invoices, Rejection Tracking |
+| 4 | **Store / Inventory** | Item Master (`item_type`), GRN (`grn_no`), Stock Transactions, Stock Position, Stock Ledger |
+| 5 | **Production** | Bill of Materials (versioned), Work Orders (`wo_no`), Material Consumption, Costing |
+| 6 | **Maintenance** | Asset Management, Preventive Maintenance Schedules, Asset Issue Ticketing |
+| 7 | **Quality Assurance** | QA Checklists, Test Reports, File Uploads, Approval Workflow (`approval_status`) |
+| 8 | **Quality Control** | Incoming Raw Material QC, In-Process QC, Final Product QC, NCR Management (`ncr_no`) |
+| 9 | **Dispatch** | Packing Slips (`packing_slip_no`), Delivery Challans (`challan_no`), Transport Details, POD Upload |
+| 10 | **HR** | Employee Directory, Attendance Matrix, Leave Applications & Balances, Training Sessions |
+| 11 | **Design** | File Versioning (CAD/PDF), Design Kanban Tasks, Review & Approval Workflows |
+| 12 | **Dashboard** | Real-time KPI Cards, Sales Trend Analytics, Inventory Pie Breakdown, Activity Feed |
+| 13 | **Settings** | System-wide settings & company configuration |
 
 ---
 
-## 🚀 Getting Started
+## 🔒 Security & Hardening Features
+
+- **XSS Protection**: Tokens stored in memory and `httpOnly`, `Secure`, `SameSite=Strict` cookies. Strict `Content-Security-Policy` active via `helmet`.
+- **Brute-Force Rate Limiting**: Sensitive auth endpoints (`/login`, `/register`) protected via `express-rate-limit` (10 attempts / 15 mins per IP).
+- **MIME & Extension Validation**: File uploads restricted by file extension and actual MIME header verification.
+- **SQL Injection Prevention**: 100% parameterized queries across all database operations.
+- **Idempotent Database Migrations**: Included under `backend/db/migrations/`.
+
+---
+
+## 🚀 Quick Start & Installation
 
 ### Prerequisites
-- Node.js ≥ 18
-- PostgreSQL database (or a [Supabase](https://supabase.com) project)
-- npm
+- **Node.js**: ≥ 18.x
+- **PostgreSQL**: Local instance or [Supabase](https://supabase.com) project
+- **npm**
 
 ---
 
-### 1. Clone the repo
+### 1. Clone & Setup
 
 ```bash
 git clone https://github.com/your-username/ERP.git
@@ -61,41 +72,38 @@ cd backend
 npm install
 ```
 
-Create your environment file:
-
-```bash
-cp .env.example .env
-```
-
-Edit `backend/.env` with your values:
+Create `backend/.env`:
 
 ```env
 PORT=5000
+NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
-# PostgreSQL / Supabase connection string
+# PostgreSQL / Supabase Connection
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
 
-# JWT secrets — use long random strings in production
-JWT_SECRET=change_me_long_random_secret
-JWT_REFRESH_SECRET=change_me_another_long_random_secret
+# JWT Secrets (use long random strings)
+JWT_SECRET=your_jwt_secret_64_chars
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_64_chars
 
-# Supabase Storage (for file uploads)
+# Supabase Storage
 SUPABASE_URL=https://[YOUR_REF].supabase.co
-SUPABASE_SERVICE_KEY=your_supabase_service_role_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-Start the backend:
+Database Setup:
+- Run `backend/db/schema.sql` to initialize all database tables.
+- Run `backend/db/migrations/001_add_missing_document_columns.sql` to apply all document number columns & unique indexes.
 
+Seed Admin Account:
 ```bash
-# Development (auto-reload)
-npm run dev
-
-# Production
-npm start
+node scripts/seedAdmin.js
 ```
 
-The backend runs on `http://localhost:5000`. On first start, it **auto-migrates** all required schema changes to your PostgreSQL database.
+Start Backend:
+```bash
+npm run dev
+```
 
 ---
 
@@ -107,29 +115,7 @@ npm install
 npm run dev
 ```
 
-The frontend runs on `http://localhost:5173`.
-
-> **Note:** If your backend is on a different port, update the `VITE_API_BASE_URL` in `frontend/src/api/axiosInstance.js`.
-
----
-
-### 4. First Login
-
-After the backend starts, create an Admin user directly in the database:
-
-```sql
--- Insert a hashed password for 'admin@erp.com' / 'Admin@1234'
-INSERT INTO users (name, email, password_hash, is_active)
-VALUES ('Admin', 'admin@erp.com', '$2a$12$...your_bcrypt_hash...', true);
-
-INSERT INTO roles (name) VALUES ('Admin') ON CONFLICT DO NOTHING;
-
-INSERT INTO user_roles (user_id, role_id)
-SELECT u.id, r.id FROM users u, roles r
-WHERE u.email = 'admin@erp.com' AND r.name = 'Admin';
-```
-
-Or use the seed script if provided in `backend/seed.js`.
+The frontend will start at `http://localhost:5173`.
 
 ---
 
@@ -138,55 +124,26 @@ Or use the seed script if provided in `backend/seed.js`.
 ```
 ERP/
 ├── backend/
-│   ├── controllers/        # Business logic (one file per module)
+│   ├── controllers/        # Business logic for all 13 modules
+│   ├── db/                 # schema.sql and migrations/
 │   ├── middleware/         # auth.js, rbac.js, upload.js, errorHandler.js
-│   ├── models/
-│   │   └── db.js           # PostgreSQL pool + startup migrations
-│   ├── routes/             # Express routers (one per module)
-│   ├── server.js           # Entry point
-│   └── .env.example        # Environment variable template
+│   ├── models/             # db.js (PostgreSQL pool)
+│   ├── routes/             # Express routers (1:1 mapping with controllers)
+│   ├── scripts/            # Admin seed and schema check scripts
+│   └── server.js           # Server entry point
 │
 └── frontend/
     ├── src/
-    │   ├── api/            # Axios API layer (one file per module)
-    │   ├── components/     # Shared UI: Layout, Sidebar, Navbar, StatusBadge, etc.
+    │   ├── api/            # Axios instance with refresh interceptor & API endpoints
+    │   ├── components/     # Reusable UI components & layouts
     │   ├── context/        # AuthContext, RoleContext
-    │   ├── pages/          # One folder per module, plus print/ views
-    │   └── utils/          # exportCSV.js, formatCurrency.js, formatDate.js
+    │   ├── pages/          # 13 Module Pages + Print Views
+    │   └── utils/          # Currency, date, and CSV export helpers
     └── index.html
 ```
 
 ---
 
-## 🔐 Role-Based Access Control
-
-Permissions are stored in the database per role. The middleware `rbac.js` checks `module_name` + `action` for every protected endpoint. The **Admin** role bypasses all checks.
-
-Actions: `view` | `create` | `edit` | `delete` | `approve`
-
----
-
-## 🖨️ Print Views
-
-Open print-ready documents directly in a new browser tab — no sidebar or navbar:
-
-| URL | Document |
-|-----|---------|
-| `/print/invoice/:id` | Tax Invoice |
-| `/print/quotation/:id` | Quotation |
-| `/print/challan/:id` | Delivery Challan |
-| `/print/packing-slip/:id` | Packing Slip |
-| `/print/purchase-order/:id` | Purchase Order |
-
----
-
-## 📤 CSV Export
-
-Available on: Sales Report, Purchase Analytics, Stock Ledger, Attendance, Activity Logs.  
-Uses a native JS utility (`src/utils/exportCSV.js`) — no external library required.
-
----
-
 ## 📄 License
 
-MIT — free to use, modify, and distribute.
+MIT — open for production use and customization.

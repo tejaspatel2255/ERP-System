@@ -1,9 +1,22 @@
 import express from 'express';
 import { body } from 'express-validator';
+import rateLimit from 'express-rate-limit';
 import { login, refresh, logout, me, register, seedAdmin } from '../controllers/authController.js';
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Rate limiting for sensitive authentication endpoints (10 attempts / 15 mins)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: {
+    success: false,
+    message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 // Input validation rules
 const loginValidation = [
@@ -40,8 +53,8 @@ const tokenValidation = (req, res, next) => {
 
 // Auth Routes
 router.get('/seed', seedAdmin);
-router.post('/login', loginValidation, login);
-router.post('/register', registerValidation, register);
+router.post('/login', authLimiter, loginValidation, login);
+router.post('/register', authLimiter, registerValidation, register);
 router.post('/refresh', tokenValidation, refresh);
 router.post('/logout', logout);
 router.get('/me', verifyToken, me);

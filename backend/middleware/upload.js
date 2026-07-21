@@ -21,15 +21,31 @@ if (supabaseUrl && supabaseServiceKey) {
 // Multer memory storage configuration
 const storage = multer.memoryStorage();
 
-// Allowed file types check
+// Allowed file types check (validates both extension and MIME type)
 const fileFilter = (req, file, cb) => {
   const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.dwg'];
+  const allowedMimeTypes = [
+    'application/pdf',
+    'image/jpeg',
+    'image/pjpeg',
+    'image/png',
+    'image/x-png',
+    'image/vnd.dwg',
+    'image/x-dwg',
+    'application/dwg',
+    'application/x-dwg',
+    'application/acad',
+    'application/octet-stream'
+  ];
+
   const ext = path.extname(file.originalname).toLowerCase();
-  
-  if (allowedExtensions.includes(ext)) {
+  const isValidExt = allowedExtensions.includes(ext);
+  const isValidMime = allowedMimeTypes.includes(file.mimetype);
+
+  if (isValidExt && isValidMime) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF, JPG, JPEG, PNG, and DWG files are allowed.'), false);
+    cb(new Error('Invalid file type or MIME type. Only PDF, JPG, JPEG, PNG, and DWG files are allowed.'), false);
   }
 };
 

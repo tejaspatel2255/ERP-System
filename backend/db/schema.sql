@@ -123,6 +123,7 @@ CREATE TABLE IF NOT EXISTS items (
     category_id UUID REFERENCES item_categories(id) ON DELETE SET NULL,
     reorder_level NUMERIC(15, 4) DEFAULT 0.0000,
     current_stock NUMERIC(15, 4) DEFAULT 0.0000,
+    item_type VARCHAR(50) DEFAULT 'Raw Material',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -141,6 +142,7 @@ CREATE TABLE IF NOT EXISTS customers (
     gstin VARCHAR(15),
     credit_limit NUMERIC(15, 2) DEFAULT 0.00,
     balance NUMERIC(15, 2) DEFAULT 0.00,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -148,6 +150,7 @@ CREATE TABLE IF NOT EXISTS customers (
 -- 11. Quotations Table
 CREATE TABLE IF NOT EXISTS quotations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    quotation_no VARCHAR(100) UNIQUE NOT NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
     valid_until DATE NOT NULL,
@@ -175,6 +178,7 @@ CREATE TABLE IF NOT EXISTS quotation_items (
 -- 13. Sales Orders
 CREATE TABLE IF NOT EXISTS sales_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_no VARCHAR(100) UNIQUE NOT NULL,
     quotation_id UUID REFERENCES quotations(id) ON DELETE SET NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
     order_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -199,6 +203,7 @@ CREATE TABLE IF NOT EXISTS sales_order_items (
 -- 15. Invoices Table
 CREATE TABLE IF NOT EXISTS invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_no VARCHAR(100) UNIQUE NOT NULL,
     order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
     invoice_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -236,6 +241,7 @@ CREATE TABLE IF NOT EXISTS vendors (
     address TEXT,
     gstin VARCHAR(15),
     payment_terms VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -243,6 +249,7 @@ CREATE TABLE IF NOT EXISTS vendors (
 -- 18. Purchase Orders
 CREATE TABLE IF NOT EXISTS purchase_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    po_no VARCHAR(100) UNIQUE NOT NULL,
     vendor_id UUID REFERENCES vendors(id) ON DELETE SET NULL,
     po_date DATE NOT NULL DEFAULT CURRENT_DATE,
     expected_date DATE,
@@ -250,6 +257,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     total_amount NUMERIC(15, 2) DEFAULT 0.00,
     approval_status VARCHAR(50) DEFAULT 'Pending', -- Pending, Approved, Rejected
     approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    rejection_reason TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -301,6 +309,7 @@ CREATE TABLE IF NOT EXISTS stock_transactions (
 -- 22. Goods Receipt Note (GRN)
 CREATE TABLE IF NOT EXISTS grn (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    grn_no VARCHAR(100) UNIQUE NOT NULL,
     po_id UUID REFERENCES purchase_orders(id) ON DELETE SET NULL,
     received_date DATE NOT NULL DEFAULT CURRENT_DATE,
     received_by UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -350,6 +359,7 @@ CREATE TABLE IF NOT EXISTS bom_items (
 -- 26. Work Orders
 CREATE TABLE IF NOT EXISTS work_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    wo_no VARCHAR(100) UNIQUE NOT NULL,
     bom_id UUID REFERENCES bom(id) ON DELETE SET NULL,
     sales_order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
     planned_qty NUMERIC(15, 4) NOT NULL,
@@ -479,6 +489,7 @@ CREATE TABLE IF NOT EXISTS qa_tests (
     test_date DATE NOT NULL DEFAULT CURRENT_DATE,
     result VARCHAR(50) DEFAULT 'Pending', -- Pending, Pass, Fail
     notes TEXT,
+    approval_status VARCHAR(50) DEFAULT 'Pending',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -562,6 +573,7 @@ CREATE TABLE IF NOT EXISTS qc_final (
 -- 42. Non-Conformance Reports (NCR)
 CREATE TABLE IF NOT EXISTS ncr (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ncr_no VARCHAR(100) UNIQUE NOT NULL,
     source_type VARCHAR(50) NOT NULL, -- raw, in_process, final
     source_id UUID NOT NULL, -- references respective qc table ID
     defect_description TEXT NOT NULL,
@@ -581,6 +593,7 @@ CREATE TABLE IF NOT EXISTS ncr (
 -- 43. Packing Slips
 CREATE TABLE IF NOT EXISTS packing_slips (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    packing_slip_no VARCHAR(100) UNIQUE NOT NULL,
     order_id UUID REFERENCES sales_orders(id) ON DELETE CASCADE,
     packed_by UUID REFERENCES users(id) ON DELETE SET NULL,
     packed_at TIMESTAMPTZ DEFAULT NOW(),
@@ -603,6 +616,7 @@ CREATE TABLE IF NOT EXISTS packing_slip_items (
 -- 45. Delivery Challans
 CREATE TABLE IF NOT EXISTS delivery_challans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    challan_no VARCHAR(100) UNIQUE NOT NULL,
     packing_slip_id UUID REFERENCES packing_slips(id) ON DELETE SET NULL,
     order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
     challan_date DATE NOT NULL DEFAULT CURRENT_DATE,

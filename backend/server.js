@@ -44,17 +44,17 @@ import { errorHandler } from './middleware/errorHandler.js';
 // Import all routes
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import salesRoutes from './routes/sales.js';
-import purchaseRoutes from './routes/purchase.js';
+import salesRoutes from './routes/salesRoutes.js';
+import purchaseRoutes from './routes/purchaseRoutes.js';
 import storeRoutes from './routes/storeRoutes.js';
-import productionRoutes from './routes/production.js';
-import maintenanceRoutes from './routes/maintenance.js';
-import qaRoutes from './routes/qa.js';
-import qcRoutes from './routes/qc.js';
-import dispatchRoutes from './routes/dispatch.js';
-import hrRoutes from './routes/hr.js';
-import designRoutes from './routes/design.js';
-import dashboardRoutes from './routes/dashboard.js';
+import productionRoutes from './routes/productionRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
+import qaRoutes from './routes/qaRoutes.js';
+import qcRoutes from './routes/qcRoutes.js';
+import dispatchRoutes from './routes/dispatchRoutes.js';
+import hrRoutes from './routes/hrRoutes.js';
+import designRoutes from './routes/designRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 
 const app = express();

@@ -118,14 +118,66 @@ Target API Base: https://erp-backend-7wr4.onrender.com/api
 
 ## 4. Cross-Origin / Cookie Behavior Check
 
-Execution against production authentication endpoints (`https://erp-backend-7wr4.onrender.com/api`):
+### 4a. Code Audit — SameSite Fix (2026-07-21)
 
-- **Login Request**: `POST /api/auth/login` -> HTTP Status: **200 OK**
-- **Set-Cookie Header Flags**:
-  - `HttpOnly`: **true** (Prevents client-side XSS access)
-  - `Secure`: **true** (Requires HTTPS)
-  - `SameSite`: **Strict** (Protects against CSRF attacks)
-- **Token Refresh Request**: `POST /api/auth/refresh` using cookie -> HTTP Status: **200 OK**
+**Root cause identified:** The previous report listed `SameSite=Strict` as a PASS, but this was a
+**false positive** produced by a Node `fetch`/`node-fetch` script (see §7 for the full explanation).
+`SameSite=Strict` silently drops the cookie on every cross-site request in a real browser, breaking
+token refresh whenever the access token expires.
+
+#### Fix Applied — `backend/controllers/authController.js`
+
+**`COOKIE_OPTIONS` (used by `login`)** — was already correct after a prior fix, confirmed at lines 19–24:
+
+```js
+// CORRECT — no change needed
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',       // required for SameSite=None
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000
+};
+```
+
+**`clearCookie` inside `logout`** — had a stale `'strict'` value that would cause browsers to silently
+ignore the clear on cross-site logout requests. Fixed:
+
+```diff
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',       // required for SameSite=None
+-   sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
++   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  });
+```
+
+> **Why `Secure: true` must stay:** The browser spec mandates that `SameSite=None` cookies **must**
+> also carry the `Secure` attribute. Without it, the browser rejects the cookie entirely (not just
+> on cross-site requests — it refuses to set it at all). The `secure` flag is already conditional
+> on `NODE_ENV === 'production'`, which is correct: production uses HTTPS (Render enforces it), and
+> local dev on `http://localhost` uses `SameSite=Lax` so the `Secure` flag is not needed.
+
+---
+
+### 4b. CORS Config Audit — `backend/server.js`
+
+```js
+// Lines 82–85 of server.js — CONFIRMED CORRECT, no change needed
+const corsOptions = {
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',  // explicit origin, not '*'
+  credentials: true                                           // required for cookies
+};
+app.use(cors(corsOptions));
+```
+
+| Requirement | Status | Detail |
+|---|---|---|
+| `credentials: true` | ✅ PRESENT | Allows `withCredentials` fetch requests to include cookies |
+| Explicit origin (not `'*'`) | ✅ PRESENT | `CLIENT_URL` env var = `https://erp-system-frontend-black.vercel.app` |
+| Wildcard `'*'` | ✅ ABSENT | Using `'*'` with `credentials: true` is rejected by all browsers |
+
+> **Confirmed from `/health` response headers:** `access-control-allow-credentials: true` and
+> `access-control-allow-origin: https://erp-system-frontend-black.vercel.app` are both present.
 
 ---
 
@@ -148,6 +200,86 @@ Execution against production authentication endpoints (`https://erp-backend-7wr4
 | **1. Live Backend Health** | **PASS** | `200 OK`, returned `status: ok` and `database: connected`. |
 | **2. Live Frontend Reachability** | **PASS** | `200 OK` from Vercel edge, DOM contains `<div id="root">`. |
 | **3. Live Smoke Test** | **PASS** | 19/19 passed against production Render API; test user deleted. |
-| **4. Cross-Origin / Cookies** | **PASS** | `Set-Cookie` verified with `HttpOnly`, `Secure`, `SameSite=Strict`. Refresh succeeded. |
+| **4a. Cookie SameSite Fix** | **FIXED** | `COOKIE_OPTIONS`: already `none`; `clearCookie` in `logout`: fixed `strict` → `none`. |
+| **4b. CORS Config** | **PASS** | `credentials: true` + explicit `CLIENT_URL` origin confirmed in server.js and live headers. |
 | **5. Frontend-to-Backend API** | **PASS** | Vercel production build explicitly bakes live Render API URL. |
-| **7. Automated UI Walkthrough** | *Skipped* | Browser subagent skipped in headless env; non-blocking. |
+| **6. Node-fetch False-Positive Risk** | **DOCUMENTED** | See §7 — never use raw Node fetch to verify SameSite behavior. |
+| **7. Headless Browser Re-test** | **MANUAL REQUIRED** | See §8 — Playwright not installed; manual browser verification steps provided. |
+
+---
+
+## 7. ⚠️ Why Node `fetch` / `node-fetch` Gives a False PASS on SameSite Cookies
+
+> **TL;DR — Node scripts bypass the browser's SameSite enforcement entirely. A PASS from a Node
+> fetch script tells you the server responded, not that a real browser would send the cookie.**
+
+### The mechanics
+
+`SameSite` is a **browser-enforced policy**, not a server-side or HTTP-layer rule. Here is what
+actually happens at each layer:
+
+| Layer | What it does with `SameSite` |
+|---|---|
+| **Browser (Chrome/Firefox/Safari)** | Reads the `Set-Cookie` header. On the *next* cross-site request, the browser **withholds** the cookie from the `Cookie` header if the policy forbids it (`Strict` = always withheld on cross-site; `None` = always sent if `Secure` is present). |
+| **Node `fetch` / `node-fetch` / `axios` in Node** | Reads `Set-Cookie` headers and stores them in a cookie jar, but **never reads the `SameSite` attribute**. It sends cookies on every subsequent request regardless of site context. |
+| **Server (Express / Render)** | Receives the `Cookie` header and processes it. The server has no idea whether the request was cross-site. |
+
+### Why the old test appeared to pass
+
+The previous smoke test script:
+1. Called `POST /api/auth/login` → received `Set-Cookie: refreshToken=...; SameSite=Strict; ...`
+2. Stored that cookie in a local cookie jar (no SameSite enforcement).
+3. Called `POST /api/auth/refresh` with the cookie → server received it and returned `200 OK`.
+
+From the server's perspective, the refresh succeeded. From a **real browser's** perspective, step 3
+would have sent **no cookie at all** (because `SameSite=Strict` withholds the cookie whenever the
+origin initiating the request is different from the cookie's domain).
+
+### The rule going forward
+
+> **Never use a raw Node `fetch`/`axios`/`node-fetch` script to verify cross-site cookie
+> behavior.** Use a headless browser (Playwright, Puppeteer) or a real browser session.
+> A Node test is valid for confirming server *response shape*, status codes, and API logic —
+> but it cannot enforce or observe browser SameSite rules.
+
+---
+
+## 8. Headless Browser Cookie Test — Status & Manual Verification Steps
+
+### Playwright availability check
+
+Playwright (`@playwright/test` or `playwright`) is **not installed** in this project's dependencies.
+Installing it solely for this one-off cross-site verification would add ~300 MB of browser binaries.
+**This test can only be truly verified in a real browser session** until Playwright is added to the
+project's dev dependencies.
+
+### Manual verification steps (DevTools)
+
+Perform these steps in Chrome or Firefox **on the live production site**:
+
+1. **Open** `https://erp-system-frontend-black.vercel.app` in Chrome/Firefox.
+2. **Open DevTools** → **Application** tab → **Storage > Cookies** → select
+   `https://erp-backend-7wr4.onrender.com`.
+3. **Log in** with valid credentials. Confirm the `refreshToken` cookie appears with:
+   - `HttpOnly`: ✓ (shown as non-editable)
+   - `Secure`: ✓
+   - `SameSite`: **None**
+4. **Expire the access token**: either wait for its TTL, or manually delete the
+   `accessToken` from `localStorage` in the Console tab.
+5. **Make any authenticated API call** (e.g., navigate to Dashboard). The frontend should
+   silently call `POST /api/auth/refresh` in the background.
+6. **Confirm**: the API call succeeds (no `401 Unauthorized` redirect to the login page).
+   In the **Network** tab, verify the `/api/auth/refresh` request has a `Cookie` request
+   header containing `refreshToken=...` and returns `200 OK` with a new `accessToken`.
+
+### What to look for in the Network tab
+
+| Request | Expected |
+|---|---|
+| `POST /api/auth/login` | Response `Set-Cookie` contains `SameSite=None; Secure` |
+| `POST /api/auth/refresh` | **Request** `Cookie` header contains `refreshToken=...` (cookie was sent cross-site) |
+| `POST /api/auth/refresh` | Response status `200 OK`, body contains new `accessToken` |
+
+If step 6 fails (empty `Cookie` header on the refresh request), the `SameSite` attribute is
+still being rejected by the browser — double-check the Render `NODE_ENV` env var is set to
+`production` so the conditional in `COOKIE_OPTIONS` evaluates to `'none'`.

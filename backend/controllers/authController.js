@@ -220,8 +220,8 @@ export const logout = async (req, res, next) => {
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+      secure: process.env.NODE_ENV === 'production',       // required for SameSite=None
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
 
     return res.status(200).json({

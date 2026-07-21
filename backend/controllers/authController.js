@@ -11,10 +11,15 @@ if (!JWT_REFRESH_SECRET) {
   throw new Error('JWT_REFRESH_SECRET must be defined in .env');
 }
 
+// SameSite=None (+ Secure=true) is required for cross-site cookie delivery when
+// the frontend (Vercel) and backend (Render) are on different domains.
+// SameSite=Strict would silently drop the cookie on every cross-site fetch,
+// breaking token refresh in real browsers even though HttpOnly/Secure are correct.
+// In development we use 'lax' so http://localhost still works without HTTPS.
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  secure: process.env.NODE_ENV === 'production',       // required for SameSite=None
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
 };
 

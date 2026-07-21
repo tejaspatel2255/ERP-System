@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { createRequire } from 'module';
 const nativeRequire = createRequire(import.meta.url);
 import db from './models/db.js';
@@ -8,9 +11,6 @@ const require = (id) => {
   }
   return nativeRequire(id);
 };
-
-import dotenv from 'dotenv';
-dotenv.config();
 
 // Startup Environment Variable Validation
 const requiredEnvVars = [

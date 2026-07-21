@@ -62,19 +62,19 @@ const requireDesignReviewPermission = (req, res, next) => {
 };
 
 // Files
-router.get('/files', requirePermission('design', 'read'), getDesignFiles);
+router.get('/files', requirePermission('design', 'view'), getDesignFiles);
 router.post('/files', requirePermission('design', 'create'), uploadDesign.single('file'), uploadDesignFile);
-router.get('/files/:id', requirePermission('design', 'read'), getDesignFileById);
+router.get('/files/:id', requirePermission('design', 'view'), getDesignFileById);
 router.post('/files/:id/versions', requirePermission('design', 'create'), uploadDesign.single('file'), uploadNewVersion);
 
 // Tasks
-router.get('/tasks', requirePermission('design', 'read'), getDesignTasks);
+router.get('/tasks', requirePermission('design', 'view'), getDesignTasks);
 router.post('/tasks', requirePermission('design', 'create'), createDesignTask);
 router.put('/tasks/:id', requirePermission('design', 'edit'), updateDesignTask);
 router.patch('/tasks/:id/status', requirePermission('design', 'edit'), updateDesignTaskStatus);
 
 // Reviews
-router.get('/reviews', requirePermission('design', 'read'), getPendingReviews);
+router.get('/reviews', requirePermission('design', 'view'), getPendingReviews);
 router.post('/files/:id/reviews', requireDesignReviewPermission, submitReview);
 
 export default router;

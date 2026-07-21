@@ -19,18 +19,18 @@ const router = express.Router();
 router.use(verifyToken);
 
 // Packing Slips
-router.get('/packing-slips', requirePermission('dispatch', 'read'), getPackingSlips);
+router.get('/packing-slips', requirePermission('dispatch', 'view'), getPackingSlips);
 router.post('/packing-slips', requirePermission('dispatch', 'create'), createPackingSlip);
-router.get('/packing-slips/:id', requirePermission('dispatch', 'read'), getPackingSlipById);
+router.get('/packing-slips/:id', requirePermission('dispatch', 'view'), getPackingSlipById);
 
 // Challans
-router.get('/challans', requirePermission('dispatch', 'read'), getChallans);
+router.get('/challans', requirePermission('dispatch', 'view'), getChallans);
 router.post('/challans', requirePermission('dispatch', 'create'), createChallan);
-router.get('/challans/:id', requirePermission('dispatch', 'read'), getChallanById);
+router.get('/challans/:id', requirePermission('dispatch', 'view'), getChallanById);
 router.post('/challans/:id/transport', requirePermission('dispatch', 'edit'), addTransportDetails);
 router.post('/challans/:id/pod', requirePermission('dispatch', 'edit'), upload.single('pod'), uploadPOD);
 
 // Schedule
-router.get('/schedule', requirePermission('dispatch', 'read'), getDispatchSchedule);
+router.get('/schedule', requirePermission('dispatch', 'view'), getDispatchSchedule);
 
 export default router;

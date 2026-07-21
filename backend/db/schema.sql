@@ -490,6 +490,8 @@ CREATE TABLE IF NOT EXISTS qa_tests (
     result VARCHAR(50) DEFAULT 'Pending', -- Pending, Pass, Fail
     notes TEXT,
     approval_status VARCHAR(50) DEFAULT 'Pending',
+    approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    approval_remarks TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

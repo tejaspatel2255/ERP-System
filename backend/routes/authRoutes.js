@@ -6,10 +6,10 @@ import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Rate limiting for sensitive authentication endpoints (10 attempts / 15 mins)
+// Rate limiting for sensitive authentication endpoints (10 attempts / 15 mins in prod)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000,
   message: {
     success: false,
     message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.'

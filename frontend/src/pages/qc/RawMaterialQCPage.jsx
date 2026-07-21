@@ -4,7 +4,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
 import { getRawMaterialQC, createRawMaterialQC } from '../../api/qcApi';
-import axiosInstance from '../../api/axiosInstance';
+import { getGRNs, getGRNById } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
 
 const RawMaterialQCPage = () => {
@@ -28,19 +28,16 @@ const RawMaterialQCPage = () => {
 
   useEffect(() => {
     fetchRecords();
-    axiosInstance.get('/purchase/orders').then(r => {
-      // Fetch PO history, let's load GRNs
-      axiosInstance.get('/inventory/grn').then(g => {
-        if (g.data.success) setGrns(g.data.grns);
-      });
+    getGRNs().then(g => {
+      if (g.success) setGrns(g.grns);
     }).catch(() => {});
   }, [fetchRecords]);
 
   const handleGRNChange = async (grnId) => {
     setForm(p => ({ ...p, grn_id: grnId, item_id: '' }));
     try {
-      const d = await axiosInstance.get(`/inventory/grn/${grnId}`);
-      if (d.data.success) setGrnItems(d.data.items);
+      const d = await getGRNById(grnId);
+      if (d.success) setGrnItems(d.items);
     } catch { toast.error('Failed to load GRN items.'); }
   };
 

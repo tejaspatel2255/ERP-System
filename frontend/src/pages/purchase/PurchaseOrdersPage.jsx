@@ -16,6 +16,7 @@ import {
   updatePurchaseOrderStatus, 
   getVendors 
 } from '../../api/purchaseApi';
+import { getItems as getStoreItems } from '../../api/storeApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -90,10 +91,10 @@ const PurchaseOrdersPage = () => {
       try {
         const [vendRes, itemsRes] = await Promise.all([
           getVendors({ page: 1, limit: 100 }),
-          axiosInstance.get('/inventory/items')
+          getStoreItems()
         ]);
         if (vendRes.success) setVendors(vendRes.vendors);
-        if (itemsRes.data?.success) setItemsList(itemsRes.data.items);
+        if (itemsRes.success) setItemsList(itemsRes.items);
       } catch (err) {
         console.error('Failed to load metadata.', err);
       }

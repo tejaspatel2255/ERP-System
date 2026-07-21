@@ -13,6 +13,7 @@ import {
   convertQuotationToOrder, 
   getCustomers 
 } from '../../api/salesApi';
+import { getItems as getStoreItems } from '../../api/storeApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -83,10 +84,10 @@ const QuotationsPage = () => {
       try {
         const [custData, itemsRes] = await Promise.all([
           getCustomers({ page: 1, limit: 100 }),
-          axiosInstance.get('/inventory/items')
+          getStoreItems()
         ]);
         if (custData.success) setCustomers(custData.customers);
-        if (itemsRes.data?.success) setItemsList(itemsRes.data.items);
+        if (itemsRes.success) setItemsList(itemsRes.items);
       } catch (err) {
         console.error('Failed to load dropdown metadata.', err);
       }

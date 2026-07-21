@@ -37,6 +37,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 // Import central error handler
 import { errorHandler } from './middleware/errorHandler.js';
@@ -59,8 +60,23 @@ import settingsRoutes from './routes/settingsRoutes.js';
 
 const app = express();
 
-// Set security HTTP headers
-app.use(helmet());
+// Set security HTTP headers with Content Security Policy
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "https:"],
+        fontSrc: ["'self'", "https:", "data:"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: []
+      }
+    }
+  })
+);
 
 // Enable CORS
 const corsOptions = {
@@ -76,7 +92,8 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Parse incoming JSON and URL-encoded requests
+// Parse incoming JSON, URL-encoded requests, and cookies
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

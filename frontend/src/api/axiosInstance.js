@@ -2,8 +2,19 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+let inMemoryToken = null;
+
+export const setMemoryToken = (token) => {
+  inMemoryToken = token;
+};
+
+export const getMemoryToken = () => {
+  return inMemoryToken;
+};
+
 const axiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -12,7 +23,7 @@ const axiosInstance = axios.create({
 // Request interceptor to automatically attach authorization header
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = inMemoryToken || localStorage.getItem('accessToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -44,6 +55,11 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Do not attempt transparent refresh on login or refresh calls
+    if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh')) {
+      return Promise.reject(error);
+    }
+
     // Check if error status is 401 Unauthorized and request has not already been retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -63,22 +79,18 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) {
-        isRefreshing = false;
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(error);
-      }
-
       try {
-        // Request a new access token using the stored refresh token
-        const refreshResponse = await axios.post(`${API_URL}/auth/refresh`, {
-          refreshToken
+        // Request a new access token using the httpOnly cookie
+        const refreshResponse = await axios.post(`${API_URL}/auth/refresh`, {}, {
+          withCredentials: true
         });
 
         const { accessToken } = refreshResponse.data;
-        localStorage.setItem('accessToken', accessToken);
+        setMemoryToken(accessToken);
+
+        if (window.__onAccessTokenRefreshed) {
+          window.__onAccessTokenRefreshed(accessToken);
+        }
 
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
@@ -90,10 +102,17 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         isRefreshing = false;
+        setMemoryToken(null);
         
-        // Revoked or expired refresh token: force logout
-        localStorage.clear();
-        window.location.href = '/login';
+        // Clear local storage and direct to login on session expiry
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        
+        if (window.__onAuthSessionExpired) {
+          window.__onAuthSessionExpired();
+        }
+
         return Promise.reject(refreshError);
       }
     }

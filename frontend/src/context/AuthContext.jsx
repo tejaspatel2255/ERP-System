@@ -1,84 +1,87 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { getCurrentUser, loginUser, logoutUser, refreshAccessToken } from '../api/authApi';
+import { setMemoryToken } from '../api/axiosInstance';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken') || '');
+  const [accessToken, setAccessTokenState] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  const updateAccessToken = useCallback((token) => {
+    setMemoryToken(token);
+    setAccessTokenState(token);
+  }, []);
 
   const isAuthenticated = Boolean(user && accessToken);
 
   useEffect(() => {
-    const bootstrap = async () => {
-      const storedAccess = localStorage.getItem('accessToken');
-      const storedRefresh = localStorage.getItem('refreshToken');
-      if (!storedAccess || !storedRefresh) {
-        setIsLoading(false);
-        return;
-      }
+    window.__onAccessTokenRefreshed = (newToken) => {
+      updateAccessToken(newToken);
+    };
 
+    window.__onAuthSessionExpired = () => {
+      updateAccessToken('');
+      setUser(null);
+    };
+
+    return () => {
+      delete window.__onAccessTokenRefreshed;
+      delete window.__onAuthSessionExpired;
+    };
+  }, [updateAccessToken]);
+
+  useEffect(() => {
+    const bootstrap = async () => {
       try {
+        const refreshed = await refreshAccessToken();
+        updateAccessToken(refreshed.accessToken);
         const me = await getCurrentUser();
-        setAccessToken(storedAccess);
         setUser(me.user);
       } catch (err) {
-        try {
-          const refreshed = await refreshAccessToken(storedRefresh);
-          localStorage.setItem('accessToken', refreshed.accessToken);
-          setAccessToken(refreshed.accessToken);
-          const me = await getCurrentUser();
-          setUser(me.user);
-        } catch (refreshErr) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setAccessToken('');
-          setUser(null);
-        }
+        updateAccessToken('');
+        setUser(null);
       } finally {
+        // Clear any residual legacy tokens from localStorage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         setIsLoading(false);
       }
     };
 
     bootstrap();
-  }, []);
+  }, [updateAccessToken]);
 
   const login = async (email, password) => {
     const result = await loginUser(email, password);
-    localStorage.setItem('accessToken', result.accessToken);
-    localStorage.setItem('refreshToken', result.refreshToken);
-    localStorage.setItem('user', JSON.stringify(result.user));
-    setAccessToken(result.accessToken);
+    updateAccessToken(result.accessToken);
     setUser(result.user);
+    // Cleanup any lingering localStorage auth entries
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
     return result.user;
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
     try {
-      if (refreshToken) {
-        await logoutUser(refreshToken);
-      }
+      await logoutUser();
     } catch (err) {
       // Ignore server-side logout errors during client cleanup.
     } finally {
+      updateAccessToken('');
+      setUser(null);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      setAccessToken('');
-      setUser(null);
     }
   };
 
   const refreshToken = async () => {
-    const storedRefresh = localStorage.getItem('refreshToken');
-    if (!storedRefresh) {
-      throw new Error('No refresh token available.');
-    }
-    const result = await refreshAccessToken(storedRefresh);
-    localStorage.setItem('accessToken', result.accessToken);
-    setAccessToken(result.accessToken);
+    const result = await refreshAccessToken();
+    updateAccessToken(result.accessToken);
     return result.accessToken;
   };
 

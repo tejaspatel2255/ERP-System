@@ -11,6 +11,13 @@ if (!JWT_REFRESH_SECRET) {
   throw new Error('JWT_REFRESH_SECRET must be defined in .env');
 }
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
+};
+
 /**
  * Handle user login
  */
@@ -81,11 +88,13 @@ export const login = async (req, res, next) => {
     `;
     await db.query(insertTokenText, [user.id, refreshToken, expiresAt]);
 
-    // 8. Return tokens and sanitized user info
+    // 8. Set httpOnly cookie for refresh token
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+
+    // 9. Return accessToken and sanitized user info
     return res.status(200).json({
       success: true,
       accessToken,
-      refreshToken,
       user: {
         id: user.id,
         name: user.name,
@@ -105,7 +114,7 @@ export const login = async (req, res, next) => {
  * Refresh expired access token
  */
 export const refresh = async (req, res, next) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (!refreshToken) {
     return res.status(400).json({ success: false, message: 'Refresh token is required.' });
@@ -187,20 +196,24 @@ export const refresh = async (req, res, next) => {
  * Revoke refresh token and logout
  */
 export const logout = async (req, res, next) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(400).json({ success: false, message: 'Refresh token is required for logout.' });
-  }
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   try {
-    // Revoke the refresh token in DB
-    const revokeQueryText = `
-      UPDATE refresh_tokens
-      SET revoked_at = NOW()
-      WHERE token = $1
-    `;
-    await db.query(revokeQueryText, [refreshToken]);
+    if (refreshToken) {
+      // Revoke the refresh token in DB
+      const revokeQueryText = `
+        UPDATE refresh_tokens
+        SET revoked_at = NOW()
+        WHERE token = $1
+      `;
+      await db.query(revokeQueryText, [refreshToken]);
+    }
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    });
 
     return res.status(200).json({
       success: true,

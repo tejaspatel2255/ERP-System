@@ -30,18 +30,20 @@ const registerValidation = [
     .withMessage('Password must be at least 6 characters long.')
 ];
 
-const tokenValidation = [
-  body('refreshToken')
-    .notEmpty()
-    .withMessage('Refresh token is required.')
-];
+const tokenValidation = (req, res, next) => {
+  const token = req.cookies?.refreshToken || req.body?.refreshToken;
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'Refresh token is required.' });
+  }
+  next();
+};
 
 // Auth Routes
 router.get('/seed', seedAdmin);
 router.post('/login', loginValidation, login);
 router.post('/register', registerValidation, register);
 router.post('/refresh', tokenValidation, refresh);
-router.post('/logout', tokenValidation, logout);
+router.post('/logout', logout);
 router.get('/me', verifyToken, me);
 
 export default router;

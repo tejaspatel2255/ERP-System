@@ -15,13 +15,13 @@ export const getCurrentUser = async () => {
   return res.data;
 };
 
-export const logoutUser = async (refreshToken) => {
-  const res = await axiosInstance.post('/auth/logout', { refreshToken });
+export const logoutUser = async () => {
+  const res = await axiosInstance.post('/auth/logout');
   return res.data;
 };
 
-export const refreshAccessToken = async (refreshToken) => {
-  const res = await axiosInstance.post('/auth/refresh', { refreshToken });
+export const refreshAccessToken = async () => {
+  const res = await axiosInstance.post('/auth/refresh');
   return res.data;
 };
 

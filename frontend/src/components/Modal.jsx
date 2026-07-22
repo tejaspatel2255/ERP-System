@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
- * Reusable Modal Component
+ * Reusable Modal Component with React Portal rendering directly into document.body
  * @param {boolean} isOpen - Trigger show/hide
  * @param {Function} onClose - Close handler
  * @param {string} title - Header title
@@ -37,7 +38,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     xl: 'max-w-5xl'
   }[size] || 'max-w-xl';
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* 1. Backdrop Overlay: Fixed inset-0 covers 100% viewport unconditionally */}
       <div 
@@ -45,7 +46,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         onClick={onClose}
       />
 
-      {/* 2. Positioning Container: Vertically & Horizontally centered in viewport */}
+      {/* 2. Positioning Container: Center modal vertically & horizontally in viewport */}
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
         {/* 3. Modal Dialog Box: Capped at max-h-[90vh], flex-col structure */}
         <div 
@@ -76,6 +77,9 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       </div>
     </div>
   );
+
+  // Render directly into document.body via React Portal to escape parent CSS transform contexts
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;

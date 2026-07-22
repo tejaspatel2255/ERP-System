@@ -397,7 +397,7 @@ const QuotationsPage = () => {
       </div>
 
       {/* CREATE & EDIT FORM MODAL */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingQuotation ? 'Edit Quotation Details' : 'Create Commercial Quotation'} size="lg">
+      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingQuotation ? 'Edit Quotation Details' : 'Create Commercial Quotation'} size="xl">
         <form onSubmit={handleFormSubmit} className="space-y-6">
           {/* Header row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

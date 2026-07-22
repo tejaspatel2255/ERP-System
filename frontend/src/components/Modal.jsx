@@ -8,7 +8,7 @@ import { X } from 'lucide-react';
  * @param {Function} onClose - Close handler
  * @param {string} title - Header title
  * @param {React.ReactNode} children - Body content
- * @param {string} size - size helper: 'sm', 'md', 'lg', 'xl'
+ * @param {string} size - size helper: 'sm' (confirm/1-field ~448px), 'md' (standard form ~576px), 'lg' (dossiers/checklists ~768px), 'xl' (tables/quotations ~1024px)
  */
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
@@ -31,12 +31,13 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
   if (!isOpen) return null;
 
+  // Specific size variants using sm:max-w-* to preserve fixed container bounds on desktop while allowing mobile responsiveness
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-xl',
-    lg: 'max-w-3xl',
-    xl: 'max-w-5xl'
-  }[size] || 'max-w-xl';
+    sm: 'sm:max-w-md',   // ~448px (Confirmation dialogs, single inputs)
+    md: 'sm:max-w-xl',   // ~576px (Standard 2-column forms: Customer Record, Edit User)
+    lg: 'sm:max-w-3xl',  // ~768px (Content-heavy forms, dossiers, checklists)
+    xl: 'sm:max-w-5xl'   // ~1024px (Table-heavy modals: Commercial Quotation, Purchase Orders)
+  }[size] || 'sm:max-w-xl';
 
   const modalContent = (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -46,11 +47,11 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         onClick={onClose}
       />
 
-      {/* 2. Positioning Container: Center modal vertically & horizontally in viewport */}
+      {/* 2. Positioning Container: Center modal vertically & horizontally in viewport with edge padding */}
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
-        {/* 3. Modal Dialog Box: Capped at max-h-[90vh] and max-w-[calc(100vw-2rem)] */}
+        {/* 3. Modal Dialog Box: Capped at size variant on desktop and max-w-[calc(100vw-2rem)] on mobile */}
         <div 
-          className={`pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn overflow-hidden`}
+          className={`pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn overflow-hidden`}
           role="dialog"
           aria-modal="true"
         >

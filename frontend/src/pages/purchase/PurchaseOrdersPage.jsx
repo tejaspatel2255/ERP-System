@@ -416,7 +416,7 @@ const PurchaseOrdersPage = () => {
       </div>
 
       {/* CREATE & EDIT FORM MODAL */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingPO ? 'Edit Purchase Order' : 'Create Purchase Order Draft'} size="lg">
+      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingPO ? 'Edit Purchase Order' : 'Create Purchase Order Draft'} size="xl">
         <form onSubmit={handleFormSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

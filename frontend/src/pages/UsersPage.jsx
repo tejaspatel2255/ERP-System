@@ -18,6 +18,7 @@ import {
   approveUser,
   rejectUser
 } from '../api/userApi';
+import PageHeader from '../components/PageHeader';
 
 const UsersPage = () => {
   const { hasPermission } = useRole();
@@ -351,26 +352,20 @@ const UsersPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-            User Accounts
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Manage your organization's user accounts, approvals, departments, and roles.
-          </p>
-        </div>
-        
-        {hasPermission('auth', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
-          >
-            Create User
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="User Accounts"
+        description="Manage your organization's user accounts, approvals, departments, and roles."
+        actions={
+          hasPermission('auth', 'create') && (
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            >
+              Create User
+            </button>
+          )
+        }
+      />
 
       {/* PENDING APPROVALS SECTION */}
       {pendingUsers.length > 0 && (

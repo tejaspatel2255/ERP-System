@@ -4,6 +4,7 @@ import Table from '../components/Table';
 import Pagination from '../components/Pagination';
 import { useRole } from '../context/RoleContext';
 import { getActivityLogs, getUsers } from '../api/userApi';
+import PageHeader from '../components/PageHeader';
 import { exportToCSV } from '../utils/exportCSV';
 
 // Exact list of modules to filter by
@@ -143,28 +144,18 @@ const ActivityLogPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-            System Audit Logs
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Real-time tracking of configurations, creations, edits, and administrative actions.
-          </p>
-        </div>
-
-        <button
-          onClick={handleExportCSV}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-        >
-          {/* Download Icon */}
-          <svg className="mr-2 h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          Export to CSV
-        </button>
-      </div>
+      <PageHeader
+        title="System Audit Logs"
+        description="Real-time tracking of configurations, creations, edits, and administrative actions."
+        actions={
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center rounded-xl border border-border-color bg-bg-secondary px-4 py-2.5 text-sm font-semibold text-text-primary shadow-sm hover:bg-bg-hover transition-colors"
+          >
+            Export to CSV
+          </button>
+        }
+      />
 
       {/* Audit Logs Filter Toolbar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">

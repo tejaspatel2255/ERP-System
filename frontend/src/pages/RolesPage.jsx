@@ -4,6 +4,7 @@ import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { useRole } from '../context/RoleContext';
 import { getRoles, createRole, setRolePermissions } from '../api/userApi';
+import PageHeader from '../components/PageHeader';
 
 // Define the exact list of modules and actions as they exist in the DB
 const MODULES = [
@@ -160,26 +161,20 @@ const RolesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-            Roles & Permissions
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Define system roles and configure granularity of access permissions across modules.
-          </p>
-        </div>
-
-        {hasPermission('auth', 'create') && (
-          <button
-            onClick={() => setIsRoleModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Create New Role
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Roles & Permissions"
+        description="Define system roles and configure granularity of access permissions across modules."
+        actions={
+          hasPermission('auth', 'create') && (
+            <button
+              onClick={() => setIsRoleModalOpen(true)}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            >
+              Create New Role
+            </button>
+          )
+        }
+      />
 
       {/* Roles List Table */}
       <Table columns={columns} data={roles} loading={loading} emptyMessage="No roles defined in the system." />

@@ -24,18 +24,7 @@ export default {
         'text-muted': 'var(--text-muted)',
         'border-color': 'var(--border-color)',
         
-        // Map slate/blue defaults for automatic backwards compatibility
-        slate: {
-          950: 'var(--bg-primary)',
-          900: 'var(--bg-secondary)',
-          850: 'var(--bg-card)',
-          800: 'var(--border-color)',
-          700: 'var(--text-secondary)',
-          500: 'var(--text-muted)',
-          400: 'var(--text-muted)',
-          300: 'var(--text-secondary)',
-          100: 'var(--text-primary)',
-        },
+        // Map blue default for automatic backwards compatibility
         blue: {
           600: 'var(--accent-primary)',
           500: 'var(--accent-secondary)',

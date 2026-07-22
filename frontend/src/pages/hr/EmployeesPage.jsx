@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getEmployees, createEmployee, updateEmployee } from '../../api/hrApi';
-import { getDepartments } from '../../api/userApi';
+import { getDepartments, getUsers } from '../../api/userApi';
+import Modal from '../../components/Modal';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [usersList, setUsersList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -25,6 +27,7 @@ export default function EmployeesPage() {
   const [designation, setDesignation] = useState('');
   const [joinDate, setJoinDate] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -33,12 +36,14 @@ export default function EmployeesPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [empRes, deptRes] = await Promise.all([
+      const [empRes, deptRes, usersRes] = await Promise.all([
         getEmployees(selectedDeptFilter),
-        getDepartments()
+        getDepartments(),
+        getUsers({ limit: 100 })
       ]);
       setEmployees(empRes.employees || []);
       setDepartments(deptRes.departments || []);
+      setUsersList(usersRes.users || []);
     } catch (err) {
       setError('Failed to load employee directory.');
     } finally {
@@ -49,7 +54,6 @@ export default function EmployeesPage() {
   const handleOpenCreate = () => {
     setEditingEmp(null);
     setName('');
-    // Auto-generate employee code pattern
     setEmpCode(`EMP-${String(Date.now()).slice(-5)}`);
     setEmail('');
     setPhone('');
@@ -57,6 +61,7 @@ export default function EmployeesPage() {
     setDesignation('');
     setJoinDate(new Date().toISOString().slice(0, 10));
     setIsActive(true);
+    setUserId('');
     setShowModal(true);
   };
 
@@ -70,6 +75,7 @@ export default function EmployeesPage() {
     setDesignation(emp.designation);
     setJoinDate(new Date(emp.join_date).toISOString().slice(0, 10));
     setIsActive(emp.is_active);
+    setUserId(emp.user_id || '');
     setShowModal(true);
   };
 
@@ -86,13 +92,14 @@ export default function EmployeesPage() {
       department_id: departmentId || null,
       designation,
       join_date: joinDate,
-      is_active: isActive
+      is_active: isActive,
+      user_id: userId || null
     };
 
     try {
       if (editingEmp) {
         await updateEmployee(editingEmp.id, payload);
-        setSuccess('Employee updated successfully.');
+        setSuccess('Employee updated & user linkage saved successfully.');
       } else {
         await createEmployee(payload);
         setSuccess('Employee created successfully.');
@@ -105,29 +112,29 @@ export default function EmployeesPage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Employee Directory</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage corporate hierarchy, department roles, and user account linkages.</p>
+          <h2 className="text-xl font-bold tracking-tight text-text-primary">Employee Directory</h2>
+          <p className="text-text-secondary text-sm mt-1">Manage corporate hierarchy, department roles, and user account linkages.</p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="bg-violet-600 hover:bg-violet-500 text-white font-medium py-2 px-4 rounded-lg shadow-lg shadow-violet-500/20 transition-all flex items-center gap-2"
+          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2"
         >
           <span>+</span> Add Employee
         </button>
       </div>
 
-      {error && <div className="mb-4 p-3 bg-red-950/80 border border-red-500/50 rounded-lg text-red-200">{error}</div>}
-      {success && <div className="mb-4 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-200">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
 
-      <div className="flex gap-4 items-center mb-4">
-        <label className="text-sm font-semibold text-slate-300">Department Filter:</label>
+      <div className="flex gap-4 items-center">
+        <label className="text-sm font-semibold text-text-secondary">Department Filter:</label>
         <select
           value={selectedDeptFilter}
           onChange={(e) => setSelectedDeptFilter(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-lg py-1.5 px-3 text-white focus:outline-none"
+          className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm focus:outline-none"
         >
           <option value="">All Departments</option>
           {departments.map(d => (
@@ -136,42 +143,52 @@ export default function EmployeesPage() {
         </select>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+      <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">Loading directory...</div>
+          <div className="p-8 text-center text-text-muted">Loading directory...</div>
         ) : employees.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">No employees found.</div>
+          <div className="p-8 text-center text-text-muted">No employees found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-700 bg-slate-800/70 text-slate-300 font-semibold text-sm">
+                <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
                   <th className="p-4">Emp Code</th>
                   <th className="p-4">Name</th>
                   <th className="p-4">Department</th>
                   <th className="p-4">Designation</th>
+                  <th className="p-4">Linked User</th>
                   <th className="p-4">Email</th>
                   <th className="p-4">Phone</th>
-                  <th className="p-4">Join Date</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-border-color text-sm">
                 {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-800/40 text-slate-300 transition-colors">
-                    <td className="p-4 font-mono text-violet-400 font-medium">{emp.emp_code}</td>
-                    <td className="p-4 font-semibold text-white">{emp.name}</td>
-                    <td className="p-4 text-slate-400">{emp.department_name || '—'}</td>
-                    <td className="p-4">{emp.designation}</td>
-                    <td className="p-4 text-slate-400 text-sm">{emp.email || '—'}</td>
-                    <td className="p-4 text-slate-400 text-sm">{emp.phone || '—'}</td>
-                    <td className="p-4 text-sm">{new Date(emp.join_date).toLocaleDateString()}</td>
+                  <tr key={emp.id} className="hover:bg-bg-hover text-text-primary transition-colors">
+                    <td className="p-4 font-mono text-accent-primary font-medium">{emp.emp_code}</td>
+                    <td className="p-4 font-semibold text-text-primary">{emp.name}</td>
+                    <td className="p-4 text-text-secondary">{emp.department_name || '—'}</td>
+                    <td className="p-4 text-text-primary">{emp.designation}</td>
+                    <td className="p-4">
+                      {emp.user_name ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-accent-success border border-accent-success/20">
+                          {emp.user_name}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-accent-warning border border-accent-warning/20">
+                          Unlinked
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-text-muted text-sm">{emp.email || '—'}</td>
+                    <td className="p-4 text-text-muted text-sm">{emp.phone || '—'}</td>
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleOpenEdit(emp)}
-                        className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-white transition-all"
+                        className="px-3 py-1 bg-bg-secondary hover:bg-bg-hover border border-border-color rounded-lg text-xs font-semibold text-text-primary transition-all"
                       >
-                        Edit
+                        Edit / Link
                       </button>
                     </td>
                   </tr>
@@ -183,136 +200,149 @@ export default function EmployeesPage() {
       </div>
 
       {/* CREATE/EDIT MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="border-b border-slate-700 p-4 bg-slate-900/50 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">{editingEmp ? 'Edit Employee Details' : 'Add New Employee'}</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">✕</button>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingEmp ? 'Edit Employee Details' : 'Add New Employee'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Emp Code *</label>
+              <input
+                type="text"
+                value={empCode}
+                onChange={(e) => setEmpCode(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none"
+                required
+                disabled={!!editingEmp}
+              />
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Emp Code</label>
-                  <input
-                    type="text"
-                    value={empCode}
-                    onChange={(e) => setEmpCode(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono text-sm"
-                    required
-                    disabled={!!editingEmp}
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Full Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    placeholder="name@company.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Phone Number</label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Department</label>
-                  <select
-                    value={departmentId}
-                    onChange={(e) => setDepartmentId(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm focus:outline-none"
-                  >
-                    <option value="">-- Choose Dept --</option>
-                    {departments.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Designation</label>
-                  <input
-                    type="text"
-                    value={designation}
-                    onChange={(e) => setDesignation(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Joining Date</label>
-                  <input
-                    type="date"
-                    value={joinDate}
-                    onChange={(e) => setJoinDate(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    required
-                  />
-                </div>
-                {editingEmp && (
-                  <div className="flex items-center gap-2 mt-6">
-                    <input
-                      type="checkbox"
-                      id="is-active"
-                      checked={isActive}
-                      onChange={(e) => setIsActive(e.target.checked)}
-                      className="w-4 h-4 bg-slate-900 border-slate-700 rounded text-violet-600 focus:ring-violet-500"
-                    />
-                    <label htmlFor="is-active" className="text-slate-300 font-semibold text-sm">Is Active Profile</label>
-                  </div>
-                )}
-              </div>
-
-              {!editingEmp && email && (
-                <p className="text-xs text-slate-400 italic mt-2">
-                  * Providing an email address will automatically create a matching User Account with credentials.
-                </p>
-              )}
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-white font-medium text-sm"
-                >
-                  Save Employee
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Full Name *</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                placeholder="name@company.com"
+              />
+            </div>
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Phone Number</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Department</label>
+              <select
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              >
+                <option value="">-- Choose Dept --</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Designation *</label>
+              <input
+                type="text"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          {/* User Account Linkage Selection */}
+          <div className="rounded-xl border border-border-color bg-bg-secondary/60 p-3.5 space-y-2">
+            <label className="block text-text-primary font-bold text-xs uppercase tracking-wider">
+              Link User Account
+            </label>
+            <select
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              className="w-full bg-bg-card border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+            >
+              <option value="">-- No Linked User Account (Standalone Profile) --</option>
+              {usersList.map(u => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-text-muted leading-tight">
+              Linking a User Account grants this employee access to Self-Service features (leave applications & clock logs).
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-text-secondary font-semibold mb-1 text-xs">Joining Date *</label>
+              <input
+                type="date"
+                value={joinDate}
+                onChange={(e) => setJoinDate(e.target.value)}
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                required
+              />
+            </div>
+            {editingEmp && (
+              <div className="flex items-center gap-2 mt-6">
+                <input
+                  type="checkbox"
+                  id="is-active"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded border-border-color text-accent-primary"
+                />
+                <label htmlFor="is-active" className="text-text-primary font-semibold text-xs">Is Active Profile</label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+            >
+              Save Employee
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

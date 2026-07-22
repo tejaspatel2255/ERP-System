@@ -1,6 +1,6 @@
 # ERP Nexus — Production-Grade Enterprise Resource Planning System
 
-A full-stack, modular ERP system built with **React + Vite** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to Dispatch, hardened with httpOnly Cookie authentication, Content Security Policy, rate limiting, and role-based access control.
+A full-stack, modular ERP system built for **Hina Industries** with **React + Vite + Dual-Theme CSS System** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to HR Self-Service, hardened with `httpOnly` Cookie authentication, Content Security Policy, rate limiting, and role-based access control.
 
 ---
 
@@ -8,12 +8,12 @@ A full-stack, modular ERP system built with **React + Vite** (frontend) and **No
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, Vite, Vanilla CSS Design System, Recharts, Lucide Icons |
+| **Frontend** | React 18, Vite, Dual-Theme System (Dark/Light), React Portals, Recharts, Lucide Icons |
 | **Backend** | Node.js, Express.js (ESM), Helmet (CSP), Rate Limiter, Cookie-Parser |
 | **Database** | PostgreSQL (Supabase / Self-hosted pg pool) |
-| **Auth** | JWT (in-memory access token + httpOnly refresh cookie), bcryptjs |
+| **Auth** | JWT (in-memory access token + `httpOnly` refresh cookie), bcryptjs |
 | **Storage** | Supabase Storage (Design files, Proof-of-Delivery, QA reports) |
-| **HTTP Client** | Axios (with credentials & automated background token refresh) |
+| **Formatting** | `Intl.NumberFormat` Indian Rupee (₹ INR) currency standardisation |
 
 ---
 
@@ -21,8 +21,8 @@ A full-stack, modular ERP system built with **React + Vite** (frontend) and **No
 
 | # | Module | Features & Capabilities |
 |---|--------|------------------------|
-| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, activity audit logs |
-| 2 | **Sales** | Customers, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Payments |
+| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, user approval workflow, activity audit logs |
+| 2 | **Sales** | Customers, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Collections in ₹ |
 | 3 | **Purchase** | Vendors, Purchase Orders (`po_no`), Approval Workflow, Vendor Invoices, Rejection Tracking |
 | 4 | **Store / Inventory** | Item Master (`item_type`), GRN (`grn_no`), Stock Transactions, Stock Position, Stock Ledger |
 | 5 | **Production** | Bill of Materials (versioned), Work Orders (`wo_no`), Material Consumption, Costing |
@@ -30,10 +30,19 @@ A full-stack, modular ERP system built with **React + Vite** (frontend) and **No
 | 7 | **Quality Assurance** | QA Checklists, Test Reports, File Uploads, Approval Workflow (`approval_status`) |
 | 8 | **Quality Control** | Incoming Raw Material QC, In-Process QC, Final Product QC, NCR Management (`ncr_no`) |
 | 9 | **Dispatch** | Packing Slips (`packing_slip_no`), Delivery Challans (`challan_no`), Transport Details, POD Upload |
-| 10 | **HR** | Employee Directory, Attendance Matrix, Leave Applications & Balances, Training Sessions |
+| 10 | **HR & Self-Service** | Employee Directory, User-Employee Linkage, Attendance Matrix, Leave Applications & Quotas, Self-Service |
 | 11 | **Design** | File Versioning (CAD/PDF), Design Kanban Tasks, Review & Approval Workflows |
-| 12 | **Dashboard** | Real-time KPI Cards, Sales Trend Analytics, Inventory Pie Breakdown, Activity Feed |
-| 13 | **Settings** | System-wide settings & company configuration |
+| 12 | **Dashboard** | Real-time KPI Cards in ₹, Sales Trend Analytics, Inventory Pie Breakdown, Activity Feed |
+| 13 | **Settings** | System-wide settings & company configuration in dual-theme layout |
+
+---
+
+## 🎨 Design System & Theme Engine
+
+- **Dual-Theme Support**: Instant switching between dark mode and light mode with an interactive Sun/Moon toggle button, OS color preference detection, and `localStorage` persistence.
+- **Precision Left-Rail Status Badges**: High contrast status indicators for document and workflow states.
+- **React Portal Modals**: Modals render directly into `document.body` via `createPortal`, guaranteeing full-viewport backdrop coverage with zero clipping seams, capped height (`max-h-[90vh]`), and internal content scrolling.
+- **Indian Rupee (₹ INR)**: Built-in `formatINR` formatter utilizing `en-IN` locale digit grouping (e.g. `₹1,50,000.00`).
 
 ---
 
@@ -59,8 +68,8 @@ A full-stack, modular ERP system built with **React + Vite** (frontend) and **No
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/your-username/ERP.git
-cd ERP
+git clone https://github.com/tejaspatel2255/ERP-System.git
+cd ERP-System
 ```
 
 ---
@@ -122,7 +131,7 @@ The frontend will start at `http://localhost:5173`.
 ## 📁 Project Structure
 
 ```
-ERP/
+ERP-System/
 ├── backend/
 │   ├── controllers/        # Business logic for all 13 modules
 │   ├── db/                 # schema.sql and migrations/
@@ -135,10 +144,10 @@ ERP/
 └── frontend/
     ├── src/
     │   ├── api/            # Axios instance with refresh interceptor & API endpoints
-    │   ├── components/     # Reusable UI components & layouts
-    │   ├── context/        # AuthContext, RoleContext
+    │   ├── components/     # Modal (Portal), PageHeader, Table, StatusBadge, Navbar
+    │   ├── context/        # AuthContext, RoleContext, ThemeContext
     │   ├── pages/          # 13 Module Pages + Print Views
-    │   └── utils/          # Currency, date, and CSV export helpers
+    │   └── utils/          # Currency (formatINR), date, and CSV export helpers
     └── index.html
 ```
 

@@ -154,16 +154,21 @@ export const getEmployeeById = async (req, res, next) => {
 
 export const updateEmployee = async (req, res, next) => {
   const { id } = req.params;
-  const { name, email, phone, department_id, designation, join_date, is_active } = req.body;
+  const { name, email, phone, department_id, designation, join_date, is_active, user_id } = req.body;
   try {
     const result = await db.query(`
       UPDATE employees
-      SET name = $1, email = $2, phone = $3, department_id = $4, designation = $5, join_date = $6, is_active = $7, updated_at = NOW()
-      WHERE id = $8 RETURNING *
-    `, [name, email, phone, department_id || null, designation, join_date, is_active !== undefined ? is_active : true, id]);
+      SET name = $1, email = $2, phone = $3, department_id = $4, designation = $5, join_date = $6, is_active = $7, user_id = $8, updated_at = NOW()
+      WHERE id = $9 RETURNING *
+    `, [name, email, phone, department_id || null, designation, join_date, is_active !== undefined ? is_active : true, user_id || null, id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Employee not found.' });
+    }
+
+    if (user_id) {
+      const currentYear = new Date().getFullYear();
+      await ensureLeaveBalances(id, currentYear);
     }
 
     await logActivity(req.user.id, 'UPDATE_EMPLOYEE', 'hr', id, req);

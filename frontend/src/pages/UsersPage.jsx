@@ -531,7 +531,7 @@ const UsersPage = () => {
           {/* User Roles Selection */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Assign Roles</label>
-            <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-bg-secondary rounded-xl border border-border-color">
               {roles.map((role) => {
                 const isChecked = formData.roles.includes(role.name);
                 return (

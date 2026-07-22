@@ -48,20 +48,20 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
       {/* 2. Positioning Container: Center modal vertically & horizontally in viewport */}
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
-        {/* 3. Modal Dialog Box: Capped at max-h-[90vh], flex-col structure */}
+        {/* 3. Modal Dialog Box: Capped at max-h-[90vh] and max-w-[calc(100vw-2rem)] */}
         <div 
-          className={`pointer-events-auto relative w-full ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn`}
+          className={`pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn overflow-hidden`}
           role="dialog"
           aria-modal="true"
         >
           {/* 4. Integrated Header (Pinned Top) */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-color bg-bg-modal shrink-0 select-none">
-            <h3 className="text-lg font-bold text-text-primary tracking-tight">
+            <h3 className="text-lg font-bold text-text-primary tracking-tight truncate mr-3">
               {title}
             </h3>
             <button
               type="button"
-              className="rounded-lg p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+              className="rounded-lg p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors shrink-0"
               onClick={onClose}
             >
               <span className="sr-only">Close modal</span>
@@ -70,7 +70,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           </div>
 
           {/* 5. Scrollable Content Body Area (Internal Scrollbar) */}
-          <div className="flex-1 overflow-y-auto px-6 py-5 bg-bg-modal text-text-primary">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-5 bg-bg-modal text-text-primary">
             {children}
           </div>
         </div>

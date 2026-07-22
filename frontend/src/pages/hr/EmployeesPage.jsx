@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Users } from 'lucide-react';
 import { getEmployees, createEmployee, updateEmployee } from '../../api/hrApi';
 import { getDepartments, getUsers } from '../../api/userApi';
 import Modal from '../../components/Modal';
+import EmptyState from '../../components/EmptyState';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
@@ -120,7 +122,7 @@ export default function EmployeesPage() {
         </div>
         <button
           onClick={handleOpenCreate}
-          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2"
+          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm"
         >
           <span>+</span> Add Employee
         </button>
@@ -129,8 +131,8 @@ export default function EmployeesPage() {
       {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
       {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
 
-      <div className="flex gap-4 items-center">
-        <label className="text-sm font-semibold text-text-secondary">Department Filter:</label>
+      <div className="flex gap-4 items-center bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
+        <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Department Filter:</label>
         <select
           value={selectedDeptFilter}
           onChange={(e) => setSelectedDeptFilter(e.target.value)}
@@ -143,12 +145,18 @@ export default function EmployeesPage() {
         </select>
       </div>
 
-      <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
-        {loading ? (
-          <div className="p-8 text-center text-text-muted">Loading directory...</div>
-        ) : employees.length === 0 ? (
-          <div className="p-8 text-center text-text-muted">No employees found.</div>
-        ) : (
+      {loading ? (
+        <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading directory...</div>
+      ) : employees.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No Employees Found"
+          description="There are currently no employee records matching your filter criteria. Add a new employee to get started."
+          actionLabel="Add Employee"
+          onAction={handleOpenCreate}
+        />
+      ) : (
+        <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -196,8 +204,8 @@ export default function EmployeesPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* CREATE/EDIT MODAL */}
       <Modal

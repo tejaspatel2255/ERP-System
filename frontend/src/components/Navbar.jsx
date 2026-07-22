@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Bell, Menu, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, Menu, Search, User, Settings, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
+import { useTheme } from '../context/ThemeContext';
 import { getStockAlerts } from '../api/storeApi';
 import { getPendingApprovals } from '../api/qaApi';
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { hasPermission } = useRole();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -65,7 +67,7 @@ export default function Navbar({ onMenuClick }) {
   const totalNotifications = alertCount + qaCount;
 
   return (
-    <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border-color bg-bg-secondary px-4 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border-color bg-bg-secondary px-4 shadow-sm transition-colors duration-200">
       {/* Left: Menu click (mobile toggle) + Current Page Name (Breadcrumb) */}
       <div className="flex items-center gap-3">
         <button
@@ -75,14 +77,24 @@ export default function Navbar({ onMenuClick }) {
           <Menu size={20} />
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted hidden sm:inline">Pages</span>
+          <span className="text-xs text-text-muted hidden sm:inline font-medium">Pages</span>
           <span className="text-xs text-text-muted hidden sm:inline">/</span>
           <h1 className="text-sm font-bold text-text-primary tracking-wide">{getBreadcrumb()}</h1>
         </div>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className="flex items-center justify-center rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-accent-primary transition-all duration-200"
+          aria-label="Toggle visual theme"
+        >
+          {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-accent-primary" />}
+        </button>
+
         {/* Search Icon Button */}
         <button className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors">
           <Search size={18} />
@@ -100,6 +112,7 @@ export default function Navbar({ onMenuClick }) {
 
         {/* Vertical divider */}
         <div className="h-6 w-[1px] bg-border-color" />
+
 
         {/* User initials circle + dropdown toggle */}
         <div className="relative">

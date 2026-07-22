@@ -1,55 +1,68 @@
 import React from 'react';
 
-const mapStatusStyles = (status = '') => {
+const mapStatusTheme = (status = '') => {
   const value = String(status).toLowerCase();
-  
-  // Active/Success/Approved/Paid
-  if (['active', 'success', 'approved', 'paid', 'completed', 'pass', 'resolved'].includes(value)) {
+
+  // Success / Active / Approved / Completed / Pass / Paid / Resolved
+  if (['active', 'success', 'approved', 'paid', 'completed', 'pass', 'resolved', 'in stock', 'verified'].includes(value)) {
     return {
-      backgroundColor: 'rgba(16, 185, 129, 0.15)',
-      color: '#10b981'
-    };
-  }
-  
-  // Warning/Pending/Draft
-  if (['warning', 'pending', 'draft', 'scheduled', 'open'].includes(value)) {
-    return {
-      backgroundColor: 'rgba(245, 158, 11, 0.15)',
-      color: '#f59e0b'
+      bg: 'var(--success-bg)',
+      color: 'var(--success-text)',
+      border: 'var(--success-border)',
+      rail: 'var(--success-rail)'
     };
   }
 
-  // Danger/Rejected/Overdue
-  if (['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical'].includes(value)) {
+  // Warning / Pending / Draft / Scheduled / Open / Reorder / Low Stock
+  if (['warning', 'pending', 'draft', 'scheduled', 'open', 'reorder', 'low stock', 'inspection required', 'in progress'].includes(value)) {
     return {
-      backgroundColor: 'rgba(239, 68, 68, 0.15)',
-      color: '#ef4444'
+      bg: 'var(--warning-bg)',
+      color: 'var(--warning-text)',
+      border: 'var(--warning-border)',
+      rail: 'var(--warning-rail)'
     };
   }
 
-  // Info/Processing
+  // Danger / Rejected / Overdue / Fail / Cancelled / Critical / Out of Stock
+  if (['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical', 'out of stock', 'expired'].includes(value)) {
+    return {
+      bg: 'var(--danger-bg)',
+      color: 'var(--danger-text)',
+      border: 'var(--danger-border)',
+      rail: 'var(--danger-rail)'
+    };
+  }
+
+  // Info / Processing / Issued / Shipped / En-Route / New
   return {
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
-    color: '#6366f1'
+    bg: 'var(--info-bg)',
+    color: 'var(--info-text)',
+    border: 'var(--info-border)',
+    rail: 'var(--info-rail)'
   };
 };
 
-export default function StatusBadge({ status }) {
-  const styles = mapStatusStyles(status);
-  
+export default function StatusBadge({ status, className = '' }) {
+  const theme = mapStatusTheme(status);
+
   return (
-    <span 
-      className="inline-flex items-center justify-center text-center"
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase font-mono-tabular transition-colors shadow-2xs ${className}`}
       style={{
-        borderRadius: '20px',
-        padding: '4px 12px',
-        fontSize: '12px',
-        fontWeight: '600',
-        lineHeight: '1.2',
-        ...styles
+        backgroundColor: theme.bg,
+        color: theme.color,
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: theme.border,
+        borderLeftWidth: '3px',
+        borderLeftColor: theme.rail
       }}
     >
-      {status}
+      <span
+        className="h-1.5 w-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: theme.rail }}
+      />
+      <span>{status || 'UNKNOWN'}</span>
     </span>
   );
 }

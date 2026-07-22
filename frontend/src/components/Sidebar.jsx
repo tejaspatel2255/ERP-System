@@ -222,7 +222,6 @@ export default function Sidebar({ open, onClose }) {
 
   const renderLink = (item, isMobileView = false) => {
     const Icon = item.icon;
-    const isActive = location.pathname === item.to;
     return (
       <NavLink
         key={item.to}
@@ -230,19 +229,19 @@ export default function Sidebar({ open, onClose }) {
         onClick={isMobileView ? onClose : undefined}
         title={collapsed && !isMobileView ? item.label : ''}
         className={({ isActive }) =>
-          `group relative flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-250 ${
+          `group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
             isActive
-              ? 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white shadow-brand border-l-4 border-accent-secondary'
+              ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
               : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
           }`
         }
       >
-        <Icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
+        <Icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
         {(!collapsed || isMobileView) && (
-          <span className="flex-1 truncate transition-opacity duration-300">{item.label}</span>
+          <span className="flex-1 truncate transition-opacity duration-200">{item.label}</span>
         )}
         {item.alertBadge && alertCount > 0 && (
-          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-bold text-white">
+          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
             {alertCount}
           </span>
         )}
@@ -254,9 +253,14 @@ export default function Sidebar({ open, onClose }) {
   const mobileSidebarContent = (
     <div className="flex h-full w-[240px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
       <div className="flex h-[60px] items-center justify-between border-b border-border-color px-5">
-        <span className="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent font-black tracking-wider text-xl">
-          ERP Nexus
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs">
+            EN
+          </div>
+          <span className="text-text-primary font-black tracking-wide text-lg">
+            ERP <span className="text-accent-primary">Nexus</span>
+          </span>
+        </div>
         <button
           onClick={onClose}
           className="rounded-lg p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
@@ -269,9 +273,9 @@ export default function Sidebar({ open, onClose }) {
           to="/dashboard"
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
               isActive
-                ? 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white'
+                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
             }`
           }
@@ -308,19 +312,24 @@ export default function Sidebar({ open, onClose }) {
       {/* Top Header */}
       <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
         {!collapsed ? (
-          <span className="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent font-black tracking-wider text-xl transition-all duration-300">
-            ERP Nexus
-          </span>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs shadow-xs">
+              EN
+            </div>
+            <span className="text-text-primary font-black tracking-wider text-lg">
+              ERP <span className="text-accent-primary">Nexus</span>
+            </span>
+          </div>
         ) : (
-          <span className="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent font-black text-xl mx-auto transition-all duration-300">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs mx-auto shadow-xs">
             EN
-          </span>
+          </div>
         )}
 
         {/* Desktop Collapse Arrow Button */}
         <button
           onClick={toggleSidebar}
-          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center rounded-full border border-border-color bg-bg-card text-text-secondary shadow-md hover:bg-bg-hover hover:text-text-primary"
+          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center rounded-full border border-border-color bg-bg-modal text-text-secondary shadow-md hover:bg-bg-hover hover:text-text-primary transition-colors"
         >
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -333,9 +342,9 @@ export default function Sidebar({ open, onClose }) {
           to="/dashboard"
           title={collapsed ? 'Dashboard' : ''}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
               isActive
-                ? 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white shadow-brand border-l-4 border-accent-secondary'
+                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
             } ${collapsed ? 'justify-center' : ''}`
           }

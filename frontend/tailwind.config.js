@@ -11,18 +11,20 @@ export default {
         'bg-primary': 'var(--bg-primary)',
         'bg-secondary': 'var(--bg-secondary)',
         'bg-card': 'var(--bg-card)',
+        'bg-modal': 'var(--bg-modal)',
         'bg-hover': 'var(--bg-hover)',
         'accent-primary': 'var(--accent-primary)',
         'accent-secondary': 'var(--accent-secondary)',
         'accent-success': 'var(--accent-success)',
         'accent-warning': 'var(--accent-warning)',
         'accent-danger': 'var(--accent-danger)',
+        'accent-info': 'var(--accent-info)',
         'text-primary': 'var(--text-primary)',
         'text-secondary': 'var(--text-secondary)',
         'text-muted': 'var(--text-muted)',
         'border-color': 'var(--border-color)',
         
-        // Map defaults for automatic styling
+        // Map slate/blue defaults for automatic backwards compatibility
         slate: {
           950: 'var(--bg-primary)',
           900: 'var(--bg-secondary)',
@@ -40,7 +42,8 @@ export default {
         }
       },
       boxShadow: {
-        'brand': 'var(--shadow)'
+        'brand': 'var(--shadow)',
+        'modal': 'var(--shadow-modal)',
       }
     },
   },
@@ -48,3 +51,4 @@ export default {
     require("@tailwindcss/forms"),
   ],
 }
+

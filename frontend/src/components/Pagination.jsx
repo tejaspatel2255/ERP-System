@@ -30,20 +30,20 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
   const pages = getPageNumbers();
 
   return (
-    <nav className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6">
+    <nav className="flex items-center justify-between border-t border-border-color px-4 py-3 sm:px-6 transition-colors duration-200">
       {/* Mobile view simple buttons */}
       <div className="flex flex-1 justify-between sm:hidden">
         <button
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="relative inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="relative inline-flex items-center rounded-xl border border-border-color bg-bg-secondary px-4 py-2 text-sm font-medium text-text-primary hover:bg-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Previous
         </button>
         <button
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="relative ml-3 inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="relative ml-3 inline-flex items-center rounded-xl border border-border-color bg-bg-secondary px-4 py-2 text-sm font-medium text-text-primary hover:bg-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Next
         </button>
@@ -52,18 +52,18 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       {/* Desktop view with specific page numbers */}
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing page <span className="font-semibold text-slate-900 dark:text-white">{page}</span> of{' '}
-            <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
+          <p className="text-sm text-text-muted">
+            Showing page <span className="font-mono-tabular font-bold text-text-primary">{page}</span> of{' '}
+            <span className="font-mono-tabular font-bold text-text-primary">{totalPages}</span>
           </p>
         </div>
         <div>
-          <span className="isolate inline-flex -space-x-px rounded-xl shadow-sm bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <span className="isolate inline-flex -space-x-px rounded-xl shadow-xs bg-bg-secondary border border-border-color overflow-hidden">
             {/* Prev Button */}
             <button
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
-              className="relative inline-flex items-center px-3 py-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="relative inline-flex items-center px-3 py-2 text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <span className="sr-only">Previous</span>
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -77,10 +77,10 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
                 key={p}
                 onClick={() => onPageChange(p)}
                 aria-current={p === page ? 'page' : undefined}
-                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold font-mono-tabular transition-colors ${
                   p === page
-                    ? 'bg-blue-600 text-white dark:bg-blue-600 focus:z-20'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 focus:z-20'
+                    ? 'bg-accent-primary text-white font-bold'
+                    : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                 }`}
               >
                 {p}
@@ -91,7 +91,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
             <button
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
-              className="relative inline-flex items-center px-3 py-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="relative inline-flex items-center px-3 py-2 text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <span className="sr-only">Next</span>
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

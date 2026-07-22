@@ -1,25 +1,30 @@
 import React from 'react';
+import Modal from './Modal';
 
 export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Confirm', danger = false }) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6">
-        <h3 className="text-xl font-bold text-white">{title}</h3>
-        <p className="mt-2 text-sm text-slate-400">{message}</p>
-        <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onClose} className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300">
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold ${danger ? 'bg-red-600 text-white' : 'bg-cyan-500 text-slate-950'}`}
-          >
-            {confirmLabel}
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
+      <p className="text-sm text-text-secondary leading-relaxed">{message}</p>
+      <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-border-color">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-xl border border-border-color px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all ${
+            danger
+              ? 'bg-accent-danger hover:opacity-90'
+              : 'bg-accent-primary hover:opacity-90'
+          }`}
+        >
+          {confirmLabel}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }

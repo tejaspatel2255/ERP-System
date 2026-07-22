@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
 
 /**
  * Reusable Modal Component
@@ -6,7 +7,7 @@ import React, { useEffect } from 'react';
  * @param {Function} onClose - Close handler
  * @param {string} title - Header title
  * @param {React.ReactNode} children - Body content
- * @param {string} size - size helper: 'sm', 'md', 'lg'
+ * @param {string} size - size helper: 'sm', 'md', 'lg', 'xl'
  */
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
@@ -32,37 +33,36 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-xl',
-    lg: 'max-w-4xl'
+    lg: 'max-w-3xl',
+    xl: 'max-w-5xl'
   }[size] || 'max-w-xl';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop: rgba(0,0,0,0.7) with blur(4px) */}
+      {/* Overlay Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/70 backdrop-blur-[4px] transition-opacity duration-300"
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-[3px] transition-opacity duration-200"
         onClick={onClose}
       />
 
-      {/* Modal Box: bg: var(--bg-card), border-radius: 16px, border: 1px solid var(--border-color), shadow */}
+      {/* Modal Box: Highest Elevation bg-bg-modal with shadow-modal */}
       <div 
-        className={`relative w-full ${sizeClasses} transform overflow-hidden rounded-2xl border border-border-color bg-bg-card p-6 shadow-brand transition-all duration-300 animate-in fade-in zoom-in-95 duration-200`}
+        className={`relative w-full ${sizeClasses} transform overflow-hidden rounded-2xl border border-border-color bg-bg-modal p-6 shadow-modal transition-all duration-200 animate-fadeIn`}
         role="dialog"
         aria-modal="true"
       >
-        {/* Header: border-bottom 1px solid var(--border-color) */}
+        {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-border-color">
-          <h3 className="text-lg font-bold text-text-primary">
+          <h3 className="text-lg font-bold text-text-primary tracking-tight">
             {title}
           </h3>
           <button
             type="button"
-            className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+            className="rounded-lg p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
             onClick={onClose}
           >
             <span className="sr-only">Close modal</span>
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X size={18} />
           </button>
         </div>
 

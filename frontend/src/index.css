@@ -3,20 +3,101 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #0f1117;
-  --bg-secondary: #1a1d2e;
-  --bg-card: #1e2235;
-  --bg-hover: #252840;
-  --accent-primary: #6366f1;
-  --accent-secondary: #8b5cf6;
+  /* Surface & Elevation Levels (Light Mode) */
+  --bg-primary: #f4f6f9;        /* Canvas background */
+  --bg-secondary: #ffffff;      /* Surface / Panel / Sidebar */
+  --bg-card: #f8fafc;           /* Container / Table header layer */
+  --bg-modal: #ffffff;          /* Elevated modal / Popover surface */
+  --bg-hover: #e2e8f0;          /* Interactive hover */
+  
+  /* Brand Accent Palette (Light Mode - WCAG AAA compliant) */
+  --accent-primary: #1d4ed8;    /* Steel Blue Primary */
+  --accent-secondary: #2563eb;  /* Secondary Accent */
+  
+  /* Text Hierarchy (Light Mode) */
+  --text-primary: #0f172a;      /* High contrast body text */
+  --text-secondary: #475569;    /* Supporting labels & secondary text */
+  --text-muted: #64748b;        /* Low contrast captions & icons */
+  
+  /* Borders & Shadows (Light Mode) */
+  --border-color: #cbd5e1;      /* Crisp structural divider */
+  --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  --shadow-modal: 0 20px 35px -10px rgba(15, 23, 42, 0.18);
+
+  /* Semantic Colors (Light Mode) */
+  --accent-success: #059669;
+  --accent-warning: #d97706;
+  --accent-danger: #dc2626;
+  --accent-info: #2563eb;
+
+  --success-text: #065f46;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-rail: #059669;
+
+  --warning-text: #92400e;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-rail: #d97706;
+
+  --danger-text: #991b1b;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --danger-rail: #dc2626;
+
+  --info-text: #1e40af;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --info-rail: #2563eb;
+}
+
+.dark {
+  /* Surface & Elevation Levels (Dark Mode) */
+  --bg-primary: #0c0e14;        /* Deep obsidian industrial canvas */
+  --bg-secondary: #141722;      /* Surface / Panel / Sidebar */
+  --bg-card: #1b1f2e;           /* Container / Table header layer */
+  --bg-modal: #23283b;          /* Elevated modal / Popover surface */
+  --bg-hover: #2a3045;          /* Interactive hover */
+  
+  /* Brand Accent Palette (Dark Mode) */
+  --accent-primary: #38bdf8;    /* Electric Sky Steel Blue */
+  --accent-secondary: #60a5fa;  /* Secondary Accent */
+  
+  /* Text Hierarchy (Dark Mode) */
+  --text-primary: #f8fafc;      /* High contrast white body text */
+  --text-secondary: #94a3b8;    /* Supporting labels & secondary text */
+  --text-muted: #64748b;        /* Muted captions & icons */
+  
+  /* Borders & Shadows (Dark Mode) */
+  --border-color: #262b3d;      /* Structural dark border */
+  --shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 24px 48px -6px rgba(0, 0, 0, 0.8);
+
+  /* Semantic Colors (Dark Mode) */
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
   --accent-danger: #ef4444;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: #2d3148;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --accent-info: #3b82f6;
+
+  --success-text: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.3);
+  --success-rail: #10b981;
+
+  --warning-text: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.3);
+  --warning-rail: #f59e0b;
+
+  --danger-text: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.12);
+  --danger-border: rgba(248, 113, 113, 0.3);
+  --danger-rail: #ef4444;
+
+  --info-text: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.12);
+  --info-border: rgba(96, 165, 250, 0.3);
+  --info-rail: #3b82f6;
 }
 
 * {
@@ -42,20 +123,34 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Monospace alignment for numbers, document codes, prices */
+.font-mono-tabular {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
   outline: none !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -64,11 +159,16 @@ textarea:focus {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease forwards;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media print {
   .no-print {
     display: none !important;
   }
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
 }
+

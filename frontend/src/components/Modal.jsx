@@ -38,23 +38,23 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   }[size] || 'max-w-xl';
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-[3px] transition-opacity duration-200">
-      {/* Centering Wrapper */}
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
-        {/* Backdrop click dismiss overlay */}
-        <div 
-          className="fixed inset-0 z-[-1]"
-          onClick={onClose}
-        />
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* 1. Backdrop Overlay: Fixed inset-0 covers 100% viewport unconditionally */}
+      <div 
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-[3px] transition-opacity duration-200"
+        onClick={onClose}
+      />
 
-        {/* Modal Dialog Card Container */}
+      {/* 2. Positioning Container: Vertically & Horizontally centered in viewport */}
+      <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+        {/* 3. Modal Dialog Box: Capped at max-h-[90vh], flex-col structure */}
         <div 
-          className={`relative w-full ${sizeClasses} my-6 transform overflow-hidden rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn`}
+          className={`pointer-events-auto relative w-full ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn`}
           role="dialog"
           aria-modal="true"
         >
-          {/* Integrated Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border-color bg-bg-modal">
+          {/* 4. Integrated Header (Pinned Top) */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border-color bg-bg-modal shrink-0 select-none">
             <h3 className="text-lg font-bold text-text-primary tracking-tight">
               {title}
             </h3>
@@ -68,8 +68,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
             </button>
           </div>
 
-          {/* Integrated Content Body */}
-          <div className="px-6 py-5 max-h-[calc(85vh-100px)] overflow-y-auto bg-bg-modal text-text-primary">
+          {/* 5. Scrollable Content Body Area (Internal Scrollbar) */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 bg-bg-modal text-text-primary">
             {children}
           </div>
         </div>

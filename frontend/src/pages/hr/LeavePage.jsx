@@ -137,7 +137,7 @@ export default function LeavePage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
+    <div className="p-6 animate-in fade-in duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">Leave Management</h1>

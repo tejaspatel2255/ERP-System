@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BookOpen } from 'lucide-react';
 import {
   getTrainingSessions,
   createTrainingSession,
@@ -6,6 +7,9 @@ import {
   markTrainingAttendance,
   getEmployees
 } from '../../api/hrApi';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import Modal from '../../components/Modal';
 
 export default function TrainingPage() {
   const [sessions, setSessions] = useState([]);
@@ -118,35 +122,43 @@ export default function TrainingPage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-teal-400 to-indigo-400 bg-clip-text text-transparent font-sans">Training & Upskilling</h1>
-          <p className="text-slate-400 text-sm mt-1">Organize professional workshops, assign attendees, and mark course completion logs.</p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
-        >
-          <span>+</span> Schedule Session
-        </button>
-      </div>
+    <div className="p-6 animate-in fade-in duration-300">
+      <PageHeader
+        title="Training & Upskilling"
+        description="Organize professional workshops, assign attendees, and mark course completion logs."
+        actions={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+          >
+            Schedule Session
+          </button>
+        }
+      />
 
-      {error && <div className="mb-4 p-3 bg-red-950/80 border border-red-500/50 rounded-lg text-red-200 text-sm">{error}</div>}
-      {success && <div className="mb-4 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-200 text-sm">{success}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-red-600 dark:text-red-400 text-sm">{error}</div>}
+      {success && <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl text-emerald-600 dark:text-emerald-400 text-sm">{success}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sessions Table */}
-        <div className="lg:col-span-2 bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-slate-400">Loading training sessions...</div>
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm">Loading training sessions...</div>
           ) : sessions.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">No training sessions scheduled.</div>
+            <div className="p-6">
+              <EmptyState
+                icon={BookOpen}
+                title="No training sessions scheduled"
+                description="There are no upcoming or past training sessions. Start by scheduling a new session."
+                actionLabel="Schedule Session"
+                onAction={() => setShowCreateModal(true)}
+              />
+            </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-slate-700 bg-slate-800/70 text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider">
                     <th className="p-4">Session Details</th>
                     <th className="p-4">Trainer</th>
                     <th className="p-4">Date & Time</th>
@@ -154,31 +166,31 @@ export default function TrainingPage() {
                     <th className="p-4 text-center">Completion Ratio</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50 text-sm">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                   {sessions.map((sess) => (
                     <tr
                       key={sess.id}
                       onClick={() => handleSelectSession(sess)}
-                      className={`hover:bg-slate-850 cursor-pointer transition-colors ${
-                        selectedSession?.id === sess.id ? 'bg-slate-800/75' : ''
+                      className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors ${
+                        selectedSession?.id === sess.id ? 'bg-blue-50/50 dark:bg-slate-800/75' : ''
                       }`}
                     >
                       <td className="p-4">
-                        <p className="font-bold text-white">{sess.title}</p>
-                        <p className="text-xs text-slate-400 max-w-xs truncate">{sess.description || 'No description'}</p>
+                        <p className="font-bold text-slate-900 dark:text-white">{sess.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[12rem] truncate">{sess.description || 'No description'}</p>
                       </td>
-                      <td className="p-4 font-medium">{sess.trainer}</td>
-                      <td className="p-4 text-xs text-slate-300">{new Date(sess.scheduled_date).toLocaleString()}</td>
+                      <td className="p-4 font-medium text-slate-900 dark:text-slate-300">{sess.trainer}</td>
+                      <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{new Date(sess.scheduled_date).toLocaleString()}</td>
                       <td className="p-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          sess.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                          sess.status === 'Ongoing' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                          'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          sess.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30' :
+                          sess.status === 'Ongoing' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30' :
+                          'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30'
                         }`}>
                           {sess.status}
                         </span>
                       </td>
-                      <td className="p-4 text-center font-mono font-semibold">
+                      <td className="p-4 text-center font-mono font-semibold text-slate-900 dark:text-slate-300">
                         {sess.completed_count} / {sess.assigned_count} Completed
                       </td>
                     </tr>
@@ -190,46 +202,46 @@ export default function TrainingPage() {
         </div>
 
         {/* Selected Session Info */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl h-fit">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm h-fit">
           {selectedSession ? (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-bold text-white">{selectedSession.title}</h3>
-                <p className="text-xs text-slate-400 mt-1">{selectedSession.description}</p>
-                <div className="mt-3 text-xs space-y-1 text-slate-300 border-t border-slate-700/50 pt-2">
-                  <p><span className="text-slate-500">Instructor:</span> {selectedSession.trainer}</p>
-                  <p><span className="text-slate-500">Time:</span> {new Date(selectedSession.scheduled_date).toLocaleString()}</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedSession.title}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{selectedSession.description}</p>
+                <div className="mt-4 text-sm space-y-2 text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <p><span className="text-slate-500 dark:text-slate-400 font-medium">Instructor:</span> {selectedSession.trainer}</p>
+                  <p><span className="text-slate-500 dark:text-slate-400 font-medium">Time:</span> {new Date(selectedSession.scheduled_date).toLocaleString()}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Assigned Employees</h4>
+                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Assigned Employees</h4>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                   {attendees.map(att => (
-                    <div key={att.employee_id} className="bg-slate-900/60 border border-slate-800 rounded-lg p-3 flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-slate-200">{att.employee_name}</p>
-                        <p className="text-slate-400 text-[10px]">{att.designation}</p>
+                    <div key={att.employee_id} className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex justify-between items-center text-sm">
+                      <div className="truncate pr-2">
+                        <p className="font-bold text-slate-900 dark:text-slate-200 truncate">{att.employee_name}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{att.designation}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                          att.status === 'Completed' ? 'bg-emerald-500/25 text-emerald-400' :
-                          att.status === 'Absent' ? 'bg-red-500/25 text-red-400' :
-                          'bg-amber-500/25 text-amber-400'
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          att.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-400' :
+                          att.status === 'Absent' ? 'bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-red-400' :
+                          'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-400'
                         }`}>
                           {att.status}
                         </span>
                         {att.status === 'Assigned' && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1.5 mt-1">
                             <button
                               onClick={() => handleMarkAttendance(att.employee_id, 'Completed')}
-                              className="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 rounded text-[9px] text-white"
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-xs text-white shadow-sm transition-colors"
                             >
                               Done
                             </button>
                             <button
                               onClick={() => handleMarkAttendance(att.employee_id, 'Absent')}
-                              className="px-1.5 py-0.5 bg-red-600 hover:bg-red-500 rounded text-[9px] text-white"
+                              className="px-2 py-1 bg-red-600 hover:bg-red-500 rounded text-xs text-white shadow-sm transition-colors"
                             >
                               Abs
                             </button>
@@ -242,106 +254,105 @@ export default function TrainingPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-500 italic text-sm">
-              Select a training session to view roster and mark completion records.
+            <div className="text-center py-12">
+              <EmptyState
+                icon={BookOpen}
+                title="No session selected"
+                description="Select a training session to view the roster and mark completion records."
+              />
             </div>
           )}
         </div>
       </div>
 
-      {/* CREATE MODAL */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl">
-            <div className="border-b border-slate-700 p-4 bg-slate-900/50 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white font-sans">Schedule Training Session</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">✕</button>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Schedule Training Session"
+        size="md"
+      >
+        <form onSubmit={handleCreateSessionSubmit} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Course Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                placeholder="E.g., Safety induction"
+                required
+              />
             </div>
-            <form onSubmit={handleCreateSessionSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Course Title</label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    placeholder="E.g., Safety induction, ISO audits"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Trainer Name</label>
-                  <input
-                    type="text"
-                    value={trainer}
-                    onChange={(e) => setTrainer(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm">Session Date & Time</label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm font-mono"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1 text-sm font-sans">Description</label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Roster Assignment */}
-              <div>
-                <label className="block text-slate-300 font-semibold mb-2 text-sm">Assign Roster (Select Employees)</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 bg-slate-900/60 p-3 rounded-lg border border-slate-700/50 max-h-[160px] overflow-y-auto">
-                  {employees.map(emp => (
-                    <div key={emp.id} className="flex items-center gap-2 text-xs">
-                      <input
-                        type="checkbox"
-                        id={`emp-${emp.id}`}
-                        checked={selectedEmpIds.includes(emp.id)}
-                        onChange={() => handleEmpCheckboxChange(emp.id)}
-                        className="w-4 h-4 bg-slate-900 border-slate-700 rounded text-indigo-600"
-                      />
-                      <label htmlFor={`emp-${emp.id}`} className="text-slate-300 truncate" title={emp.name}>{emp.name}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-medium text-sm"
-                >
-                  Schedule Course
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Trainer Name</label>
+              <input
+                type="text"
+                value={trainer}
+                onChange={(e) => setTrainer(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Session Date & Time</label>
+              <input
+                type="datetime-local"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm font-mono text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Assign Roster (Select Employees)</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50 max-h-[160px] overflow-y-auto">
+              {employees.map(emp => (
+                <div key={emp.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    id={`emp-${emp.id}`}
+                    checked={selectedEmpIds.includes(emp.id)}
+                    onChange={() => handleEmpCheckboxChange(emp.id)}
+                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor={`emp-${emp.id}`} className="text-slate-700 dark:text-slate-300 truncate cursor-pointer" title={emp.name}>{emp.name}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors shadow-sm"
+            >
+              Schedule Course
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

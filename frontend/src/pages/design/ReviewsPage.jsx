@@ -53,21 +53,21 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">Design Reviews</h2>
-        <p className="text-slate-400 text-sm mt-1">Open pending files, inspect the version, and approve or request changes.</p>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div>
+        <h2 className="text-xl font-bold text-text-primary">Design Reviews</h2>
+        <p className="text-text-secondary text-sm mt-1">Open pending files, inspect the version, and approve or request changes.</p>
       </div>
 
-      {error && <div className="mb-4 rounded-lg border border-red-500/40 bg-red-950/80 p-3 text-red-200">{error}</div>}
+      {error && <div className="p-3 rounded-xl border border-accent-danger/30 bg-accent-danger/10 text-accent-danger text-sm">{error}</div>}
 
       {loading ? (
-        <div className="p-8 text-center text-slate-400">Loading pending reviews...</div>
+        <div className="p-8 text-center text-text-muted">Loading pending reviews...</div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-xl border border-slate-700/50 bg-slate-800/50 overflow-hidden">
+          <div className="lg:col-span-2 rounded-2xl border border-border-color bg-bg-card shadow-brand overflow-hidden">
             <table className="w-full text-left">
-              <thead className="bg-slate-800/70 text-xs uppercase tracking-wider text-slate-400">
+              <thead className="bg-bg-secondary text-xs uppercase tracking-wider text-text-muted">
                 <tr>
                   <th className="p-4">File Title</th>
                   <th className="p-4">Version</th>
@@ -75,31 +75,31 @@ export default function ReviewsPage() {
                   <th className="p-4">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-border-color">
                 {pendingReviews.map((review) => (
-                  <tr key={review.id} className="cursor-pointer hover:bg-slate-800/70" onClick={() => openReview(review)}>
-                    <td className="p-4 font-semibold text-white">{review.design_file_title}</td>
-                    <td className="p-4 font-mono text-teal-400">v{review.version_number}</td>
-                    <td className="p-4 text-slate-300">{review.uploaded_by_name || 'Unknown'}</td>
-                    <td className="p-4 text-slate-400">{new Date(review.uploaded_at).toLocaleDateString()}</td>
+                  <tr key={review.id} className="cursor-pointer hover:bg-bg-hover transition-colors" onClick={() => openReview(review)}>
+                    <td className="p-4 font-semibold text-text-primary">{review.design_file_title}</td>
+                    <td className="p-4 font-mono text-accent-primary">v{review.version_number}</td>
+                    <td className="p-4 text-text-secondary">{review.uploaded_by_name || 'Unknown'}</td>
+                    <td className="p-4 text-text-muted">{new Date(review.uploaded_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
                 {pendingReviews.length === 0 && (
                   <tr>
-                    <td className="p-8 text-center text-slate-400" colSpan={4}>No pending reviews right now.</td>
+                    <td className="p-8 text-center text-text-muted" colSpan={4}>No pending reviews right now.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          <div className="rounded-xl border border-slate-700/50 bg-slate-800 p-5">
+          <div className="rounded-2xl border border-border-color bg-bg-card p-6 shadow-brand">
             {selectedReview ? (
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-teal-400">Reviewing</p>
-                  <h3 className="mt-1 text-xl font-bold text-white">{selectedReview.design_file_title}</h3>
-                  <p className="text-sm text-slate-400">Version v{selectedReview.version_number}</p>
+                  <p className="text-xs uppercase tracking-[0.25em] text-accent-primary font-bold">Reviewing</p>
+                  <h3 className="mt-1 text-xl font-bold text-text-primary">{selectedReview.design_file_title}</h3>
+                  <p className="text-sm text-text-secondary">Version v{selectedReview.version_number}</p>
                 </div>
 
                 {selectedFile?.versions?.find((v) => v.id === selectedReview.id)?.file_url && (

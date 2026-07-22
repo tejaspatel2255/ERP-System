@@ -5,6 +5,7 @@ import { Activity, Boxes, ClipboardList, DollarSign, Factory, PackageSearch, Arr
 import { getDashboardActivity, getDashboardCharts, getDashboardSummary } from '../api/dashboardApi';
 import Table from '../components/Table';
 import StatusBadge from '../components/StatusBadge';
+import { formatINR } from '../utils/formatCurrency';
 
 const kpiConfig = [
   { key: 'total_sales_this_month', label: 'Sales This Month', icon: DollarSign, color: 'from-indigo-500 to-accent-secondary', trend: '+14.2%', trendUp: true, isCurrency: true },
@@ -86,7 +87,7 @@ export default function DashboardPage() {
           const rawValue = summary ? summary[item.key] : null;
           const displayValue = typeof rawValue === 'number'
             ? item.isCurrency
-              ? `$${rawValue.toLocaleString()}`
+              ? formatINR(rawValue)
               : rawValue.toLocaleString()
             : '0';
 

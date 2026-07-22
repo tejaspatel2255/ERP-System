@@ -96,32 +96,32 @@ export default function DesignTasksPage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-teal-400 to-indigo-400 bg-clip-text text-transparent">Design Tasks</h1>
-          <p className="text-slate-400 text-sm mt-1">Organize CAD drawings creation workflows, track task states, and coordinate assignments.</p>
+          <h2 className="text-xl font-bold tracking-tight text-text-primary">Design Tasks Kanban</h2>
+          <p className="text-text-secondary text-sm mt-1">Organize CAD drawings creation workflows, track task states, and coordinate assignments.</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-teal-600 hover:bg-teal-500 text-white font-medium py-2 px-4 rounded-lg shadow-lg shadow-teal-500/20 transition-all flex items-center gap-2"
+          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2"
         >
           <span>+</span> Create Task
         </button>
       </div>
 
-      {error && <div className="mb-4 p-3 bg-red-950/80 border border-red-500/50 rounded-lg text-red-200 text-sm">{error}</div>}
-      {success && <div className="mb-4 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-200 text-sm">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
 
       {loading ? (
-        <div className="p-8 text-center text-slate-400">Loading task board...</div>
+        <div className="p-8 text-center text-text-muted">Loading task board...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {columns.map(col => {
             const colTasks = tasks.filter(t => t.status === col.key);
 
             return (
-              <div key={col.key} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex flex-col min-h-[500px] backdrop-blur-md">
+              <div key={col.key} className="bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col min-h-[500px] shadow-brand">
                 <div className={`border-t-4 ${col.borderClass} pt-2 pb-4 flex justify-between items-center`}>
                   <h3 className="font-bold text-white text-sm uppercase tracking-wider">{col.label}</h3>
                   <span className="bg-slate-700/50 text-slate-300 font-mono text-xs px-2 py-0.5 rounded-full">

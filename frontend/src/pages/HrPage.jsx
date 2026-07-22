@@ -4,48 +4,50 @@ import AttendancePage from './hr/AttendancePage';
 import LeavePage from './hr/LeavePage';
 import SelfServicePage from './hr/SelfServicePage';
 import TrainingPage from './hr/TrainingPage';
+import PageHeader from '../components/PageHeader';
 
 const tabs = [
-  { key: 'employees', label: 'Employees' },
-  { key: 'attendance', label: 'Attendance' },
-  { key: 'leave', label: 'Leave' },
-  { key: 'self', label: 'Self Service' },
-  { key: 'training', label: 'Training' }
+  { key: 'employees', label: 'Employee Dossiers' },
+  { key: 'attendance', label: 'Attendance Register' },
+  { key: 'leave', label: 'Leave Applications' },
+  { key: 'self', label: 'Employee Self Service' },
+  { key: 'training', label: 'Skills & Training' }
 ];
 
 export default function HrPage() {
   const [activeTab, setActiveTab] = useState('employees');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-sky-400">HR Module</p>
-            <h1 className="mt-1 text-3xl font-black">People operations and self service</h1>
-          </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Human Resources & People Ops"
+        description="Employee lifecycle, monthly attendance, leave balances, self service requests, and training certifications."
+        actions={
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
                   activeTab === tab.key
-                    ? 'bg-sky-500 text-slate-950'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-accent-primary text-white shadow-sm'
+                    : 'border border-border-color bg-bg-secondary text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                 }`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-        </div>
+        }
+      />
+
+      <div className="mt-6">
+        {activeTab === 'employees' && <EmployeesPage />}
+        {activeTab === 'attendance' && <AttendancePage />}
+        {activeTab === 'leave' && <LeavePage />}
+        {activeTab === 'self' && <SelfServicePage />}
+        {activeTab === 'training' && <TrainingPage />}
       </div>
-      {activeTab === 'employees' && <EmployeesPage />}
-      {activeTab === 'attendance' && <AttendancePage />}
-      {activeTab === 'leave' && <LeavePage />}
-      {activeTab === 'self' && <SelfServicePage />}
-      {activeTab === 'training' && <TrainingPage />}
     </div>
   );
 }

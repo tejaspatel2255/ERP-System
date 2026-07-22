@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import { formatINR } from '../../utils/formatCurrency';
 
 const env = import.meta.env;
 
@@ -41,12 +42,21 @@ export default function PrintInvoice() {
           <table className="mt-6 w-full text-sm">
             <thead><tr className="border-b"><th className="text-left py-2">Item</th><th>Qty</th><th>Unit Price</th><th>Discount</th><th>Tax</th><th>Total</th></tr></thead>
             <tbody>
-              {items.map((item) => <tr key={item.id} className="border-b"><td className="py-2">{item.item_name}</td><td className="text-center">{item.qty}</td><td>{item.unit_price}</td><td>{item.discount || 0}</td><td>{item.tax_pct || 0}</td><td>{item.line_total}</td></tr>)}
+              {items.map((item) => (
+                <tr key={item.id} className="border-b">
+                  <td className="py-2">{item.item_name}</td>
+                  <td className="text-center">{item.qty}</td>
+                  <td>{formatINR(item.unit_price)}</td>
+                  <td>{formatINR(item.discount || 0)}</td>
+                  <td>{item.tax_pct || 0}%</td>
+                  <td>{formatINR(item.line_total)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          <div className="mt-6 text-right text-sm">
-            <p>Subtotal: {invoice.subtotal || invoice.total_amount}</p>
-            <p>Grand Total: {invoice.total_amount}</p>
+          <div className="mt-6 text-right text-sm font-bold">
+            <p>Subtotal: {formatINR(invoice.subtotal || invoice.total_amount)}</p>
+            <p className="text-lg mt-1 text-blue-900">Grand Total: {formatINR(invoice.total_amount)}</p>
           </div>
           <div className="mt-6 text-sm">
             <p>{env.VITE_INVOICE_TERMS || 'Payment terms apply.'}</p>

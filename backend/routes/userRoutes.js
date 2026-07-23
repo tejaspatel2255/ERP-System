@@ -28,13 +28,13 @@ const createUserValidation = [
   body('name').trim().notEmpty().withMessage('Name is required.'),
   body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters.'),
-  body('department_id').isUUID().withMessage('Valid department ID is required.')
+  body('department_id').isUUID('all').withMessage('Valid department ID is required.')
 ];
 
 const updateUserValidation = [
   body('name').trim().notEmpty().withMessage('Name is required.'),
   body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
-  body('department_id').isUUID().withMessage('Valid department ID is required.'),
+  body('department_id').isUUID('all').withMessage('Valid department ID is required.'),
   body('is_active').isBoolean().withMessage('is_active must be a boolean.')
 ];
 

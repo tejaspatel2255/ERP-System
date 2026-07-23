@@ -1012,16 +1012,18 @@ CREATE INDEX idx_payments_payment_date ON payments(payment_date);
 -- ============================================================================
 
 -- 1. Seed Departments
-INSERT INTO departments (id, name) VALUES
-('d1111111-1111-1111-1111-111111111111', 'Sales'),
-('d2222222-2222-2222-2222-222222222222', 'Production'),
-('d3333333-3333-3333-3333-333333333333', 'HR');
+INSERT INTO departments (name) VALUES
+('Sales'),
+('Production'),
+('HR')
+ON CONFLICT (name) DO NOTHING;
 
 -- 2. Seed Default Roles
-INSERT INTO roles (id, name) VALUES
-('a1111111-1111-1111-1111-111111111111', 'Admin'),
-('a2222222-2222-2222-2222-222222222222', 'Manager'),
-('a3333333-3333-3333-3333-333333333333', 'Staff');
+INSERT INTO roles (name) VALUES
+('Admin'),
+('Manager'),
+('Staff')
+ON CONFLICT (name) DO NOTHING;
 
 -- 3. Seed Admin User
 -- Email: admin@erp.com

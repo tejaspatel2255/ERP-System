@@ -223,7 +223,9 @@ const UsersPage = () => {
           is_active: formData.is_active
         });
 
-        await assignUserRoles(editingUser.id, formData.roles);
+        if (formData.roles && Array.isArray(formData.roles)) {
+          await assignUserRoles(editingUser.id, formData.roles);
+        }
         toast.success('User updated successfully.');
       } else {
         await createUser({
@@ -237,7 +239,8 @@ const UsersPage = () => {
       }
 
       setIsModalOpen(false);
-      fetchUsersList();
+      setEditingUser(null);
+      await fetchUsersList();
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Action failed.');
     }

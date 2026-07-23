@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { login, refresh, logout, me, register, seedAdmin } from '../controllers/authController.js';
+import { login, refresh, logout, me, register } from '../controllers/authController.js';
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -52,7 +52,6 @@ const tokenValidation = (req, res, next) => {
 };
 
 // Auth Routes
-router.get('/seed', seedAdmin);
 router.post('/login', authLimiter, loginValidation, login);
 router.post('/register', authLimiter, registerValidation, register);
 router.post('/refresh', tokenValidation, refresh);

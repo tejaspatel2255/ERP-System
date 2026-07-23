@@ -4,6 +4,7 @@ import { getDesignTasks, createDesignTask, updateDesignTaskStatus, getDesignFile
 import { getUsers } from '../../api/userApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
+import PageHeader from '../../components/PageHeader';
 
 export default function DesignTasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -61,7 +62,6 @@ export default function DesignTasksPage() {
       });
       setSuccess('Design task created successfully.');
       setShowCreateModal(false);
-      // Reset form
       setTitle('');
       setDescription('');
       setAssignedTo('');
@@ -86,7 +86,7 @@ export default function DesignTasksPage() {
   };
 
   const columns = [
-    { key: 'Pending', label: 'To Do', borderClass: 'border-t-slate-400 dark:border-t-slate-500' },
+    { key: 'Pending', label: 'To Do', borderClass: 'border-t-text-muted' },
     { key: 'In Progress', label: 'In Progress', borderClass: 'border-t-accent-primary' },
     { key: 'In Review', label: 'In Review', borderClass: 'border-t-accent-warning' },
     { key: 'Completed', label: 'Done', borderClass: 'border-t-accent-success' }
@@ -95,36 +95,36 @@ export default function DesignTasksPage() {
   const priorityColors = {
     'High': 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30',
     'Medium': 'bg-accent-warning/15 text-accent-warning border border-accent-warning/30',
-    'Low': 'bg-accent-primary/15 text-accent-primary border border-accent-primary/30'
+    'Low': 'bg-accent-info/15 text-accent-info border border-accent-info/30'
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-text-primary">Design Tasks Kanban</h2>
-          <p className="text-text-secondary text-sm mt-1">Organize CAD drawings creation workflows, track task states, and coordinate assignments.</p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm"
-        >
-          <span>+</span> Create Task
-        </button>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Design Tasks Kanban"
+        description="Organize CAD drawings creation workflows, track task states, and coordinate assignments."
+        actions={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+          >
+            + Create Task
+          </button>
+        }
+      />
 
-      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
 
       {loading ? (
         <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading task board...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {columns.map(col => {
             const colTasks = tasks.filter(t => t.status === col.key);
 
             return (
-              <div key={col.key} className="bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col min-h-[500px] shadow-brand">
+              <div key={col.key} className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col min-h-[480px] shadow-brand">
                 <div className={`border-t-4 ${col.borderClass} pt-2 pb-4 flex justify-between items-center`}>
                   <h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">{col.label}</h3>
                   <span className="bg-bg-secondary text-text-secondary font-mono text-xs px-2.5 py-0.5 rounded-full border border-border-color font-semibold">
@@ -132,7 +132,7 @@ export default function DesignTasksPage() {
                   </span>
                 </div>
 
-                <div className="space-y-3 flex-1 overflow-y-auto">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-1">
                   {colTasks.map(task => (
                     <div key={task.id} className="bg-bg-secondary border border-border-color rounded-xl p-4 space-y-3 shadow-sm hover:border-text-muted transition-colors">
                       <div>
@@ -141,13 +141,13 @@ export default function DesignTasksPage() {
                       </div>
 
                       {task.design_file_title && (
-                        <div className="bg-bg-card border border-border-color rounded-lg p-2 text-[11px] text-accent-primary font-mono flex items-center gap-1.5">
+                        <div className="bg-bg-card border border-border-color rounded-lg p-2 text-[11px] text-accent-primary font-mono flex items-center gap-1.5 min-w-0">
                           <span>📎</span> <span className="truncate">{task.design_file_title}</span>
                         </div>
                       )}
 
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className={`px-2 py-0.5 rounded-full font-bold ${priorityColors[task.priority]}`}>
+                        <span className={`px-2 py-0.5 rounded-full font-bold ${priorityColors[task.priority] || priorityColors['Medium']}`}>
                           {task.priority}
                         </span>
                         {task.due_date && (
@@ -158,12 +158,11 @@ export default function DesignTasksPage() {
                       </div>
 
                       <div className="pt-2 border-t border-border-color flex justify-between items-center">
-                        <span className="text-[11px] text-text-secondary font-medium">
+                        <span className="text-[11px] text-text-secondary font-medium truncate max-w-[100px]">
                           {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : 'Unassigned'}
                         </span>
 
-                        {/* Transition Buttons */}
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 shrink-0">
                           {col.key !== 'Pending' && (
                             <button
                               onClick={() => {
@@ -197,7 +196,7 @@ export default function DesignTasksPage() {
                       <EmptyState
                         icon={CheckSquare}
                         title="No Tasks"
-                        description={`No items currently in ${col.label}.`}
+                        description={`No items in ${col.label}.`}
                       />
                     </div>
                   )}
@@ -217,34 +216,34 @@ export default function DesignTasksPage() {
       >
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Task Title *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Task Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               placeholder="E.g., Draw electrical wiring layout"
               required
             />
           </div>
 
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Description</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none focus:border-accent-primary"
               placeholder="Task instructions..."
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Assign To (User)</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">Assign To (User)</label>
               <select
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               >
                 <option value="">-- Select Designer --</option>
                 {users.map(u => (
@@ -253,11 +252,11 @@ export default function DesignTasksPage() {
               </select>
             </div>
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Priority</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -266,22 +265,22 @@ export default function DesignTasksPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Due Date</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">Due Date</label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm font-mono focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm font-mono focus:outline-none focus:border-accent-primary"
               />
             </div>
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Link Design File</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">Link Design File</label>
               <select
                 value={designFileId}
                 onChange={(e) => setDesignFileId(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               >
                 <option value="">-- Choose File (Optional) --</option>
                 {designFiles.map(f => (

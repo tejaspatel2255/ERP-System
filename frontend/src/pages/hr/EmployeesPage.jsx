@@ -4,6 +4,8 @@ import { getEmployees, createEmployee, updateEmployee } from '../../api/hrApi';
 import { getDepartments, getUsers } from '../../api/userApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
+import PageHeader from '../../components/PageHeader';
+import Table from '../../components/Table';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
@@ -113,30 +115,88 @@ export default function EmployeesPage() {
     }
   };
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-text-primary">Employee Directory</h2>
-          <p className="text-text-secondary text-sm mt-1">Manage corporate hierarchy, department roles, and user account linkages.</p>
-        </div>
+  const columns = [
+    {
+      key: 'emp_code',
+      label: 'Emp Code',
+      render: (emp) => <span className="font-mono text-accent-primary font-medium">{emp.emp_code}</span>
+    },
+    {
+      key: 'name',
+      label: 'Name',
+      render: (emp) => <span className="font-semibold text-text-primary">{emp.name}</span>
+    },
+    {
+      key: 'department_name',
+      label: 'Department',
+      render: (emp) => <span className="text-text-secondary">{emp.department_name || '—'}</span>
+    },
+    {
+      key: 'designation',
+      label: 'Designation',
+      render: (emp) => <span className="text-text-primary">{emp.designation}</span>
+    },
+    {
+      key: 'user_name',
+      label: 'Linked User',
+      render: (emp) => emp.user_name ? (
+        <span className="inline-flex items-center rounded-full bg-accent-success/15 px-2.5 py-0.5 text-xs font-semibold text-accent-success border border-accent-success/30">
+          {emp.user_name}
+        </span>
+      ) : (
+        <span className="inline-flex items-center rounded-full bg-accent-warning/15 px-2.5 py-0.5 text-xs font-semibold text-accent-warning border border-accent-warning/30">
+          Unlinked
+        </span>
+      )
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (emp) => <span className="text-text-muted text-sm">{emp.email || '—'}</span>
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      render: (emp) => <span className="text-text-muted text-sm">{emp.phone || '—'}</span>
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (emp) => (
         <button
-          onClick={handleOpenCreate}
-          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm"
+          onClick={() => handleOpenEdit(emp)}
+          className="px-3 py-1 bg-bg-secondary hover:bg-bg-hover border border-border-color rounded-xl text-xs font-semibold text-text-primary transition-all"
         >
-          <span>+</span> Add Employee
+          Edit / Link
         </button>
-      </div>
+      )
+    }
+  ];
 
-      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Employee Directory"
+        description="Manage corporate hierarchy, department roles, and user account linkages."
+        actions={
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+          >
+            + Add Employee
+          </button>
+        }
+      />
 
-      <div className="flex gap-4 items-center bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
+      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+
+      <div className="mb-6 flex gap-4 items-center bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
         <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Department Filter:</label>
         <select
           value={selectedDeptFilter}
           onChange={(e) => setSelectedDeptFilter(e.target.value)}
-          className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm focus:outline-none"
+          className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
         >
           <option value="">All Departments</option>
           {departments.map(d => (
@@ -145,9 +205,7 @@ export default function EmployeesPage() {
         </select>
       </div>
 
-      {loading ? (
-        <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading directory...</div>
-      ) : employees.length === 0 ? (
+      {employees.length === 0 && !loading ? (
         <EmptyState
           icon={Users}
           title="No Employees Found"
@@ -156,55 +214,7 @@ export default function EmployeesPage() {
           onAction={handleOpenCreate}
         />
       ) : (
-        <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
-                  <th className="p-4">Emp Code</th>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Department</th>
-                  <th className="p-4">Designation</th>
-                  <th className="p-4">Linked User</th>
-                  <th className="p-4">Email</th>
-                  <th className="p-4">Phone</th>
-                  <th className="p-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-color text-sm">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-bg-hover text-text-primary transition-colors">
-                    <td className="p-4 font-mono text-accent-primary font-medium">{emp.emp_code}</td>
-                    <td className="p-4 font-semibold text-text-primary">{emp.name}</td>
-                    <td className="p-4 text-text-secondary">{emp.department_name || '—'}</td>
-                    <td className="p-4 text-text-primary">{emp.designation}</td>
-                    <td className="p-4">
-                      {emp.user_name ? (
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-accent-success border border-accent-success/20">
-                          {emp.user_name}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-accent-warning border border-accent-warning/20">
-                          Unlinked
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-4 text-text-muted text-sm">{emp.email || '—'}</td>
-                    <td className="p-4 text-text-muted text-sm">{emp.phone || '—'}</td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleOpenEdit(emp)}
-                        className="px-3 py-1 bg-bg-secondary hover:bg-bg-hover border border-border-color rounded-lg text-xs font-semibold text-text-primary transition-all"
-                      >
-                        Edit / Link
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table columns={columns} data={employees} loading={loading} emptyMessage="No employees found." />
       )}
 
       {/* CREATE/EDIT MODAL */}
@@ -215,14 +225,14 @@ export default function EmployeesPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-text-secondary font-semibold mb-1 text-xs">Emp Code *</label>
               <input
                 type="text"
                 value={empCode}
                 onChange={(e) => setEmpCode(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none focus:border-accent-primary"
                 required
                 disabled={!!editingEmp}
               />
@@ -233,20 +243,20 @@ export default function EmployeesPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-text-secondary font-semibold mb-1 text-xs">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
                 placeholder="name@company.com"
               />
             </div>
@@ -256,18 +266,18 @@ export default function EmployeesPage() {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-text-secondary font-semibold mb-1 text-xs">Department</label>
               <select
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               >
                 <option value="">-- Choose Dept --</option>
                 {departments.map(d => (
@@ -281,21 +291,21 @@ export default function EmployeesPage() {
                 type="text"
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
                 required
               />
             </div>
           </div>
 
           {/* User Account Linkage Selection */}
-          <div className="rounded-xl border border-border-color bg-bg-secondary/60 p-3.5 space-y-2">
+          <div className="rounded-2xl border border-border-color bg-bg-secondary/60 p-4 space-y-2">
             <label className="block text-text-primary font-bold text-xs uppercase tracking-wider">
               Link User Account
             </label>
             <select
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              className="w-full bg-bg-card border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              className="w-full bg-bg-card border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
             >
               <option value="">-- No Linked User Account (Standalone Profile) --</option>
               {usersList.map(u => (
@@ -309,14 +319,14 @@ export default function EmployeesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-text-secondary font-semibold mb-1 text-xs">Joining Date *</label>
               <input
                 type="date"
                 value={joinDate}
                 onChange={(e) => setJoinDate(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
                 required
               />
             </div>
@@ -327,9 +337,9 @@ export default function EmployeesPage() {
                   id="is-active"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 rounded border-border-color text-accent-primary"
+                  className="w-4 h-4 rounded border-border-color text-accent-primary focus:ring-accent-primary"
                 />
-                <label htmlFor="is-active" className="text-text-primary font-semibold text-xs">Is Active Profile</label>
+                <label htmlFor="is-active" className="text-text-primary font-semibold text-xs cursor-pointer">Is Active Profile</label>
               </div>
             )}
           </div>

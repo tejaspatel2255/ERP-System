@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle2, FileSearch } from 'lucide-react';
 import { getPendingReviews, submitReview, getDesignFileById } from '../../api/designApi';
 import EmptyState from '../../components/EmptyState';
+import PageHeader from '../../components/PageHeader';
 
 export default function ReviewsPage() {
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -55,20 +56,20 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight text-text-primary">Design Reviews</h2>
-        <p className="text-text-secondary text-sm mt-1">Open pending engineering files, inspect versions, and approve or request revisions.</p>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Design Reviews"
+        description="Open pending engineering files, inspect versions, and approve or request revisions."
+      />
 
-      {error && <div className="p-3 rounded-xl border border-accent-danger/30 bg-accent-danger/10 text-accent-danger text-sm">{error}</div>}
+      {error && <div className="mb-6 p-4 rounded-2xl border border-accent-danger/30 bg-accent-danger/10 text-accent-danger text-sm">{error}</div>}
 
       {loading ? (
         <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading pending reviews...</div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Pending Reviews Table Left Panel */}
-          <div className="lg:col-span-2 rounded-2xl border border-border-color bg-bg-card shadow-brand overflow-hidden">
+          <div className="lg:col-span-2 min-w-0 rounded-2xl border border-border-color bg-bg-card shadow-brand overflow-hidden">
             {pendingReviews.length === 0 ? (
               <div className="p-6">
                 <EmptyState
@@ -110,12 +111,12 @@ export default function ReviewsPage() {
           </div>
 
           {/* Selected File Inspection Right Panel */}
-          <div className="rounded-2xl border border-border-color bg-bg-card p-6 shadow-brand h-fit space-y-6">
+          <div className="min-w-0 rounded-2xl border border-border-color bg-bg-card p-6 shadow-brand h-fit space-y-6">
             {selectedReview ? (
               <div className="space-y-4">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-accent-primary font-bold">Reviewing Submission</p>
-                  <h3 className="mt-1 text-lg font-bold text-text-primary">{selectedReview.design_file_title}</h3>
+                  <h3 className="mt-1 text-lg font-bold text-text-primary truncate">{selectedReview.design_file_title}</h3>
                   <p className="text-xs text-text-secondary font-mono mt-0.5">Version v{selectedReview.version_number}</p>
                 </div>
 
@@ -156,11 +157,13 @@ export default function ReviewsPage() {
                 </div>
               </div>
             ) : (
-              <EmptyState
-                icon={FileSearch}
-                title="No Review Selected"
-                description="Select a pending design file from the left table to open its CAD drawing, write evaluation remarks, and approve or request changes."
-              />
+              <div className="text-center py-6">
+                <EmptyState
+                  icon={FileSearch}
+                  title="No Review Selected"
+                  description="Select a pending design file from the left table to open its CAD drawing, write evaluation remarks, and approve or request changes."
+                />
+              </div>
             )}
           </div>
         </div>

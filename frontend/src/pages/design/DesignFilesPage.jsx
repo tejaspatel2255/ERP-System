@@ -3,6 +3,7 @@ import { FolderPlus, FileCode } from 'lucide-react';
 import { getDesignFiles, uploadDesignFile, getDesignFileById, uploadNewVersion } from '../../api/designApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
+import PageHeader from '../../components/PageHeader';
 
 export default function DesignFilesPage() {
   const [designFiles, setDesignFiles] = useState([]);
@@ -76,7 +77,6 @@ export default function DesignFilesPage() {
       await uploadDesignFile(formData);
       setSuccess('Design file uploaded successfully.');
       setShowUploadModal(false);
-      // Reset form
       setTitle('');
       setDescription('');
       setProjectRef('');
@@ -107,7 +107,6 @@ export default function DesignFilesPage() {
       setShowNewVersionModal(false);
       setVersionNotes('');
       setVersionFile(null);
-      // Refresh current file details
       handleSelectFile(selectedFile);
       fetchFiles();
     } catch (err) {
@@ -116,28 +115,28 @@ export default function DesignFilesPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-text-primary">Design Files Directory</h2>
-          <p className="text-text-secondary text-sm mt-1">Upload CAD drawings, view version histories, and track engineering approvals.</p>
-        </div>
-        <button
-          onClick={() => setShowUploadModal(true)}
-          className="bg-accent-primary hover:opacity-90 text-white font-medium py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm"
-        >
-          <span>+</span> Upload Design File
-        </button>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Design Files Directory"
+        description="Upload CAD drawings, view version histories, and track engineering approvals."
+        actions={
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+          >
+            + Upload Design File
+          </button>
+        }
+      />
 
-      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 rounded-xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 rounded-xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Files Directory Left Panel */}
-        <div className="lg:col-span-2 bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
+        <div className="lg:col-span-2 min-w-0 bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
           {loading ? (
-            <div className="p-12 text-center text-text-muted">Loading design files...</div>
+            <div className="p-12 text-center text-text-muted text-sm">Loading design files...</div>
           ) : designFiles.length === 0 ? (
             <div className="p-6">
               <EmptyState
@@ -186,17 +185,17 @@ export default function DesignFilesPage() {
         </div>
 
         {/* Selected File Details Right Panel */}
-        <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-6">
+        <div className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-6">
           {selectedFile ? (
             <div className="space-y-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold text-text-primary">{selectedFile.title}</h3>
+              <div className="flex justify-between items-start gap-2">
+                <div className="truncate">
+                  <h3 className="text-lg font-bold text-text-primary truncate">{selectedFile.title}</h3>
                   <p className="text-xs text-text-muted font-mono mt-0.5">Ref: {selectedFile.project_ref || 'N/A'}</p>
                 </div>
                 <button
                   onClick={() => setShowNewVersionModal(true)}
-                  className="bg-accent-primary/10 hover:bg-accent-primary/20 text-accent-primary border border-accent-primary/30 font-semibold py-1.5 px-3 rounded-xl text-xs transition-all"
+                  className="bg-accent-primary/10 hover:bg-accent-primary/20 text-accent-primary border border-accent-primary/30 font-semibold py-1.5 px-3 rounded-xl text-xs transition-all shrink-0"
                 >
                   + New Ver.
                 </button>
@@ -208,16 +207,16 @@ export default function DesignFilesPage() {
                 <div className="space-y-2 max-h-[180px] overflow-y-auto">
                   {versions.map(v => (
                     <div key={v.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl flex justify-between items-center text-xs">
-                      <div>
+                      <div className="truncate pr-2">
                         <span className="font-mono font-extrabold text-accent-primary mr-2">v{v.version_number}</span>
                         <span className="text-text-muted">{new Date(v.uploaded_at).toLocaleDateString()}</span>
-                        {v.notes && <p className="text-[11px] text-text-secondary mt-0.5 italic">{v.notes}</p>}
+                        {v.notes && <p className="text-[11px] text-text-secondary mt-0.5 italic truncate">{v.notes}</p>}
                       </div>
                       <a
                         href={v.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-accent-primary hover:underline font-semibold"
+                        className="text-accent-primary hover:underline font-semibold shrink-0"
                       >
                         Download
                       </a>
@@ -235,7 +234,7 @@ export default function DesignFilesPage() {
                   ) : (
                     reviews.map(r => (
                       <div key={r.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl text-xs space-y-1">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                           <span className="font-mono text-[10px] text-text-muted">Ver: v{r.version_number}</span>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             r.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' : 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30'
@@ -252,11 +251,13 @@ export default function DesignFilesPage() {
               </div>
             </div>
           ) : (
-            <EmptyState
-              icon={FileCode}
-              title="No File Selected"
-              description="Select a design file from the directory table on the left to inspect version history, download drawings, and view review logs."
-            />
+            <div className="text-center py-6">
+              <EmptyState
+                icon={FileCode}
+                title="No File Selected"
+                description="Select a design file from the directory table on the left to inspect version history, download drawings, and view review logs."
+              />
+            </div>
           )}
         </div>
       </div>
@@ -270,44 +271,44 @@ export default function DesignFilesPage() {
       >
         <form onSubmit={handleUploadFileSubmit} className="space-y-4">
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Design Title *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Design Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               placeholder="E.g., Component layout schematics"
               required
             />
           </div>
 
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Project Reference</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Project Reference</label>
             <input
               type="text"
               value={projectRef}
               onChange={(e) => setProjectRef(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
               placeholder="E.g., PRJ-2026-X"
             />
           </div>
 
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Description</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none focus:border-accent-primary"
               placeholder="Engineering file details..."
             />
           </div>
 
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Select File (PDF, PNG, JPG, DWG - Max 20MB) *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Select File (PDF, PNG, JPG, DWG - Max 20MB) *</label>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none focus:border-accent-primary"
               accept=".pdf,.png,.jpg,.jpeg,.dwg"
               required
             />
@@ -340,22 +341,22 @@ export default function DesignFilesPage() {
       >
         <form onSubmit={handleUploadVersionSubmit} className="space-y-4">
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Version Notes / Revision Remarks *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Version Notes / Revision Remarks *</label>
             <textarea
               value={versionNotes}
               onChange={(e) => setVersionNotes(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-24 focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-24 focus:outline-none focus:border-accent-primary"
               placeholder="E.g., Added component dimensions, refined connectors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-text-secondary font-semibold mb-1 text-xs">Select Revision File (Max 20MB) *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">Select Revision File (Max 20MB) *</label>
             <input
               type="file"
               onChange={(e) => setVersionFile(e.target.files[0])}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none"
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none focus:border-accent-primary"
               accept=".pdf,.png,.jpg,.jpeg,.dwg"
               required
             />

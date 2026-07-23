@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FileText } from 'lucide-react';
 import {
   getLeaveApplications,
   getLeaveTypes,
@@ -8,6 +9,10 @@ import {
   getLeaveBalance,
   getEmployees
 } from '../../api/hrApi';
+import PageHeader from '../../components/PageHeader';
+import Modal from '../../components/Modal';
+import EmptyState from '../../components/EmptyState';
+import Table from '../../components/Table';
 
 export default function LeavePage() {
   const [activeTab, setActiveTab] = useState('applications');
@@ -136,28 +141,96 @@ export default function LeavePage() {
     return Math.ceil(Math.abs(t - f) / (1000 * 60 * 60 * 24)) + 1;
   };
 
-  return (
-    <div className="p-6 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">Leave Management</h1>
-          <p className="text-slate-400 text-sm mt-1">Review leave applications, manage leave allocation rules, and check remaining balances.</p>
-        </div>
-      </div>
+  const applicationColumns = [
+    {
+      key: 'employee_name',
+      label: 'Employee',
+      render: (app) => <span className="font-semibold text-text-primary">{app.employee_name}</span>
+    },
+    {
+      key: 'leave_type_name',
+      label: 'Leave Type',
+      render: (app) => <span className="text-accent-primary font-medium">{app.leave_type_name}</span>
+    },
+    {
+      key: 'from_date',
+      label: 'From',
+      render: (app) => <span className="text-text-secondary">{new Date(app.from_date).toLocaleDateString()}</span>
+    },
+    {
+      key: 'to_date',
+      label: 'To',
+      render: (app) => <span className="text-text-secondary">{new Date(app.to_date).toLocaleDateString()}</span>
+    },
+    {
+      key: 'days',
+      label: 'Days',
+      render: (app) => <span className="font-mono font-semibold text-text-primary text-center block">{calculateDays(app.from_date, app.to_date)}</span>
+    },
+    {
+      key: 'reason',
+      label: 'Reason',
+      render: (app) => <span className="text-text-muted italic max-w-xs truncate block" title={app.reason}>{app.reason}</span>
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (app) => (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+          app.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
+          app.status === 'Rejected' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
+          'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
+        }`}>
+          {app.status}
+        </span>
+      )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (app) => (
+        app.status === 'Pending' ? (
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={() => handleApprove(app.id)}
+              className="px-2.5 py-1 bg-accent-success hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+            >
+              Approve
+            </button>
+            <button
+              onClick={() => handleOpenReject(app.id)}
+              className="px-2.5 py-1 bg-accent-danger hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+            >
+              Reject
+            </button>
+          </div>
+        ) : (
+          <span className="text-text-muted text-xs">—</span>
+        )
+      )
+    }
+  ];
 
-      {error && <div className="mb-4 p-3 bg-red-950/80 border border-red-500/50 rounded-lg text-red-200 text-sm">{error}</div>}
-      {success && <div className="mb-4 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-200 text-sm">{success}</div>}
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+      <PageHeader
+        title="Leave Management"
+        description="Review leave applications, manage leave allocation rules, and check remaining balances."
+      />
+
+      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
+      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-700 mb-6 gap-2">
+      <div className="flex border-b border-border-color mb-6 gap-2">
         {['applications', 'types', 'balances'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`py-2 px-4 font-bold border-b-2 capitalize transition-all ${
+            className={`py-2.5 px-5 font-bold text-sm border-b-2 capitalize transition-all rounded-t-xl ${
               activeTab === tab 
-                ? 'border-rose-500 text-rose-400 bg-rose-500/5' 
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-accent-primary text-accent-primary bg-accent-primary/10' 
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             {tab}
@@ -167,106 +240,56 @@ export default function LeavePage() {
 
       {activeTab === 'applications' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
             <input
               type="checkbox"
               id="pending-only"
               checked={pendingOnly}
               onChange={(e) => setPendingOnly(e.target.checked)}
-              className="w-4 h-4 bg-slate-900 border-slate-700 rounded text-rose-600 focus:ring-rose-500"
+              className="w-4 h-4 rounded border-border-color text-accent-primary focus:ring-accent-primary"
             />
-            <label htmlFor="pending-only" className="text-slate-300 font-semibold text-sm">Show Pending Only</label>
+            <label htmlFor="pending-only" className="text-text-primary font-semibold text-xs cursor-pointer">Show Pending Applications Only</label>
           </div>
 
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
-            {loading ? (
-              <div className="p-8 text-center text-slate-400">Loading applications...</div>
-            ) : applications.length === 0 ? (
-              <div className="p-8 text-center text-slate-400">No leave applications found.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-700 bg-slate-800/70 text-slate-300 font-semibold text-sm">
-                      <th className="p-4">Employee</th>
-                      <th className="p-4">Leave Type</th>
-                      <th className="p-4">From</th>
-                      <th className="p-4">To</th>
-                      <th className="p-4 text-center">Days</th>
-                      <th className="p-4">Reason</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700/50 text-sm">
-                    {applications.map((app) => (
-                      <tr key={app.id} className="hover:bg-slate-800/40 text-slate-300 transition-colors">
-                        <td className="p-4 font-semibold text-white">{app.employee_name}</td>
-                        <td className="p-4 text-rose-400 font-medium">{app.leave_type_name}</td>
-                        <td className="p-4">{new Date(app.from_date).toLocaleDateString()}</td>
-                        <td className="p-4">{new Date(app.to_date).toLocaleDateString()}</td>
-                        <td className="p-4 text-center font-mono font-semibold">{calculateDays(app.from_date, app.to_date)}</td>
-                        <td className="p-4 text-slate-400 italic max-w-xs truncate" title={app.reason}>{app.reason}</td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            app.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-300' :
-                            app.status === 'Rejected' ? 'bg-red-500/20 text-red-300' :
-                            'bg-amber-500/20 text-amber-300'
-                          }`}>
-                            {app.status}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          {app.status === 'Pending' ? (
-                            <div className="flex gap-2 justify-center">
-                              <button
-                                onClick={() => handleApprove(app.id)}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-xs text-white font-medium"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleOpenReject(app.id)}
-                                className="px-2.5 py-1 bg-red-600 hover:bg-red-500 rounded text-xs text-white font-medium"
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-slate-500 text-xs">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          {applications.length === 0 && !loading ? (
+            <EmptyState
+              icon={FileText}
+              title="No Leave Applications Found"
+              description="There are currently no leave requests filed in the system matching your criteria."
+            />
+          ) : (
+            <Table columns={applicationColumns} data={applications} loading={loading} emptyMessage="No leave applications found." />
+          )}
         </div>
       )}
 
       {activeTab === 'types' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-2 min-w-0 bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
             {loading ? (
-              <div className="p-8 text-center text-slate-400">Loading leave types...</div>
+              <div className="p-8 text-center text-text-muted text-sm">Loading leave types...</div>
             ) : leaveTypes.length === 0 ? (
-              <div className="p-8 text-center text-slate-400">No leave types defined.</div>
+              <div className="p-6">
+                <EmptyState
+                  icon={FileText}
+                  title="No Leave Types Defined"
+                  description="Create leave categories (e.g. Paid Leave, Sick Leave) to set annual quota balances."
+                />
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-700 bg-slate-800/70 text-slate-300 font-semibold text-sm">
+                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
                       <th className="p-4">Leave Type Name</th>
                       <th className="p-4 text-right">Days Allowed Per Year</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-700/50 text-sm">
+                  <tbody className="divide-y divide-border-color text-sm">
                     {leaveTypes.map((lt) => (
-                      <tr key={lt.id} className="hover:bg-slate-800/40 text-slate-300">
-                        <td className="p-4 font-semibold text-white">{lt.name}</td>
-                        <td className="p-4 text-right font-mono font-semibold text-slate-300">{lt.days_allowed_per_year} Days</td>
+                      <tr key={lt.id} className="hover:bg-bg-hover text-text-secondary transition-colors">
+                        <td className="p-4 font-semibold text-text-primary">{lt.name}</td>
+                        <td className="p-4 text-right font-mono font-semibold text-accent-primary">{lt.days_allowed_per_year} Days</td>
                       </tr>
                     ))}
                   </tbody>
@@ -275,34 +298,34 @@ export default function LeavePage() {
             )}
           </div>
 
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl h-fit">
-            <h3 className="text-lg font-bold text-white mb-4">Create Leave Type</h3>
+          <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-4">
+            <h3 className="text-base font-bold text-text-primary">Create Leave Type</h3>
             <form onSubmit={handleCreateType} className="space-y-4">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1 text-sm">Type Name</label>
+                <label className="block text-xs font-semibold text-text-secondary mb-1">Type Name *</label>
                 <input
                   type="text"
                   value={typeName}
                   onChange={(e) => setTypeName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm"
+                  className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
                   placeholder="E.g., Sick Leave, Casual Leave"
                   required
                 />
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1 text-sm">Days Allowed Per Year</label>
+                <label className="block text-xs font-semibold text-text-secondary mb-1">Days Allowed Per Year *</label>
                 <input
                   type="number"
                   value={daysAllowed}
                   onChange={(e) => setDaysAllowed(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono text-sm"
+                  className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none focus:border-accent-primary"
                   placeholder="E.g., 12"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-sm transition-all shadow-lg shadow-rose-500/20"
+                className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-bold rounded-xl text-xs transition-all shadow-sm"
               >
                 Create Type
               </button>
@@ -313,12 +336,12 @@ export default function LeavePage() {
 
       {activeTab === 'balances' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-semibold text-slate-300">Select Employee:</label>
+          <div className="flex items-center gap-4 bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
+            <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Select Employee:</label>
             <select
               value={selectedEmpForBalance}
               onChange={(e) => handleEmpBalanceChange(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded-lg py-1.5 px-3 text-white focus:outline-none text-sm"
+              className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm font-semibold focus:outline-none focus:border-accent-primary"
             >
               <option value="">-- Choose Employee --</option>
               {employees.map(e => (
@@ -327,18 +350,18 @@ export default function LeavePage() {
             </select>
           </div>
 
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+          <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
             {!selectedEmpForBalance ? (
-              <div className="p-8 text-center text-slate-500 italic text-sm">Select an employee to view leave balances.</div>
+              <div className="p-8 text-center text-text-muted italic text-sm">Select an employee from the dropdown above to view leave balances.</div>
             ) : loading ? (
-              <div className="p-8 text-center text-slate-400">Loading balances...</div>
+              <div className="p-8 text-center text-text-muted text-sm">Loading balances...</div>
             ) : balances.length === 0 ? (
-              <div className="p-8 text-center text-slate-400">No leave balances found.</div>
+              <div className="p-8 text-center text-text-muted text-sm">No leave balances found.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-700 bg-slate-800/70 text-slate-300 font-semibold text-sm">
+                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
                       <th className="p-4">Leave Type</th>
                       <th className="p-4 text-center">Year</th>
                       <th className="p-4 text-center">Allocated Days</th>
@@ -346,14 +369,14 @@ export default function LeavePage() {
                       <th className="p-4 text-center">Remaining Days</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-700/50 text-sm">
+                  <tbody className="divide-y divide-border-color text-sm">
                     {balances.map((b) => (
-                      <tr key={b.id} className="hover:bg-slate-800/40 text-slate-300">
-                        <td className="p-4 font-semibold text-white">{b.leave_type_name}</td>
+                      <tr key={b.id} className="hover:bg-bg-hover text-text-secondary transition-colors">
+                        <td className="p-4 font-semibold text-text-primary">{b.leave_type_name}</td>
                         <td className="p-4 text-center font-mono">{b.year}</td>
                         <td className="p-4 text-center font-mono">{b.total_days}</td>
-                        <td className="p-4 text-center font-mono text-amber-400">{b.used_days}</td>
-                        <td className="p-4 text-center font-mono text-emerald-400 font-bold">{b.remaining_days}</td>
+                        <td className="p-4 text-center font-mono text-accent-warning font-semibold">{b.used_days}</td>
+                        <td className="p-4 text-center font-mono text-accent-success font-bold">{b.remaining_days}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -365,44 +388,41 @@ export default function LeavePage() {
       )}
 
       {/* REJECT MODAL */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="border-b border-slate-700 p-4 bg-slate-900/50 flex justify-between items-center">
-              <h3 className="text-md font-bold text-white font-sans">Reject Leave Application</h3>
-              <button onClick={() => setShowRejectModal(false)} className="text-slate-400 hover:text-white">✕</button>
-            </div>
-            <form onSubmit={handleReject} className="p-6 space-y-4">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-2 text-sm">Provide Reason/Remark for Rejection</label>
-                <textarea
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-red-500 transition-all h-24 text-sm"
-                  placeholder="E.g., Operational requirements or insufficient staff coverage"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setShowRejectModal(false)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-medium text-xs"
-                >
-                  Confirm Rejection
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        title="Reject Leave Application"
+        size="md"
+      >
+        <form onSubmit={handleReject} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-text-secondary mb-1.5">Provide Reason/Remark for Rejection *</label>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="w-full bg-bg-secondary border border-border-color rounded-xl p-3 text-text-primary focus:outline-none focus:border-accent-primary h-24 text-xs"
+              placeholder="E.g., Operational requirements or insufficient staff coverage"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setShowRejectModal(false)}
+              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-accent-danger hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+            >
+              Confirm Rejection
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -21,7 +21,7 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 
 | # | Module | Features & Capabilities |
 |---|--------|------------------------|
-| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, user approval workflow, activity audit logs |
+| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, user approval workflow, activity audit logs, inline department management |
 | 2 | **Sales** | Customers, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Collections in ₹ |
 | 3 | **Purchase** | Vendors, Purchase Orders (`po_no`), Approval Workflow, Vendor Invoices, Rejection Tracking |
 | 4 | **Store / Inventory** | Item Master (`item_type`), GRN (`grn_no`), Stock Transactions, Stock Position, Stock Ledger |
@@ -32,7 +32,7 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 | 9 | **Dispatch** | Packing Slips (`packing_slip_no`), Delivery Challans (`challan_no`), Transport Details, POD Upload |
 | 10 | **HR & Self-Service** | Employee Directory, User-Employee Linkage, Attendance Matrix, Leave Applications & Quotas, Self-Service |
 | 11 | **Design** | File Versioning (CAD/PDF), Design Kanban Tasks, Review & Approval Workflows |
-| 12 | **Dashboard** | Real-time KPI Cards in ₹, Sales Trend Analytics, Inventory Pie Breakdown, Activity Feed |
+| 12 | **Dashboard** | Dynamic real-time KPI Cards in ₹, Month-over-Month (MoM) live trend calculations, Sales Trend Analytics, Inventory Breakdown, Activity Feed |
 | 13 | **Settings** | System-wide settings & company configuration in dual-theme layout |
 
 ---
@@ -40,14 +40,16 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 ## 🎨 Design System & Theme Engine
 
 - **Dual-Theme Support**: Instant switching between dark mode and light mode with an interactive Sun/Moon toggle button, OS color preference detection, and `localStorage` persistence.
-- **Precision Left-Rail Status Badges**: High contrast status indicators for document and workflow states.
+- **Dynamic Dashboard KPIs**: Real-time MoM comparison percentage calculation across all 6 operational metrics.
+- **Precision Status Badges**: High contrast status indicators for document and workflow states.
 - **React Portal Modals**: Modals render directly into `document.body` via `createPortal`, guaranteeing full-viewport backdrop coverage with zero clipping seams, capped height (`max-h-[90vh]`), and internal content scrolling.
 - **Indian Rupee (₹ INR)**: Built-in `formatINR` formatter utilizing `en-IN` locale digit grouping (e.g. `₹1,50,000.00`).
 
 ---
 
-## 🔒 Security & Hardening Features
+## 🔒 Security & Safe Pushing Guidelines
 
+- **Environment File Protection**: `.env`, `.env.local`, and sensitive environment files are excluded via `.gitignore`. Never commit API keys or passwords.
 - **XSS Protection**: Tokens stored in memory and `httpOnly`, `Secure`, `SameSite=Strict` cookies. Strict `Content-Security-Policy` active via `helmet`.
 - **Brute-Force Rate Limiting**: Sensitive auth endpoints (`/login`, `/register`) protected via `express-rate-limit` (10 attempts / 15 mins per IP).
 - **MIME & Extension Validation**: File uploads restricted by file extension and actual MIME header verification.
@@ -81,7 +83,7 @@ cd backend
 npm install
 ```
 
-Create `backend/.env`:
+Create `backend/.env` (Copy from `backend/.env.example` if available):
 
 ```env
 PORT=5000
@@ -100,13 +102,9 @@ SUPABASE_URL=https://[YOUR_REF].supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-Database Setup:
-- Run `backend/db/schema.sql` to initialize all database tables.
-- Run `backend/db/migrations/001_add_missing_document_columns.sql` to apply all document number columns & unique indexes.
-
-Seed Admin Account:
+Run Database Migrations:
 ```bash
-node scripts/seedAdmin.js
+node scripts/run_migration.js
 ```
 
 Start Backend:
@@ -128,17 +126,37 @@ The frontend will start at `http://localhost:5173`.
 
 ---
 
+## 📤 Pushing Safely to GitHub
+
+To push your updates safely to GitHub without exposing secrets:
+
+```bash
+# 1. Check status to confirm no sensitive files are tracked
+git status
+
+# 2. Add all tracked changes
+git add .
+
+# 3. Commit with a descriptive message
+git commit -m "feat: complete ERP Nexus deployment with dynamic dashboard KPIs and department management"
+
+# 4. Push safely to GitHub
+git push origin main
+```
+
+---
+
 ## 📁 Project Structure
 
 ```
 ERP-System/
 ├── backend/
-│   ├── controllers/        # Business logic for all 13 modules
-│   ├── db/                 # schema.sql and migrations/
+│   ├── controllers/        # Business logic for all 13 modules (including dynamic dashboard MoM metrics)
+│   ├── db/                 # schema.sql and migrations/ (001 to 006)
 │   ├── middleware/         # auth.js, rbac.js, upload.js, errorHandler.js
 │   ├── models/             # db.js (PostgreSQL pool)
-│   ├── routes/             # Express routers (1:1 mapping with controllers)
-│   ├── scripts/            # Admin seed and schema check scripts
+│   ├── routes/             # Express routers
+│   ├── scripts/            # Admin seed, migration runner, and schema check scripts
 │   └── server.js           # Server entry point
 │
 └── frontend/

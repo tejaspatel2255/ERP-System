@@ -32,6 +32,7 @@ frontend/.vite/
 backend/uploads/
 backend/logs/
 *.log
+.vercel/
 
 # ─────────────────────────────────────────────
 # TESTING & COVERAGE
@@ -44,7 +45,7 @@ coverage/
 # ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-.vscode/*
+.vscode/
 !.vscode/extensions.json
 .idea/
 *.suo

@@ -11,6 +11,7 @@ export const getUsers = async (filters = {}) => {
       params.append(key, filters[key]);
     }
   });
+  params.append('_t', Date.now());
 
   const response = await axiosInstance.get(`/users?${params.toString()}`);
   return response.data;

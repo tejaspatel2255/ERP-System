@@ -62,6 +62,17 @@ async function checkMigrationStatus() {
       console.log('❌ Table doc_number_sequences MISSING!');
     }
 
+    // 4. Check IT Department (Migration 005)
+    console.log('\n--- Migration 005: IT Department Check ---');
+    const deptRes = await db.query(
+      `SELECT id, name FROM departments WHERE name = 'IT'`
+    );
+    if (deptRes.rows.length > 0) {
+      console.log('✅ Department IT EXISTS');
+    } else {
+      console.log('❌ Department IT MISSING!');
+    }
+
     console.log('\n✨ Status check complete.');
   } catch (err) {
     console.error('❌ Check failed with error:', err);

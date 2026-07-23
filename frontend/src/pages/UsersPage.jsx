@@ -13,6 +13,7 @@ import {
   updateUser,
   getRoles,
   getDepartments,
+  createDepartment,
   getUserActivity,
   assignUserRoles,
   getPendingUsers,
@@ -61,6 +62,12 @@ const UsersPage = () => {
     roles: [],
     is_active: true
   });
+
+  // Inline Department Creation State
+  const [isAddingDept, setIsAddingDept] = useState(false);
+  const [newDeptName, setNewDeptName] = useState('');
+  const [creatingDeptLoading, setCreatingDeptLoading] = useState(false);
+  const [previousDeptId, setPreviousDeptId] = useState('');
 
   // Fetch Pending Users
   const fetchPending = useCallback(async () => {
@@ -158,6 +165,8 @@ const UsersPage = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
+    setIsAddingDept(false);
+    setNewDeptName('');
     setFormData({
       name: '',
       email: '',
@@ -202,6 +211,54 @@ const UsersPage = () => {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Handle Department Select Change (Inline Creation Trigger)
+  const handleDepartmentChange = (e) => {
+    const value = e.target.value;
+    if (value === '__add_new__') {
+      setPreviousDeptId(formData.department_id);
+      setIsAddingDept(true);
+      setNewDeptName('');
+    } else {
+      setFormData(prev => ({ ...prev, department_id: value }));
+    }
+  };
+
+  // Create Inline Department
+  const handleCreateInlineDept = async () => {
+    if (!newDeptName.trim()) {
+      return toast.error('Department name is required.');
+    }
+    setCreatingDeptLoading(true);
+    try {
+      const res = await createDepartment({ name: newDeptName.trim() });
+      const deptsRes = await getDepartments();
+      if (deptsRes.success) {
+        setDepartments(deptsRes.departments);
+      }
+      const createdId = res.department?.id || res.id;
+      if (createdId) {
+        setFormData(prev => ({ ...prev, department_id: createdId }));
+      }
+      setIsAddingDept(false);
+      setNewDeptName('');
+      toast.success('Department created successfully!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create department.');
+    } finally {
+      setCreatingDeptLoading(false);
+    }
+  };
+
+  // Cancel Inline Department Creation
+  const handleCancelInlineDept = () => {
+    setIsAddingDept(false);
+    setNewDeptName('');
+    setFormData(prev => ({
+      ...prev,
+      department_id: previousDeptId || (departments[0]?.id || '')
     }));
   };
 
@@ -542,18 +599,50 @@ const UsersPage = () => {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Department</label>
-            <select
-              name="department_id"
-              required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-              value={formData.department_id}
-              onChange={handleInputChange}
-            >
-              <option value="" disabled>Select Department</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
+            {!isAddingDept ? (
+              <select
+                name="department_id"
+                required
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                value={formData.department_id}
+                onChange={handleDepartmentChange}
+              >
+                <option value="" disabled>Select Department</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                ))}
+                {hasPermission('auth', 'create') && (
+                  <option value="__add_new__">+ Add New Department...</option>
+                )}
+              </select>
+            ) : (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="text"
+                  placeholder="New Department Name"
+                  className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  value={newDeptName}
+                  onChange={(e) => setNewDeptName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateInlineDept}
+                  disabled={creatingDeptLoading}
+                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {creatingDeptLoading ? 'Creating...' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelInlineDept}
+                  disabled={creatingDeptLoading}
+                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
 
           {/* User Roles Selection */}

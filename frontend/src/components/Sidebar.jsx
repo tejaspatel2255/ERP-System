@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useRole } from '../context/RoleContext';
 import { getStockAlerts } from '../api/storeApi';
+import Logo from './Logo';
 import {
   LayoutDashboard,
   Users,
@@ -252,15 +253,8 @@ export default function Sidebar({ open, onClose }) {
   // 1. Mobile Sidebar Render (Always 240px width drawer slide-in)
   const mobileSidebarContent = (
     <div className="flex h-full w-[240px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs">
-            EN
-          </div>
-          <span className="text-text-primary font-black tracking-wide text-lg">
-            ERP <span className="text-accent-primary">Nexus</span>
-          </span>
-        </div>
+      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
+        <Logo size="sm" showText={true} />
         <button
           onClick={onClose}
           className="rounded-lg p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
@@ -310,20 +304,11 @@ export default function Sidebar({ open, onClose }) {
       }`}
     >
       {/* Top Header */}
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
+      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-3.5">
         {!collapsed ? (
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs shadow-xs">
-              EN
-            </div>
-            <span className="text-text-primary font-black tracking-wider text-lg">
-              ERP <span className="text-accent-primary">Nexus</span>
-            </span>
-          </div>
+          <Logo size="sm" showText={true} />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary text-white font-black text-xs mx-auto shadow-xs">
-            EN
-          </div>
+          <Logo size="sm" showText={false} className="mx-auto" />
         )}
 
         {/* Desktop Collapse Arrow Button */}

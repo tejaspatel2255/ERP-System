@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Clock, Sun, Moon } from 'lucide-react';
 
+import Logo from '../components/Logo';
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -48,11 +50,11 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md rounded-3xl border border-border-color bg-bg-secondary p-8 shadow-brand transition-all">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-primary text-white text-xl font-black shadow-md">
-            EN
+          <div className="flex justify-center mb-4">
+            <Logo size="lg" showText={false} />
           </div>
           <h1 className="text-2xl font-black text-text-primary">Welcome back</h1>
-          <p className="mt-1.5 text-xs text-text-muted">Sign in to access your Hina Industries ERP workspace.</p>
+          <p className="mt-1.5 text-xs text-text-muted">Sign in to access your ERP Nexus workspace.</p>
         </div>
 
         {pendingApproval && (

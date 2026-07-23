@@ -8,44 +8,60 @@ export const getSummary = async (req, res, next) => {
       || (req.user?.permissions || []).some((perm) => perm.module_name === 'hr' && perm.action === 'approve');
 
     const queries = [
-      // 1. Sales
+      // 1. Sales (Current month vs Previous month)
       db.query(`
-        SELECT COALESCE(SUM(total_amount), 0)::numeric AS total
+        SELECT 
+          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE) THEN total_amount ELSE 0 END), 0)::numeric AS current_total,
+          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND invoice_date < date_trunc('month', CURRENT_DATE) THEN total_amount ELSE 0 END), 0)::numeric AS last_total
         FROM invoices
         WHERE status = 'Paid'
-          AND invoice_date >= date_trunc('month', CURRENT_DATE)
-      `).catch(() => ({ rows: [{ total: 0 }] })),
-      // 2. POs
+      `).catch(() => ({ rows: [{ current_total: 0, last_total: 0 }] })),
+
+      // 2. Purchase Orders
       db.query(`
-        SELECT COUNT(*)::int AS total
+        SELECT 
+          COUNT(*) FILTER (WHERE approval_status IN ('Pending', 'Approved') AND status NOT IN ('Completed', 'Closed', 'Cancelled'))::int AS current_open,
+          COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE))::int AS created_this_month,
+          COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND created_at < date_trunc('month', CURRENT_DATE))::int AS created_last_month
         FROM purchase_orders
-        WHERE approval_status IN ('Pending', 'Approved') AND status NOT IN ('Completed', 'Closed', 'Cancelled')
-      `).catch(() => ({ rows: [{ total: 0 }] })),
-      // 3. Stock
+      `).catch(() => ({ rows: [{ current_open: 0, created_this_month: 0, created_last_month: 0 }] })),
+
+      // 3. Low Stock Items
       db.query(`
-        SELECT COUNT(*)::int AS total
+        SELECT 
+          COUNT(*) FILTER (WHERE reorder_level > 0 AND current_stock <= reorder_level)::int AS low_stock,
+          COUNT(*)::int AS total_items
         FROM items
-        WHERE reorder_level > 0 AND current_stock <= reorder_level
-      `).catch(() => ({ rows: [{ total: 0 }] })),
+      `).catch(() => ({ rows: [{ low_stock: 0, total_items: 0 }] })),
+
       // 4. Work Orders
       db.query(`
-        SELECT COUNT(*)::int AS total
+        SELECT 
+          COUNT(*) FILTER (WHERE status NOT IN ('Completed', 'Closed', 'Cancelled'))::int AS current_open,
+          COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE))::int AS created_this_month,
+          COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND created_at < date_trunc('month', CURRENT_DATE))::int AS created_last_month
         FROM work_orders
-        WHERE status NOT IN ('Completed', 'Closed', 'Cancelled')
-      `).catch(() => ({ rows: [{ total: 0 }] })),
-      // 5. QA
+      `).catch(() => ({ rows: [{ current_open: 0, created_this_month: 0, created_last_month: 0 }] })),
+
+      // 5. QA Approvals
       db.query(`
-        SELECT COUNT(*)::int AS total
+        SELECT 
+          COUNT(*) FILTER (WHERE approval_status = 'Pending' AND result <> 'Pending')::int AS pending_count,
+          COUNT(*) FILTER (WHERE test_date >= date_trunc('month', CURRENT_DATE))::int AS tested_this_month,
+          COUNT(*) FILTER (WHERE test_date >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND test_date < date_trunc('month', CURRENT_DATE))::int AS tested_last_month
         FROM qa_tests
-        WHERE approval_status = 'Pending' AND result <> 'Pending'
-      `).catch(() => ({ rows: [{ total: 0 }] })),
-      // 6. Maintenance
+      `).catch(() => ({ rows: [{ pending_count: 0, tested_this_month: 0, tested_last_month: 0 }] })),
+
+      // 6. Maintenance Issues
       db.query(`
-        SELECT COUNT(*)::int AS total
+        SELECT 
+          COUNT(*) FILTER (WHERE status <> 'Closed')::int AS open_count,
+          COUNT(*) FILTER (WHERE reported_date >= date_trunc('month', CURRENT_DATE))::int AS reported_this_month,
+          COUNT(*) FILTER (WHERE reported_date >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND reported_date < date_trunc('month', CURRENT_DATE))::int AS reported_last_month
         FROM issue_logs
-        WHERE status <> 'Closed'
-      `).catch(() => ({ rows: [{ total: 0 }] })),
-      // 7. Leave
+      `).catch(() => ({ rows: [{ open_count: 0, reported_this_month: 0, reported_last_month: 0 }] })),
+
+      // 7. Leave Applications
       (canSeeLeave ? db.query(`
         SELECT COUNT(*)::int AS total
         FROM leave_applications
@@ -55,20 +71,63 @@ export const getSummary = async (req, res, next) => {
 
     const results = await Promise.allSettled(queries);
 
-    const getValue = (result, key = 'total') => {
-      if (result.status === 'fulfilled' && result.value && result.value.rows && result.value.rows[0]) {
-        return Number(result.value.rows[0][key] || 0);
+    const getRow = (idx) => {
+      if (results[idx].status === 'fulfilled' && results[idx].value?.rows?.[0]) {
+        return results[idx].value.rows[0];
       }
-      return 0;
+      return {};
     };
 
-    const salesThisMonth = getValue(results[0]);
-    const openPurchaseOrders = getValue(results[1]);
-    const lowStockItems = getValue(results[2]);
-    const openWorkOrders = getValue(results[3]);
-    const pendingQAApprovals = getValue(results[4]);
-    const openMaintenanceIssues = getValue(results[5]);
-    const pendingLeaveApplications = getValue(results[6]);
+    const calcTrend = (curr, prev) => {
+      const c = Number(curr || 0);
+      const p = Number(prev || 0);
+      if (p === 0) {
+        if (c > 0) return { trend: '+100%', trendUp: true };
+        return { trend: '0%', trendUp: true };
+      }
+      const pct = ((c - p) / p) * 100;
+      const formatted = (pct > 0 ? '+' : '') + pct.toFixed(1) + '%';
+      return { trend: formatted, trendUp: pct >= 0 };
+    };
+
+    const r0 = getRow(0);
+    const salesThisMonth = Number(r0.current_total || 0);
+    const salesLastMonth = Number(r0.last_total || 0);
+    const salesTrend = calcTrend(salesThisMonth, salesLastMonth);
+
+    const r1 = getRow(1);
+    const openPurchaseOrders = Number(r1.current_open || 0);
+    const poTrend = calcTrend(r1.created_this_month, r1.created_last_month);
+
+    const r2 = getRow(2);
+    const lowStockItems = Number(r2.low_stock || 0);
+    const totalItems = Number(r2.total_items || 0);
+    const stockPct = totalItems > 0 ? ((lowStockItems / totalItems) * 100).toFixed(1) + '%' : '0%';
+    const stockTrend = { trend: stockPct, trendUp: lowStockItems === 0 };
+
+    const r3 = getRow(3);
+    const openWorkOrders = Number(r3.current_open || 0);
+    const woTrend = calcTrend(r3.created_this_month, r3.created_last_month);
+
+    const r4 = getRow(4);
+    const pendingQAApprovals = Number(r4.pending_count || 0);
+    const qaTrend = calcTrend(r4.tested_this_month, r4.tested_last_month);
+
+    const r5 = getRow(5);
+    const openMaintenanceIssues = Number(r5.open_count || 0);
+    const maintenanceTrend = calcTrend(r5.reported_this_month, r5.reported_last_month);
+
+    const r6 = getRow(6);
+    const pendingLeaveApplications = Number(r6.total || 0);
+
+    const trends = {
+      sales_trend: salesTrend,
+      po_trend: poTrend,
+      stock_trend: stockTrend,
+      wo_trend: woTrend,
+      qa_trend: qaTrend,
+      maintenance_trend: maintenanceTrend
+    };
 
     return res.status(200).json({
       success: true,
@@ -79,6 +138,7 @@ export const getSummary = async (req, res, next) => {
       pendingQAApprovals,
       openMaintenanceIssues,
       pendingLeaveApplications,
+      trends,
       summary: {
         salesThisMonth,
         openPurchaseOrders,
@@ -93,7 +153,8 @@ export const getSummary = async (req, res, next) => {
         open_work_orders: openWorkOrders,
         pending_qa_approvals: pendingQAApprovals,
         open_maintenance_issues: openMaintenanceIssues,
-        pending_leave_applications: pendingLeaveApplications
+        pending_leave_applications: pendingLeaveApplications,
+        trends
       }
     });
   } catch (error) {

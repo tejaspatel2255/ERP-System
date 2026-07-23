@@ -8,12 +8,12 @@ import StatusBadge from '../components/StatusBadge';
 import { formatINR } from '../utils/formatCurrency';
 
 const kpiConfig = [
-  { key: 'total_sales_this_month', label: 'Sales This Month', icon: DollarSign, color: 'from-indigo-500 to-accent-secondary', trend: '+14.2%', trendUp: true, isCurrency: true },
-  { key: 'open_purchase_orders', label: 'Open Purchase Orders', icon: ClipboardList, color: 'from-accent-warning to-amber-500', trend: '-2.4%', trendUp: false },
-  { key: 'low_stock_items', label: 'Low Stock Items', icon: PackageSearch, color: 'from-accent-danger to-rose-500', trend: '+4%', trendUp: true },
-  { key: 'open_work_orders', label: 'Open Work Orders', icon: Factory, color: 'from-accent-primary to-blue-500', trend: '+8.3%', trendUp: true },
-  { key: 'pending_qa_approvals', label: 'Pending QA Approvals', icon: Activity, color: 'from-fuchsia-500 to-purple-600', trend: '0%', trendUp: true },
-  { key: 'open_maintenance_issues', label: 'Open Maintenance Issues', icon: Boxes, color: 'from-accent-success to-teal-500', trend: '-12.5%', trendUp: false }
+  { key: 'total_sales_this_month', trendKey: 'sales_trend', label: 'Sales This Month', icon: DollarSign, color: 'from-indigo-500 to-accent-secondary', isCurrency: true },
+  { key: 'open_purchase_orders', trendKey: 'po_trend', label: 'Open Purchase Orders', icon: ClipboardList, color: 'from-accent-warning to-amber-500' },
+  { key: 'low_stock_items', trendKey: 'stock_trend', label: 'Low Stock Items', icon: PackageSearch, color: 'from-accent-danger to-rose-500' },
+  { key: 'open_work_orders', trendKey: 'wo_trend', label: 'Open Work Orders', icon: Factory, color: 'from-accent-primary to-blue-500' },
+  { key: 'pending_qa_approvals', trendKey: 'qa_trend', label: 'Pending QA Approvals', icon: Activity, color: 'from-fuchsia-500 to-purple-600' },
+  { key: 'open_maintenance_issues', trendKey: 'maintenance_trend', label: 'Open Maintenance Issues', icon: Boxes, color: 'from-accent-success to-teal-500' }
 ];
 
 const quickLinks = [
@@ -91,6 +91,8 @@ export default function DashboardPage() {
               : rawValue.toLocaleString()
             : '0';
 
+          const trendInfo = summary?.trends?.[item.trendKey] || { trend: '0%', trendUp: true };
+
           return (
             <div
               key={item.key}
@@ -105,10 +107,10 @@ export default function DashboardPage() {
                       <Icon size={22} className="stroke-[2]" />
                     </div>
                     <div className={`flex items-center gap-0.5 text-xs font-bold rounded-full px-2 py-0.5 ${
-                      item.trendUp ? 'text-accent-success bg-accent-success/10' : 'text-accent-danger bg-accent-danger/10'
+                      trendInfo.trendUp ? 'text-accent-success bg-accent-success/10' : 'text-accent-danger bg-accent-danger/10'
                     }`}>
-                      {item.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                      <span>{item.trend}</span>
+                      {trendInfo.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                      <span>{trendInfo.trend}</span>
                     </div>
                   </div>
                   

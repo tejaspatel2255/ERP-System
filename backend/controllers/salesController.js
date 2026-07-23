@@ -1,4 +1,4 @@
-import db from '../models/db.js';
+import db, { pool } from '../models/db.js';
 import { logActivity } from './userController.js';
 
 const GSTIN_REGEX = /^[0-9]{2}[A-Z0-9]{13}$/i;
@@ -772,10 +772,16 @@ export const recordPayment = async (req, res, next) => {
     return res.status(400).json({ success: false, message: 'Payment amount must be greater than zero.' });
   }
 
+  const client = await pool.connect();
   try {
-    // 1. Fetch Invoice
-    const invRes = await db.query(`SELECT * FROM invoices WHERE id = $1`, [invoice_id]);
-    if (invRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Invoice not found.' });
+    await client.query('BEGIN');
+
+    // 1. SELECT * FROM invoices WHERE id = $1 FOR UPDATE
+    const invRes = await client.query(`SELECT * FROM invoices WHERE id = $1 FOR UPDATE`, [invoice_id]);
+    if (invRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Invoice not found.' });
+    }
     
     const invoice = invRes.rows[0];
     const totalAmount = parseFloat(invoice.total_amount);
@@ -783,6 +789,7 @@ export const recordPayment = async (req, res, next) => {
     
     const nextPaid = prevPaid + payAmt;
     if (nextPaid > totalAmount) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'Payment exceeds outstanding invoice amount.' });
     }
     let nextStatus = 'Partially Paid';
@@ -796,28 +803,33 @@ export const recordPayment = async (req, res, next) => {
       VALUES ($1, CURRENT_DATE, $2, $3, $4, $5)
       RETURNING *
     `;
-    const pRes = await db.query(insertPaymentText, [invoice_id, payAmt, payment_mode, reference_no, notes]);
+    const pRes = await client.query(insertPaymentText, [invoice_id, payAmt, payment_mode, reference_no, notes]);
     const newPayment = pRes.rows[0];
 
     // 3. Update Invoice Header paid amount & status
-    await db.query(`
+    await client.query(`
       UPDATE invoices
       SET paid_amount = $1, status = $2, updated_at = NOW()
       WHERE id = $3
     `, [nextPaid, nextStatus, invoice_id]);
 
     // 4. Decrease Customer outstanding balance
-    await db.query(`
+    await client.query(`
       UPDATE customers
       SET balance = balance - $1, updated_at = NOW()
       WHERE id = $2
     `, [payAmt, invoice.customer_id]);
 
+    await client.query('COMMIT');
+
     await logActivity(req.user.id, 'RECORD_PAYMENT', 'sales', newPayment.id, req);
 
     return res.status(201).json({ success: true, payment: newPayment });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 

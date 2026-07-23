@@ -204,15 +204,20 @@ const UsersPage = () => {
     });
   };
 
+  // Submitting state for form
+  const [submitting, setSubmitting] = useState(false);
+
   // Submit User creation/edit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name.trim()) return toast.error('Full Name is required.');
-    if (!formData.email.trim()) return toast.error('Email is required.');
+    if (!formData.name?.trim()) return toast.error('Full Name is required.');
+    if (!formData.email?.trim()) return toast.error('Email is required.');
     if (!editingUser && !formData.password) return toast.error('Password is required.');
     if (!editingUser && formData.password.length < 6) return toast.error('Password must be at least 6 characters.');
     if (!formData.department_id) return toast.error('Department selection is required.');
+
+    setSubmitting(true);
 
     try {
       if (editingUser) {
@@ -224,7 +229,11 @@ const UsersPage = () => {
         });
 
         if (formData.roles && Array.isArray(formData.roles)) {
-          await assignUserRoles(editingUser.id, formData.roles);
+          try {
+            await assignUserRoles(editingUser.id, formData.roles);
+          } catch (roleErr) {
+            console.warn('Role assignment warning:', roleErr);
+          }
         }
         toast.success('User updated successfully.');
       } else {
@@ -243,6 +252,8 @@ const UsersPage = () => {
       await fetchUsersList();
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Action failed.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -578,9 +589,10 @@ const UsersPage = () => {
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              disabled={submitting}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-opacity"
             >
-              Save Details
+              {submitting ? 'Saving...' : 'Save Details'}
             </button>
           </div>
         </form>

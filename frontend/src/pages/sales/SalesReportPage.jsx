@@ -60,6 +60,34 @@ const SalesReportPage = () => {
     fetchReportData();
   }, [fetchReportData]);
 
+  const handleExportCSV = () => {
+    const exportData = [];
+
+    // Summary Section
+    exportData.push({ Section: 'SUMMARY', Label: 'Total Invoiced', Amount: summary.totalInvoiced || 0 });
+    exportData.push({ Section: 'SUMMARY', Label: 'Payments Collected', Amount: summary.totalCollected || 0 });
+    exportData.push({ Section: 'SUMMARY', Label: 'Outstanding Credit', Amount: summary.outstanding || 0 });
+    exportData.push({ Section: 'SUMMARY', Label: 'Overdue Balances', Amount: summary.overdue || 0 });
+
+    // Monthly Trends Section
+    monthlyChartData.forEach((m) => {
+      exportData.push({ Section: 'MONTHLY TREND', Label: m.month, Amount: m.sales || 0 });
+    });
+
+    // Top Customers Section
+    topCustomers.forEach((c, idx) => {
+      exportData.push({ Section: `TOP CUSTOMER #${idx + 1}`, Label: c.name, Amount: c.revenue || 0 });
+    });
+
+    if (exportData.length === 0) {
+      toast.error('No sales data available to export.');
+      return;
+    }
+
+    exportToCSV(exportData, `sales-report-${startDate}-to-${endDate}.csv`);
+    toast.success('Sales report exported to CSV successfully.');
+  };
+
   // Columns for Top customers table
   const customerColumns = [
     {
@@ -87,11 +115,9 @@ const SalesReportPage = () => {
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => exportToCSV(topCustomers.map((c) => ({
-                Customer: c.name,
-                Revenue: c.revenue
-              })), `sales-report-${new Date().toISOString().slice(0, 10)}.csv`)}
-              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2.5 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors whitespace-nowrap shrink-0"
+              onClick={handleExportCSV}
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2.5 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               Export CSV
             </button>

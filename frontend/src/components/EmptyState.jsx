@@ -5,7 +5,11 @@ export default function EmptyState({ icon: Icon, title, description, actionLabel
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border-color bg-bg-card/50 px-6 py-12 text-center transition-colors duration-200 shadow-sm">
       {Icon && (
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-bg-secondary text-text-muted border border-border-color shadow-sm">
-          {typeof Icon === 'function' ? <Icon size={26} className="text-text-muted" /> : Icon}
+          {React.isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon size={26} className="text-text-muted" />
+          )}
         </div>
       )}
       <h3 className="text-base font-bold text-text-primary">{title}</h3>

@@ -190,10 +190,15 @@ export const updateUser = async (req, res, next) => {
 
   try {
     const updateText = `
-      UPDATE users
-      SET name = $1, email = $2, department_id = $3, is_active = $4
-      WHERE id = $5
-      RETURNING id, name, email, department_id, is_active
+      WITH updated AS (
+        UPDATE users
+        SET name = $1, email = $2, department_id = $3, is_active = $4
+        WHERE id = $5
+        RETURNING id, name, email, department_id, is_active
+      )
+      SELECT u.id, u.name, u.email, u.department_id, u.is_active, d.name AS department_name
+      FROM updated u
+      LEFT JOIN departments d ON u.department_id = d.id;
     `;
     const result = await db.query(updateText, [name, email, department_id, is_active, id]);
 

@@ -293,12 +293,16 @@ const UsersPage = () => {
 
     try {
       if (editingUser) {
-        await updateUser(editingUser.id, {
+        const updateRes = await updateUser(editingUser.id, {
           name: formData.name,
           email: formData.email,
           department_id: formData.department_id,
           is_active: formData.is_active
         });
+
+        if (updateRes?.success && updateRes?.user) {
+          setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updateRes.user, roles: formData.roles || u.roles } : u));
+        }
 
         if (formData.roles && Array.isArray(formData.roles)) {
           try {

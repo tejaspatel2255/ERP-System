@@ -1,6 +1,6 @@
-import db from '../models/db.js';
+import db, { pool } from '../models/db.js';
 import { logActivity } from './userController.js';
-import { generateDocNumber } from './salesController.js'; // re-use helper
+import { generateDocNumber } from '../utils/generateDocNumber.js';
 
 const PO_APPROVAL_THRESHOLD = parseFloat(process.env.PO_APPROVAL_THRESHOLD) || 10000.00;
 const GSTIN_REGEX = /^[0-9]{2}[A-Z0-9]{13}$/i;
@@ -262,8 +262,11 @@ export const createPurchaseOrder = async (req, res, next) => {
     }
   }
 
+  const client = await pool.connect();
   try {
-    const poNo = await generateDocNumber('PO', 'purchase_orders', 'po_no');
+    await client.query('BEGIN');
+
+    const poNo = await generateDocNumber(client, 'PO');
 
     // Calculate totals server-side
     let grandTotal = 0.00;
@@ -282,22 +285,27 @@ export const createPurchaseOrder = async (req, res, next) => {
       VALUES ($1, $2, CURRENT_DATE, $3, 'Draft', $4, 'Pending')
       RETURNING *
     `;
-    const poResult = await db.query(insertPoText, [poNo, vendor_id, expected_date, grandTotal]);
+    const poResult = await client.query(insertPoText, [poNo, vendor_id, expected_date, grandTotal]);
     const newPO = poResult.rows[0];
 
     // Insert items
     for (const item of computedItems) {
-      await db.query(`
+      await client.query(`
         INSERT INTO purchase_order_items (po_id, item_id, qty, unit_price, line_total)
         VALUES ($1, $2, $3, $4, $5)
       `, [newPO.id, item.item_id, item.qty, item.unit_price, item.line_total]);
     }
 
+    await client.query('COMMIT');
+
     await logActivity(req.user.id, 'CREATE_PURCHASE_ORDER', 'purchase', newPO.id, req);
 
     return res.status(201).json({ success: true, order: newPO });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 

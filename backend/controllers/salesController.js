@@ -1,24 +1,10 @@
 import db, { pool } from '../models/db.js';
 import { logActivity } from './userController.js';
+import { generateDocNumber } from '../utils/generateDocNumber.js';
 
 const GSTIN_REGEX = /^[0-9]{2}[A-Z0-9]{13}$/i;
 
-// Helper to generate sequential Document Numbers
-export const generateDocNumber = async (prefix, tableName, columnName) => {
-  const now = new Date();
-  const yearMonth = now.toISOString().slice(0, 7).replace('-', ''); // YYYYMM
-  
-  // Find count of rows created in the current month
-  const countQuery = `
-    SELECT COUNT(*)::int AS count 
-    FROM ${tableName} 
-    WHERE to_char(created_at, 'YYYYMM') = $1
-  `;
-  const result = await db.query(countQuery, [yearMonth]);
-  const sequenceNum = String(result.rows[0].count + 1).padStart(4, '0');
-  
-  return `${prefix}-${yearMonth}-${sequenceNum}`;
-};
+export { generateDocNumber };
 
 // ==========================================
 // 1. CUSTOMERS
@@ -257,9 +243,12 @@ export const createQuotation = async (req, res, next) => {
     }
   }
 
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     // Generate Document Number
-    const quotationNo = await generateDocNumber('QT', 'quotations', 'quotation_no');
+    const quotationNo = await generateDocNumber(client, 'QT');
 
     // 1. Calculate totals server-side
     let grandTotal = 0.00;
@@ -292,7 +281,7 @@ export const createQuotation = async (req, res, next) => {
       VALUES ($1, $2, $3, $4, 'Draft', $5, $6)
       RETURNING *
     `;
-    const qRes = await db.query(insertQuotationText, [
+    const qRes = await client.query(insertQuotationText, [
       quotationNo,
       customer_id,
       date || new Date().toISOString().slice(0, 10),
@@ -304,17 +293,22 @@ export const createQuotation = async (req, res, next) => {
 
     // 3. Insert Quotation Items
     for (const item of computedItems) {
-      await db.query(`
+      await client.query(`
         INSERT INTO quotation_items (quotation_id, item_id, qty, unit_price, discount, tax_pct, line_total)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
       `, [newQuotation.id, item.item_id, item.qty, item.unit_price, item.discount, item.tax_pct, item.line_total]);
     }
 
+    await client.query('COMMIT');
+
     await logActivity(req.user.id, 'CREATE_QUOTATION', 'sales', newQuotation.id, req);
 
     return res.status(201).json({ success: true, quotation: newQuotation });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 
@@ -437,18 +431,25 @@ export const updateQuotationStatus = async (req, res, next) => {
 export const convertQuotationToOrder = async (req, res, next) => {
   const { id } = req.params; // Quotation ID
 
+  const client = await pool.connect();
   try {
-    // 1. Fetch quotation
-    const qRes = await db.query(`SELECT * FROM quotations WHERE id = $1`, [id]);
-    if (qRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Quotation not found.' });
+    await client.query('BEGIN');
+
+    // 1. Fetch quotation FOR UPDATE
+    const qRes = await client.query(`SELECT * FROM quotations WHERE id = $1 FOR UPDATE`, [id]);
+    if (qRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Quotation not found.' });
+    }
     
     const quotation = qRes.rows[0];
     if (quotation.status !== 'Approved') {
+      await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'Only Approved quotations can be converted to Sales Orders.' });
     }
 
     // Generate SO document number
-    const orderNo = await generateDocNumber('SO', 'sales_orders', 'order_no');
+    const orderNo = await generateDocNumber(client, 'SO');
 
     // 2. Insert Sales Order
     const insertSOText = `
@@ -456,26 +457,31 @@ export const convertQuotationToOrder = async (req, res, next) => {
       VALUES ($1, $2, $3, CURRENT_DATE, 'Pending', $4)
       RETURNING *
     `;
-    const soRes = await db.query(insertSOText, [id, quotation.customer_id, orderNo, quotation.total_amount]);
+    const soRes = await client.query(insertSOText, [id, quotation.customer_id, orderNo, quotation.total_amount]);
     const newOrder = soRes.rows[0];
 
     // 3. Copy items
-    const qItemsRes = await db.query(`SELECT * FROM quotation_items WHERE quotation_id = $1`, [id]);
+    const qItemsRes = await client.query(`SELECT * FROM quotation_items WHERE quotation_id = $1`, [id]);
     for (const qItem of qItemsRes.rows) {
-      await db.query(`
+      await client.query(`
         INSERT INTO sales_order_items (order_id, item_id, qty, unit_price, line_total)
         VALUES ($1, $2, $3, $4, $5)
       `, [newOrder.id, qItem.item_id, qItem.qty, qItem.unit_price, qItem.line_total]);
     }
 
     // 4. Update Quotation Status to indicate it was converted
-    await db.query(`UPDATE quotations SET status = 'Accepted', updated_at = NOW() WHERE id = $1`, [id]);
+    await client.query(`UPDATE quotations SET status = 'Accepted', updated_at = NOW() WHERE id = $1`, [id]);
+
+    await client.query('COMMIT');
 
     await logActivity(req.user.id, 'CONVERT_QUOTATION_TO_ORDER', 'sales', newOrder.id, req);
 
     return res.status(201).json({ success: true, order: newOrder });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 
@@ -650,21 +656,28 @@ export const createInvoiceFromOrder = async (req, res, next) => {
   const { order_id } = req.body;
   if (!order_id) return res.status(400).json({ success: false, message: 'order_id is required.' });
 
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     // 1. Fetch Order details
-    const orderRes = await db.query(`SELECT * FROM sales_orders WHERE id = $1`, [order_id]);
-    if (orderRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Sales Order not found.' });
+    const orderRes = await client.query(`SELECT * FROM sales_orders WHERE id = $1`, [order_id]);
+    if (orderRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Sales Order not found.' });
+    }
 
     const order = orderRes.rows[0];
 
     // Check if invoice already exists for this order
-    const existingInv = await db.query(`SELECT id FROM invoices WHERE order_id = $1`, [order_id]);
+    const existingInv = await client.query(`SELECT id FROM invoices WHERE order_id = $1`, [order_id]);
     if (existingInv.rows.length > 0) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'An invoice has already been generated for this Sales Order.' });
     }
 
     // Generate invoice document number
-    const invoiceNo = await generateDocNumber('INV', 'invoices', 'invoice_no');
+    const invoiceNo = await generateDocNumber(client, 'INV');
     
     // Set due date: today + 30 days
     const dueDate = new Date();
@@ -676,21 +689,26 @@ export const createInvoiceFromOrder = async (req, res, next) => {
       VALUES ($1, $2, $3, CURRENT_DATE, $4, 'Unpaid', $5, 0.00)
       RETURNING *
     `;
-    const invRes = await db.query(insertText, [order_id, order.customer_id, invoiceNo, dueDate, order.total_amount]);
+    const invRes = await client.query(insertText, [order_id, order.customer_id, invoiceNo, dueDate, order.total_amount]);
     const newInvoice = invRes.rows[0];
 
     // 3. Update Customer Balance outstanding amount
-    await db.query(`
+    await client.query(`
       UPDATE customers 
       SET balance = balance + $1, updated_at = NOW() 
       WHERE id = $2
     `, [order.total_amount, order.customer_id]);
 
+    await client.query('COMMIT');
+
     await logActivity(req.user.id, 'CREATE_INVOICE', 'sales', newInvoice.id, req);
 
     return res.status(201).json({ success: true, invoice: newInvoice });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 

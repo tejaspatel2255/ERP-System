@@ -1,14 +1,8 @@
 import { query as dbQuery, pool } from '../models/db.js';
 import { logActivity } from './userController.js';
 import { uploadToSupabase } from '../middleware/upload.js';
+import { generateDocNumber } from '../utils/generateDocNumber.js';
 const db = { query: dbQuery, pool };
-
-const genDocNo = async (prefix, table, col) => {
-  const now = new Date();
-  const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const res = await db.query(`SELECT COUNT(*)::int AS cnt FROM ${table} WHERE ${col} LIKE $1`, [`${prefix}-${yyyymm}-%`]);
-  return `${prefix}-${yyyymm}-${String((res.rows[0].cnt || 0) + 1).padStart(4, '0')}`;
-};
 
 // GET /api/dispatch/packing-slips
 export const getPackingSlips = async (req, res, next) => {
@@ -100,7 +94,7 @@ export const createPackingSlip = async (req, res, next) => {
     }
 
     // 3. Create packing slip
-    const psNo = await genDocNo('PS', 'packing_slips', 'packing_slip_no');
+    const psNo = await generateDocNumber(client, 'PS');
     const psRes = await client.query(`
       INSERT INTO packing_slips (order_id, packed_by, notes, packing_slip_no)
       VALUES ($1, $2, $3, $4) RETURNING *
@@ -182,29 +176,40 @@ export const createChallan = async (req, res, next) => {
     return res.status(400).json({ success: false, message: 'packing_slip_id is required.' });
   }
 
+  const client = await db.pool.connect();
   try {
-    const psRes = await db.query(`SELECT order_id FROM packing_slips WHERE id = $1`, [packing_slip_id]);
+    await client.query('BEGIN');
+
+    const psRes = await client.query(`SELECT order_id FROM packing_slips WHERE id = $1`, [packing_slip_id]);
     if (psRes.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ success: false, message: 'Packing slip not found.' });
     }
     const orderId = psRes.rows[0].order_id;
 
     // Check if challan already exists for this packing slip
-    const existing = await db.query(`SELECT id FROM delivery_challans WHERE packing_slip_id = $1`, [packing_slip_id]);
+    const existing = await client.query(`SELECT id FROM delivery_challans WHERE packing_slip_id = $1`, [packing_slip_id]);
     if (existing.rows.length > 0) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'Challan already exists for this Packing Slip.' });
     }
 
-    const dcNo = await genDocNo('DC', 'delivery_challans', 'challan_no');
-    const dcRes = await db.query(`
+    const dcNo = await generateDocNumber(client, 'DC');
+    const dcRes = await client.query(`
       INSERT INTO delivery_challans (packing_slip_id, order_id, challan_date, status, challan_no)
       VALUES ($1, $2, CURRENT_DATE, 'Draft', $3) RETURNING *
     `, [packing_slip_id, orderId, dcNo]);
 
+    await client.query('COMMIT');
     await logActivity(req.user.id, 'CREATE_CHALLAN', 'dispatch', dcRes.rows[0].id, req);
 
     return res.status(201).json({ success: true, challan: dcRes.rows[0] });
-  } catch (e) { next(e); }
+  } catch (e) {
+    await client.query('ROLLBACK');
+    next(e);
+  } finally {
+    client.release();
+  }
 };
 
 // GET /api/dispatch/challans/:id

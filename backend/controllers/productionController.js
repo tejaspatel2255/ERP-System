@@ -1,13 +1,7 @@
 import { query as dbQuery, pool } from '../models/db.js';
 import { logActivity } from './userController.js';
+import { generateDocNumber } from '../utils/generateDocNumber.js';
 const db = { query: dbQuery, pool };
-
-const genDocNo = async (prefix, table, col) => {
-  const now = new Date();
-  const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const res = await db.query(`SELECT COUNT(*)::int AS cnt FROM ${table} WHERE ${col} LIKE $1`, [`${prefix}-${yyyymm}-%`]);
-  return `${prefix}-${yyyymm}-${String((res.rows[0].cnt || 0) + 1).padStart(4, '0')}`;
-};
 
 // BOM
 export const getBOMs = async (req, res, next) => {
@@ -118,9 +112,11 @@ export const getWorkOrders = async (req, res, next) => {
 export const createWorkOrder = async (req, res, next) => {
   const { bom_id, sales_order_id, planned_qty, planned_start, planned_end } = req.body;
   if (!bom_id || !planned_qty || planned_qty <= 0) return res.status(400).json({ success: false, message: 'bom_id and planned_qty > 0 required.' });
+  const client = await db.pool.connect();
   try {
-    const woNo = await genDocNo('WO', 'work_orders', 'wo_no');
-    const bomItemsRes = await db.query(`
+    await client.query('BEGIN');
+    const woNo = await generateDocNumber(client, 'WO');
+    const bomItemsRes = await client.query(`
       SELECT bi.raw_material_id, bi.qty_required, bi.unit, i.name AS material_name, i.item_code, i.current_stock
       FROM bom_items bi LEFT JOIN items i ON bi.raw_material_id = i.id WHERE bi.bom_id = $1
     `, [bom_id]);
@@ -129,13 +125,14 @@ export const createWorkOrder = async (req, res, next) => {
       const available = parseFloat(m.current_stock);
       return { item_id: m.raw_material_id, material_name: m.material_name, item_code: m.item_code, unit: m.unit, required_qty: required, available_qty: available, shortage: Math.max(0, required - available), status: available >= required ? 'OK' : 'Shortage' };
     });
-    const woRes = await db.query(`
+    const woRes = await client.query(`
       INSERT INTO work_orders (wo_no, bom_id, sales_order_id, planned_qty, planned_start, planned_end, status, created_by)
       VALUES ($1,$2,$3,$4,$5,$6,'Pending',$7) RETURNING *
     `, [woNo, bom_id, sales_order_id || null, planned_qty, planned_start || null, planned_end || null, req.user.id]);
+    await client.query('COMMIT');
     await logActivity(req.user.id, 'CREATE_WORK_ORDER', 'production', woRes.rows[0].id, req);
     return res.status(201).json({ success: true, workOrder: woRes.rows[0], materialPlan, hasShortages: materialPlan.some(m => m.status === 'Shortage') });
-  } catch (e) { next(e); }
+  } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 
 export const getWorkOrderById = async (req, res, next) => {

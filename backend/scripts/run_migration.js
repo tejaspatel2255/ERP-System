@@ -6,17 +6,21 @@ import { query, pool } from '../models/db.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function applyMigration() {
-  const migrationPath = path.join(__dirname, '../db/migrations/001_add_missing_document_columns.sql');
-  const sql = fs.readFileSync(migrationPath, 'utf8');
+async function applyMigrations() {
+  const migrationsDir = path.join(__dirname, '../db/migrations');
+  const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
 
   console.log('====================================================');
-  console.log('  RUNNING MIGRATION 001');
+  console.log('  RUNNING MIGRATIONS');
   console.log('====================================================\n');
 
   try {
-    await query(sql);
-    console.log('✔ Migration applied successfully!');
+    for (const file of files) {
+      console.log(`Applying ${file}...`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      await query(sql);
+      console.log(`✔ ${file} applied successfully!`);
+    }
   } catch (err) {
     console.error('✖ Migration failed:', err.message);
   } finally {
@@ -24,4 +28,4 @@ async function applyMigration() {
   }
 }
 
-applyMigration();
+applyMigrations();

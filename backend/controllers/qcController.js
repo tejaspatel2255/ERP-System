@@ -1,13 +1,7 @@
 import { query as dbQuery, pool } from '../models/db.js';
 import { logActivity } from './userController.js';
+import { generateDocNumber } from '../utils/generateDocNumber.js';
 const db = { query: dbQuery, pool };
-
-const genNcrNo = async () => {
-  const now = new Date();
-  const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const res = await db.query(`SELECT COUNT(*)::int AS cnt FROM ncr WHERE ncr_no LIKE $1`, [`NCR-${yyyymm}-%`]);
-  return `NCR-${yyyymm}-${String((res.rows[0].cnt || 0) + 1).padStart(4, '0')}`;
-};
 
 // ==========================================
 // 1. QC RAW MATERIAL
@@ -65,7 +59,7 @@ export const createRawMaterialQC = async (req, res, next) => {
       `, [item_id, rejQty, grn_id, `QC Rejection from GRN`, req.user.id]);
 
       // Auto trigger NCR
-      const ncrNo = await genNcrNo();
+      const ncrNo = await generateDocNumber(client, 'NCR');
       await client.query(`
         INSERT INTO ncr (ncr_no, source_type, source_id, defect_description, status, raised_by)
         VALUES ($1, 'raw', $2, $3, 'Open', $4)
@@ -108,7 +102,7 @@ export const createInProcessQC = async (req, res, next) => {
     const qcId = qcRes.rows[0].id;
 
     if (result === 'Rejected') {
-      const ncrNo = await genNcrNo();
+      const ncrNo = await generateDocNumber(client, 'NCR');
       await client.query(`
         INSERT INTO ncr (ncr_no, source_type, source_id, defect_description, status, raised_by)
         VALUES ($1, 'in_process', $2, $3, 'Open', $4)
@@ -151,7 +145,7 @@ export const createFinalQC = async (req, res, next) => {
     const qcId = qcRes.rows[0].id;
 
     if (result === 'Rejected') {
-      const ncrNo = await genNcrNo();
+      const ncrNo = await generateDocNumber(client, 'NCR');
       await client.query(`
         INSERT INTO ncr (ncr_no, source_type, source_id, defect_description, status, raised_by)
         VALUES ($1, 'final', $2, $3, 'Open', $4)
@@ -190,7 +184,7 @@ export const raiseNCR = async (req, res, next) => {
   const { source_type, source_id, defect_description } = req.body;
   if (!source_type || !source_id || !defect_description?.trim()) return res.status(400).json({ success: false, message: 'source_type, source_id, defect_description required.' });
   try {
-    const ncrNo = await genNcrNo();
+    const ncrNo = await generateDocNumber(db, 'NCR');
     const result = await db.query(`
       INSERT INTO ncr (ncr_no, source_type, source_id, defect_description, raised_by, status)
       VALUES ($1,$2,$3,$4,$5,'Open') RETURNING *

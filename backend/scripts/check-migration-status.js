@@ -51,6 +51,17 @@ async function checkMigrationStatus() {
       console.log('❌ Column users.is_active not found!');
     }
 
+    // 3. Check doc_number_sequences Table
+    console.log('\n--- Migration 004: doc_number_sequences Table Check ---');
+    const tableRes = await db.query(
+      `SELECT table_name FROM information_schema.tables WHERE table_name = 'doc_number_sequences'`
+    );
+    if (tableRes.rows.length > 0) {
+      console.log('✅ Table doc_number_sequences EXISTS');
+    } else {
+      console.log('❌ Table doc_number_sequences MISSING!');
+    }
+
     console.log('\n✨ Status check complete.');
   } catch (err) {
     console.error('❌ Check failed with error:', err);

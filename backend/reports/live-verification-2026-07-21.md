@@ -200,11 +200,11 @@ app.use(cors(corsOptions));
 | **1. Live Backend Health** | **PASS** | `200 OK`, returned `status: ok` and `database: connected`. |
 | **2. Live Frontend Reachability** | **PASS** | `200 OK` from Vercel edge, DOM contains `<div id="root">`. |
 | **3. Live Smoke Test** | **PASS** | 19/19 passed against production Render API; test user deleted. |
-| **4a. Cookie SameSite Fix** | **FIXED** | `COOKIE_OPTIONS`: already `none`; `clearCookie` in `logout`: fixed `strict` → `none`. |
+| **4a. Cookie SameSite Fix** | **DEPLOYED ✅** | `clearCookie` logout fixed; pushed & deployed — `SameSite=None; Secure` confirmed live on Render. |
 | **4b. CORS Config** | **PASS** | `credentials: true` + explicit `CLIENT_URL` origin confirmed in server.js and live headers. |
 | **5. Frontend-to-Backend API** | **PASS** | Vercel production build explicitly bakes live Render API URL. |
 | **6. Node-fetch False-Positive Risk** | **DOCUMENTED** | See §7 — never use raw Node fetch to verify SameSite behavior. |
-| **7. Headless Browser Re-test** | **MANUAL REQUIRED** | See §8 — Playwright not installed; manual browser verification steps provided. |
+| **7. Playwright Headless Browser Test** | **PASS ✅** | 8/8 checks passed — cross-site cookie delivery and token refresh confirmed in real browser engine. See §9. |
 
 ---
 
@@ -283,3 +283,53 @@ Perform these steps in Chrome or Firefox **on the live production site**:
 If step 6 fails (empty `Cookie` header on the refresh request), the `SameSite` attribute is
 still being rejected by the browser — double-check the Render `NODE_ENV` env var is set to
 `production` so the conditional in `COOKIE_OPTIONS` evaluates to `'none'`.
+
+> **✅ Manual steps are now superseded.** The Playwright test (§9) covers all of the above
+> automatically in a real browser engine. Run `node backend/scripts/playwright-cookie-check.js`
+> after any future auth or cookie changes.
+
+---
+
+## 9. Playwright Headless Browser Test — Final Results (2026-07-21)
+
+Script: `backend/scripts/playwright-cookie-check.js`  
+Run after deployment of commit `e70aa316` (SameSite=None fix pushed to Render).
+
+```text
+🎭 ERP Nexus — Playwright Headless Cookie Verification
+   Frontend : https://erp-system-frontend-black.vercel.app
+   Backend  : https://erp-backend-7wr4.onrender.com
+
+--- Step 1: Load Frontend ---
+  ✅ PASS: Frontend loaded (HTTP 200)
+
+--- Step 2: Login via API (browser fetch from frontend origin) ---
+  ✅ PASS: Login returned 200 OK — accessToken received
+  ℹ️  Access token (first 20 chars): eyJhbGciOiJIUzI1NiIs...
+
+--- Step 3: Inspect refreshToken Cookie ---
+  ✅ PASS: refreshToken cookie IS present in browser cookie jar
+  ℹ️    httpOnly : true
+  ℹ️    secure   : true
+  ℹ️    sameSite : None
+  ✅ PASS: httpOnly = true
+  ✅ PASS: secure = true
+  ✅ PASS: sameSite = None  (cookie will be sent on cross-site requests ✓)
+
+--- Step 4: Token Refresh via Browser (cross-site fetch + cookie) ---
+  ✅ PASS: /auth/refresh returned 200 — new accessToken issued
+  ✅ PASS: Browser sent the cross-site cookie correctly (SameSite=None is working ✓)
+  ℹ️  New token (first 20 chars): eyJhbGciOiJIUzI1NiIs...
+
+--- Step 5: Protected Endpoint with new Access Token ---
+  ✅ PASS: /dashboard/summary returned 200 — session is fully functional after refresh
+
+==========================================
+🎉 ALL CHECKS PASSED — SameSite=None is working correctly in production.
+==========================================
+```
+
+**Result: 8/8 PASS** — Cross-site cookie delivery and silent token refresh are confirmed working
+in a real Chromium browser engine (Playwright headless). Session refresh will not break in
+production for users on the live Vercel frontend.
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
@@ -611,54 +612,53 @@ const UsersPage = () => {
         </form>
       </Modal>
 
-      {/* USER ACTIVITY SLIDE-IN DRAWER */}
-      {isDrawerOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-xs transition-opacity animate-in fade-in"
-          onClick={() => setIsDrawerOpen(false)}
-        />
-      )}
+      {/* USER ACTIVITY SLIDE-IN DRAWER (Rendered via React Portal) */}
+      {isDrawerOpen && createPortal(
+        <>
+          <div 
+            className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-[3px] transition-opacity animate-in fade-in"
+            onClick={() => setIsDrawerOpen(false)}
+          />
 
-      <div className={`fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 transition-transform duration-300 transform ${
-        isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">User Activity History</h2>
-              {drawerUser && <p className="text-sm text-slate-500 dark:text-slate-400">{drawerUser.name} ({drawerUser.email})</p>}
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col animate-in slide-in-from-right duration-200">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 select-none">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">User Activity History</h2>
+                {drawerUser && <p className="text-sm text-slate-500 dark:text-slate-400">{drawerUser.name} ({drawerUser.email})</p>}
+              </div>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <button
-              onClick={() => setIsDrawerOpen(false)}
-              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          {/* Drawer Body Table */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <Table
-              loading={drawerLoading}
-              emptyMessage="No activity recorded for this user."
-              columns={[
-                { key: 'action', label: 'Action' },
-                { key: 'module', label: 'Module' },
-                { key: 'record_id', label: 'ID', render: (item) => item.record_id || 'N/A' },
-                {
-                  key: 'created_at',
-                  label: 'Time',
-                  render: (item) => new Date(item.created_at).toLocaleString()
-                }
-              ]}
-              data={drawerLogs}
-            />
+            {/* Drawer Body Table */}
+            <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900">
+              <Table
+                loading={drawerLoading}
+                emptyMessage="No activity recorded for this user."
+                columns={[
+                  { key: 'action', label: 'Action' },
+                  { key: 'module', label: 'Module' },
+                  { key: 'record_id', label: 'ID', render: (item) => item.record_id || 'N/A' },
+                  {
+                    key: 'created_at',
+                    label: 'Time',
+                    render: (item) => new Date(item.created_at).toLocaleString()
+                  }
+                ]}
+                data={drawerLogs}
+              />
+            </div>
           </div>
-        </div>
-      </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { useRole } from '../context/RoleContext';
-import { getRoles, createRole, setRolePermissions } from '../api/userApi';
+import { getRoles, createRole, setRolePermissions, getDepartments, createDepartment } from '../api/userApi';
 import PageHeader from '../components/PageHeader';
 
 // Define the exact list of modules and actions as they exist in the DB
@@ -42,6 +42,11 @@ const RolesPage = () => {
   const [newRoleName, setNewRoleName] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
   
+  // Department Management State
+  const [departments, setDepartments] = useState([]);
+  const [newDeptName, setNewDeptName] = useState('');
+  const [deptLoading, setDeptLoading] = useState(false);
+  
   // Matrix permissions mapping state
   // Format: { 'sales:view': true, 'sales:create': false, ... }
   const [matrixState, setMatrixState] = useState({});
@@ -61,9 +66,43 @@ const RolesPage = () => {
     }
   };
 
+  // Fetch Departments List
+  const fetchDepartmentsList = async () => {
+    try {
+      const data = await getDepartments();
+      if (data.success) {
+        setDepartments(data.departments);
+      }
+    } catch (err) {
+      toast.error('Failed to load departments list.');
+    }
+  };
+
   useEffect(() => {
     fetchRolesList();
+    fetchDepartmentsList();
   }, []);
+
+  // Handle New Department Creation
+  const handleCreateDeptSubmit = async (e) => {
+    e.preventDefault();
+    if (!newDeptName.trim()) {
+      return toast.error('Department name is required.');
+    }
+    setDeptLoading(true);
+    try {
+      const data = await createDepartment({ name: newDeptName.trim() });
+      if (data.success || data.department) {
+        toast.success('Department created successfully.');
+        setNewDeptName('');
+        fetchDepartmentsList();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create department.');
+    } finally {
+      setDeptLoading(false);
+    }
+  };
 
   // Handle New Role Creation
   const handleCreateRoleSubmit = async (e) => {
@@ -178,6 +217,45 @@ const RolesPage = () => {
 
       {/* Roles List Table */}
       <Table columns={columns} data={roles} loading={loading} emptyMessage="No roles defined in the system." />
+
+      {/* DEPARTMENTS MANAGEMENT SECTION */}
+      {hasPermission('auth', 'create') && (
+        <div className="mt-10 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization Departments</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">View existing system departments and create new ones.</p>
+            </div>
+            <form onSubmit={handleCreateDeptSubmit} className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="New Department Name"
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-full sm:w-64"
+                value={newDeptName}
+                onChange={(e) => setNewDeptName(e.target.value)}
+              />
+              <button
+                type="submit"
+                disabled={deptLoading}
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {deptLoading ? 'Adding...' : 'Add Department'}
+              </button>
+            </form>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            {departments.map((dept) => (
+              <span
+                key={dept.id}
+                className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              >
+                {dept.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CREATE ROLE MODAL */}
       <Modal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} title="Create New Role">

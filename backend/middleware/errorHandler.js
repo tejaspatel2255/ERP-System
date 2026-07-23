@@ -2,7 +2,7 @@
  * Central Error Handler Middleware
  */
 export const errorHandler = (err, req, res, next) => {
-  // Log error stack to console
+  // Always log error server-side
   console.error(err.stack || err);
 
   let statusCode = err.statusCode || 500;
@@ -25,13 +25,14 @@ export const errorHandler = (err, req, res, next) => {
     switch (err.code) {
       case '23505': // Unique violation
         statusCode = 409;
-        // Try to construct a cleaner message for the user
-        const detail = err.detail || '';
-        const match = detail.match(/\((.*?)\)=\((.*?)\)/);
-        if (match && match[1]) {
-          message = `A record with this ${match[1]} already exists.`;
-        } else {
-          message = 'A duplicate record violation occurred.';
+        {
+          const detail = err.detail || '';
+          const match = detail.match(/\((.*?)\)=\((.*?)\)/);
+          if (match && match[1]) {
+            message = `A record with this ${match[1]} already exists.`;
+          } else {
+            message = 'A duplicate record violation occurred.';
+          }
         }
         break;
       case '23503': // Foreign key violation
@@ -41,12 +42,16 @@ export const errorHandler = (err, req, res, next) => {
     }
   }
 
-  const isDev = process.env.NODE_ENV === 'development';
+  // In production, sanitize 500+ errors unless operational
+  const isProd = process.env.NODE_ENV === 'production';
+  if (isProd && statusCode >= 500 && !err.isOperational) {
+    message = 'Internal server error. Please try again later.';
+  }
 
   return res.status(statusCode).json({
     success: false,
     message,
-    ...(isDev && { stack: err.stack })
+    ...(!isProd && { stack: err.stack })
   });
 };
 

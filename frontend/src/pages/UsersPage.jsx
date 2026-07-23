@@ -184,7 +184,7 @@ const UsersPage = () => {
       name: '',
       email: '',
       password: '',
-      department_id: departments[0]?.id || '',
+      department_id: String(departments[0]?.id || ''),
       roles: [],
       is_active: true
     });
@@ -198,7 +198,7 @@ const UsersPage = () => {
       name: user.name || '',
       email: user.email || '',
       password: '',
-      department_id: user.department_id || departments[0]?.id || '',
+      department_id: String(user.department_id || departments[0]?.id || ''),
       roles: user.roles || [],
       is_active: user.is_active ?? true
     });
@@ -222,7 +222,7 @@ const UsersPage = () => {
       setIsAddingDept(true);
       setNewDeptName('');
     } else {
-      setFormData(prev => ({ ...prev, department_id: value }));
+      setFormData(prev => ({ ...prev, department_id: String(value) }));
     }
   };
 
@@ -293,12 +293,20 @@ const UsersPage = () => {
 
     try {
       if (editingUser) {
+        console.debug('Sending updateUser department_id:', String(formData.department_id));
         const updateRes = await updateUser(editingUser.id, {
           name: formData.name,
           email: formData.email,
-          department_id: formData.department_id,
+          department_id: String(formData.department_id),
           is_active: formData.is_active
         });
+
+        const returnedDeptId = updateRes?.user?.department_id;
+        console.debug('Received updateUser user.department_id:', String(returnedDeptId));
+
+        if (returnedDeptId && String(returnedDeptId) !== String(formData.department_id)) {
+          console.warn(`[Department Update Mismatch] Sent: ${formData.department_id}, Returned: ${returnedDeptId}`);
+        }
 
         if (updateRes?.success && updateRes?.user) {
           setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updateRes.user, roles: formData.roles || u.roles } : u));
@@ -613,7 +621,7 @@ const UsersPage = () => {
               >
                 <option value="" disabled>Select Department</option>
                 {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  <option key={String(dept.id)} value={String(dept.id)}>{dept.name}</option>
                 ))}
                 {hasPermission('auth', 'create') && (
                   <option value="__add_new__">+ Add New Department...</option>

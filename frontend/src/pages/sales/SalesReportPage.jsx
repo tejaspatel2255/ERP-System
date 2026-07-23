@@ -91,12 +91,12 @@ const SalesReportPage = () => {
                 Customer: c.name,
                 Revenue: c.revenue
               })), `sales-report-${new Date().toISOString().slice(0, 10)}.csv`)}
-              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors"
+              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2.5 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors whitespace-nowrap shrink-0"
             >
               Export CSV
             </button>
 
-            <div className="flex items-center gap-2 p-1.5 rounded-xl border border-border-color bg-bg-card shadow-brand">
+            <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-xl border border-border-color bg-bg-card shadow-brand shrink-0">
               <span className="text-xs text-text-muted font-bold uppercase tracking-wider pl-2">Range:</span>
               <input
                 type="date"

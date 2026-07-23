@@ -9,8 +9,8 @@ import React from 'react';
  */
 export default function PageHeader({ title, description, actions, children }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-      <div>
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+      <div className="min-w-0 flex-1">
         <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
           {title}
         </h1>
@@ -21,7 +21,7 @@ export default function PageHeader({ title, description, actions, children }) {
         )}
       </div>
       {(actions || children) && (
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           {actions || children}
         </div>
       )}

@@ -22,11 +22,14 @@ export default function PrintInvoice() {
       {invoice && (
         <div className="mx-auto max-w-4xl">
           {invoice.status === 'Paid' && <div className="mb-4 text-center text-5xl font-black uppercase text-slate-200">Paid</div>}
-          <div className="flex justify-between border-b pb-4">
-            <div>
-              <h1 className="text-2xl font-black">{env.VITE_COMPANY_NAME || 'Company Name'}</h1>
-              <p className="text-sm">{env.VITE_COMPANY_ADDRESS || 'Address'}</p>
-              <p className="text-sm">GSTIN: {env.VITE_COMPANY_GSTIN || 'N/A'}</p>
+          <div className="flex justify-between border-b pb-4 items-center">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="ERP Nexus Logo" className="h-12 w-12 rounded-xl object-contain shadow-xs" />
+              <div>
+                <h1 className="text-2xl font-black">{env.VITE_COMPANY_NAME || 'Hina Industries'}</h1>
+                <p className="text-sm">{env.VITE_COMPANY_ADDRESS || 'Address'}</p>
+                <p className="text-sm">GSTIN: {env.VITE_COMPANY_GSTIN || 'N/A'}</p>
+              </div>
             </div>
             <div className="text-right">
               <h2 className="text-xl font-bold">INVOICE</h2>

@@ -5,6 +5,8 @@ import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { Clock, Sun, Moon } from 'lucide-react';
 
+import Logo from '../components/Logo';
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
@@ -82,11 +84,11 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-md rounded-3xl border border-border-color bg-bg-secondary p-8 shadow-brand transition-all">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-primary text-white text-xl font-black shadow-md">
-            EN
+          <div className="flex justify-center mb-4">
+            <Logo size="lg" showText={false} />
           </div>
           <h1 className="text-2xl font-black text-text-primary">Create account</h1>
-          <p className="mt-1.5 text-xs text-text-muted">Get started with your ERP account.</p>
+          <p className="mt-1.5 text-xs text-text-muted">Get started with your ERP Nexus workspace.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

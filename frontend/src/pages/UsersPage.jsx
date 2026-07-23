@@ -153,6 +153,20 @@ const UsersPage = () => {
     }
   };
 
+  // Close Modal and Reset Form State
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      department_id: '',
+      roles: [],
+      is_active: true
+    });
+  };
+
   // Open Modal for Create
   const handleOpenCreate = () => {
     setEditingUser(null);
@@ -171,12 +185,12 @@ const UsersPage = () => {
   const handleOpenEdit = (user) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
-      email: user.email,
+      name: user.name || '',
+      email: user.email || '',
       password: '',
-      department_id: user.department_id || '',
+      department_id: user.department_id || departments[0]?.id || '',
       roles: user.roles || [],
-      is_active: user.is_active
+      is_active: user.is_active ?? true
     });
     setIsModalOpen(true);
   };
@@ -247,8 +261,7 @@ const UsersPage = () => {
         toast.success('User created successfully.');
       }
 
-      setIsModalOpen(false);
-      setEditingUser(null);
+      handleCloseModal();
       await fetchUsersList();
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Action failed.');
@@ -486,7 +499,7 @@ const UsersPage = () => {
       </div>
 
       {/* CREATE/EDIT USER MODAL */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingUser ? 'Edit User Details' : 'Create New User'}>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUser ? 'Edit User Details' : 'Create New User'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
@@ -582,7 +595,7 @@ const UsersPage = () => {
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
-              onClick={() => setIsModalOpen(false)}
+              onClick={handleCloseModal}
               className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Cancel

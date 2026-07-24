@@ -338,11 +338,7 @@ export const register = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Registration failed.',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -358,11 +354,7 @@ export const seedAdmin = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Seeding error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Admin seeding failed.',
-      error: error.message
-    });
+    next(error);
   }
 };
 

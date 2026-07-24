@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT FALSE,
-    department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES departments(id) ON DELETE SET NULL ON UPDATE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -662,7 +662,7 @@ CREATE TABLE IF NOT EXISTS employees (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
     phone VARCHAR(50),
-    department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES departments(id) ON DELETE SET NULL ON UPDATE CASCADE,
     designation VARCHAR(100) NOT NULL,
     join_date DATE NOT NULL DEFAULT CURRENT_DATE,
     is_active BOOLEAN DEFAULT TRUE,

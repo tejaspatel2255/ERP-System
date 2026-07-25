@@ -5,7 +5,7 @@ import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
 import { getGRNs, createGRN, getGRNById } from '../../api/storeApi';
 import { getPurchaseOrders } from '../../api/purchaseApi';
-import { formatDate } from '../../utils/formatDate';
+import axiosInstance from '../../api/axiosInstance';
 
 const GRNPage = () => {
   const { hasPermission } = useRole();
@@ -49,7 +49,6 @@ const GRNPage = () => {
     setSelectedPO(po || null);
     if (!po) { setPoItems([]); return; }
     try {
-      const { default: axiosInstance } = await import('../../api/axiosInstance');
       const res = await axiosInstance.get(`/purchase/orders/${poId}`);
       if (res.data.success) {
         const items = res.data.items;

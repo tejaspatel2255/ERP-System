@@ -3,8 +3,19 @@ import toast from 'react-hot-toast';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { useRole } from '../context/RoleContext';
-import { getRoles, createRole, updateRole, deleteRole, setRolePermissions, getDepartments, createDepartment, updateDepartment, deleteDepartment } from '../api/userApi';
+import {
+  getRoles,
+  createRole,
+  updateRole,
+  deleteRole,
+  setRolePermissions,
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment
+} from '../api/userApi';
 import PageHeader from '../components/PageHeader';
+import { Shield, Pencil, Trash2, Check, X, Building2, Plus, Loader2 } from 'lucide-react';
 
 // Define the exact list of modules and actions as they exist in the DB
 const MODULES = [
@@ -42,9 +53,10 @@ const RolesPage = () => {
   const [newRoleName, setNewRoleName] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // Role Edit State
+  // Role Edit & Saving State
   const [editingRoleId, setEditingRoleId] = useState(null);
   const [editingRoleName, setEditingRoleName] = useState('');
+  const [savingRoleId, setSavingRoleId] = useState(null);
   
   // Department Management State
   const [departments, setDepartments] = useState([]);
@@ -52,6 +64,7 @@ const RolesPage = () => {
   const [deptLoading, setDeptLoading] = useState(false);
   const [editingDeptId, setEditingDeptId] = useState(null);
   const [editingDeptName, setEditingDeptName] = useState('');
+  const [savingDeptId, setSavingDeptId] = useState(null);
 
   // Matrix permissions mapping state
   // Format: { 'sales:view': true, 'sales:create': false, ... }
@@ -115,6 +128,7 @@ const RolesPage = () => {
     if (!editingDeptName.trim()) {
       return toast.error('Department name is required.');
     }
+    setSavingDeptId(deptId);
     try {
       const data = await updateDepartment(deptId, { name: editingDeptName.trim() });
       if (data.success) {
@@ -125,6 +139,8 @@ const RolesPage = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update department.');
+    } finally {
+      setSavingDeptId(null);
     }
   };
 
@@ -169,6 +185,7 @@ const RolesPage = () => {
     if (!editingRoleName.trim()) {
       return toast.error('Role name is required.');
     }
+    setSavingRoleId(roleId);
     try {
       const data = await updateRole(roleId, { name: editingRoleName.trim() });
       if (data.success) {
@@ -179,6 +196,8 @@ const RolesPage = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update role.');
+    } finally {
+      setSavingRoleId(null);
     }
   };
 
@@ -256,11 +275,12 @@ const RolesPage = () => {
       label: 'Role Name',
       render: (item) => {
         if (editingRoleId === item.id) {
+          const isSaving = savingRoleId === item.id;
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
               <input
                 type="text"
-                className="rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-48"
+                className="rounded-lg border border-blue-500 dark:border-blue-500 bg-white dark:bg-slate-950 px-3 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-48 font-medium shadow-xs"
                 value={editingRoleName}
                 onChange={(e) => setEditingRoleName(e.target.value)}
                 onKeyDown={(e) => {
@@ -271,21 +291,28 @@ const RolesPage = () => {
                     setEditingRoleId(null);
                   }
                 }}
+                disabled={isSaving}
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => handleUpdateRoleSubmit(item.id)}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                disabled={isSaving}
+                className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                title="Save role name"
+                aria-label="Save role name"
               >
-                Save
+                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
               </button>
               <button
                 type="button"
                 onClick={() => setEditingRoleId(null)}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                disabled={isSaving}
+                className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+                title="Cancel edit"
+                aria-label="Cancel edit"
               >
-                Cancel
+                <X size={14} />
               </button>
             </div>
           );
@@ -293,18 +320,28 @@ const RolesPage = () => {
         return <span className="font-semibold text-slate-900 dark:text-white">{item.name}</span>;
       }
     },
-    { key: 'user_count', label: 'Assigned Users Count' },
+    {
+      key: 'user_count',
+      label: 'Assigned Users Count',
+      render: (item) => (
+        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+          {item.user_count || 0} users
+        </span>
+      )
+    },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           {hasPermission('auth', 'edit') && (
             <button
               onClick={() => handleEditPermissions(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              title="Configure permissions matrix for this role"
             >
-              Configure Permissions
+              <Shield size={14} />
+              <span>Configure Permissions</span>
             </button>
           )}
           {hasPermission('auth', 'edit') && (
@@ -313,17 +350,21 @@ const RolesPage = () => {
                 setEditingRoleId(item.id);
                 setEditingRoleName(item.name);
               }}
-              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 font-semibold text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              title="Rename role"
+              aria-label="Rename role"
             >
-              Rename
+              <Pencil size={14} />
             </button>
           )}
           {hasPermission('auth', 'delete') && item.name !== 'Admin' && (
             <button
               onClick={() => handleDeleteRole(item.id)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              title="Delete role"
+              aria-label="Delete role"
             >
-              Delete
+              <Trash2 size={14} />
             </button>
           )}
         </div>
@@ -340,7 +381,7 @@ const RolesPage = () => {
           hasPermission('auth', 'create') && (
             <button
               onClick={() => setIsRoleModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
               Create New Role
             </button>
@@ -353,101 +394,136 @@ const RolesPage = () => {
 
       {/* DEPARTMENTS MANAGEMENT SECTION */}
       {hasPermission('auth', 'create') && (
-        <div className="mt-10 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization Departments</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">View existing system departments and create new ones.</p>
+        <div className="mt-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 animate-in fade-in duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
+                <Building2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization Departments</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">View and manage organizational structure departments.</p>
+              </div>
             </div>
-            <form onSubmit={handleCreateDeptSubmit} className="flex items-center gap-2 w-full sm:w-auto">
+            <form onSubmit={handleCreateDeptSubmit} className="flex items-center gap-2 w-full md:w-auto">
               <input
                 type="text"
                 placeholder="New Department Name"
-                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-full sm:w-64"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full md:w-64 shadow-xs"
                 value={newDeptName}
                 onChange={(e) => setNewDeptName(e.target.value)}
               />
               <button
                 type="submit"
                 disabled={deptLoading}
-                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
-                {deptLoading ? 'Adding...' : 'Add Department'}
+                {deptLoading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                <span>{deptLoading ? 'Adding...' : 'Add Department'}</span>
               </button>
             </form>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            {departments.map((dept) => {
-              if (editingDeptId === dept.id) {
+          {departments.length === 0 ? (
+            <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              No departments defined yet — add one above.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {departments.map((dept) => {
+                if (editingDeptId === dept.id) {
+                  const isSaving = savingDeptId === dept.id;
+                  return (
+                    <div
+                      key={dept.id}
+                      className="flex items-center justify-between gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 shadow-xs animate-in fade-in duration-150"
+                    >
+                      <input
+                        type="text"
+                        className="rounded-lg border border-blue-500 bg-white dark:bg-slate-950 px-2.5 py-1 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full"
+                        value={editingDeptName}
+                        onChange={(e) => setEditingDeptName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleUpdateDeptSubmit(dept.id);
+                          } else if (e.key === 'Escape') {
+                            setEditingDeptId(null);
+                          }
+                        }}
+                        disabled={isSaving}
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeptSubmit(dept.id)}
+                          disabled={isSaving}
+                          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          title="Save department name"
+                          aria-label="Save department name"
+                        >
+                          {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingDeptId(null)}
+                          disabled={isSaving}
+                          className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+                          title="Cancel edit"
+                          aria-label="Cancel edit"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
-                  <div key={dept.id} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800">
-                    <input
-                      type="text"
-                      className="rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-36"
-                      value={editingDeptName}
-                      onChange={(e) => setEditingDeptName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleUpdateDeptSubmit(dept.id);
-                        } else if (e.key === 'Escape') {
-                          setEditingDeptId(null);
-                        }
-                      }}
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateDeptSubmit(dept.id)}
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-1"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingDeptId(null)}
-                      className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-1"
-                    >
-                      Cancel
-                    </button>
+                  <div
+                    key={dept.id}
+                    className="group flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-slate-800/40 transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5 truncate pr-2">
+                      <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                        {dept.name}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      {hasPermission('auth', 'edit') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingDeptId(dept.id);
+                            setEditingDeptName(dept.name);
+                          }}
+                          className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          title="Rename department"
+                          aria-label="Rename department"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      )}
+                      {hasPermission('auth', 'delete') && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDept(dept.id)}
+                          className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                          title="Delete department"
+                          aria-label="Delete department"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
-              }
-
-              return (
-                <div
-                  key={dept.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 group"
-                >
-                  <span>{dept.name}</span>
-                  {hasPermission('auth', 'edit') && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingDeptId(dept.id);
-                        setEditingDeptName(dept.name);
-                      }}
-                      title="Rename department"
-                      className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  {hasPermission('auth', 'delete') && (
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteDept(dept.id)}
-                      title="Delete department"
-                      className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          )}
         </div>
       )}
 

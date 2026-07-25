@@ -12,6 +12,8 @@ import {
   assignUserRoles,
   getDepartments,
   createDepartment,
+  updateDepartment,
+  deleteDepartment,
   getRoles,
   createRole,
   setRolePermissions,
@@ -65,6 +67,8 @@ router.post('/users/:id/roles', requirePermission('auth', 'edit'), assignUserRol
 // Department Routes
 router.get('/departments', requirePermission('auth', 'view'), getDepartments);
 router.post('/departments', requirePermission('auth', 'create'), createDeptValidation, createDepartment);
+router.put('/departments/:id', requirePermission('auth', 'edit'), updateDepartment);
+router.delete('/departments/:id', requirePermission('auth', 'delete'), deleteDepartment);
 
 // Role & Permission Routes
 router.get('/roles', requirePermission('auth', 'view'), getRoles);

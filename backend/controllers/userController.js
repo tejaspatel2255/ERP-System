@@ -671,6 +671,71 @@ export const rejectUser = async (req, res, next) => {
   }
 };
 
+/**
+ * PUT /api/departments/:id
+ * Rename an existing department
+ */
+export const updateDepartment = async (req, res, next) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ success: false, message: 'Department name is required.' });
+  }
+
+  try {
+    const updateText = `UPDATE departments SET name = $1 WHERE id = $2 RETURNING id, name`;
+    const result = await db.query(updateText, [name.trim(), id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Department not found.' });
+    }
+
+    await logActivity(req.user.id, 'UPDATE', 'departments', id, req);
+
+    return res.status(200).json({ success: true, message: 'Department updated successfully.', department: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/departments/:id
+ * Delete a department, only if no users/employees currently reference it
+ */
+export const deleteDepartment = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const usageCheck = await db.query(
+      `SELECT
+         (SELECT COUNT(*) FROM users WHERE department_id = $1) AS user_count,
+         (SELECT COUNT(*) FROM employees WHERE department_id = $1) AS employee_count`,
+      [id]
+    );
+    const { user_count, employee_count } = usageCheck.rows[0];
+
+    if (parseInt(user_count) > 0 || parseInt(employee_count) > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete this department: it is still assigned to ${user_count} user(s) and ${employee_count} employee(s). Reassign them first.`
+      });
+    }
+
+    const result = await db.query(`DELETE FROM departments WHERE id = $1 RETURNING id, name`, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Department not found.' });
+    }
+
+    await logActivity(req.user.id, 'DELETE', 'departments', id, req);
+
+    return res.status(200).json({ success: true, message: 'Department deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getUsers,
   getUserById,
@@ -681,6 +746,8 @@ export default {
   assignUserRoles,
   getDepartments,
   createDepartment,
+  updateDepartment,
+  deleteDepartment,
   getRoles,
   createRole,
   setRolePermissions,

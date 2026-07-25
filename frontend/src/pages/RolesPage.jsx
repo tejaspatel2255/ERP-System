@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { useRole } from '../context/RoleContext';
-import { getRoles, createRole, setRolePermissions, getDepartments, createDepartment } from '../api/userApi';
+import { getRoles, createRole, setRolePermissions, getDepartments, createDepartment, updateDepartment, deleteDepartment } from '../api/userApi';
 import PageHeader from '../components/PageHeader';
 
 // Define the exact list of modules and actions as they exist in the DB
@@ -46,7 +46,9 @@ const RolesPage = () => {
   const [departments, setDepartments] = useState([]);
   const [newDeptName, setNewDeptName] = useState('');
   const [deptLoading, setDeptLoading] = useState(false);
-  
+  const [editingDeptId, setEditingDeptId] = useState(null);
+  const [editingDeptName, setEditingDeptName] = useState('');
+
   // Matrix permissions mapping state
   // Format: { 'sales:view': true, 'sales:create': false, ... }
   const [matrixState, setMatrixState] = useState({});
@@ -101,6 +103,40 @@ const RolesPage = () => {
       toast.error(err.response?.data?.message || 'Failed to create department.');
     } finally {
       setDeptLoading(false);
+    }
+  };
+
+  // Handle Department Update (Save Inline Edit)
+  const handleUpdateDeptSubmit = async (deptId) => {
+    if (!editingDeptName.trim()) {
+      return toast.error('Department name is required.');
+    }
+    try {
+      const data = await updateDepartment(deptId, { name: editingDeptName.trim() });
+      if (data.success) {
+        toast.success('Department updated successfully.');
+        setEditingDeptId(null);
+        setEditingDeptName('');
+        fetchDepartmentsList();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update department.');
+    }
+  };
+
+  // Handle Department Deletion
+  const handleDeleteDept = async (deptId) => {
+    if (!window.confirm('Are you sure you want to delete this department?')) {
+      return;
+    }
+    try {
+      const data = await deleteDepartment(deptId);
+      if (data.success) {
+        toast.success('Department deleted successfully.');
+        fetchDepartmentsList();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete department.');
     }
   };
 
@@ -245,14 +281,75 @@ const RolesPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            {departments.map((dept) => (
-              <span
-                key={dept.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-              >
-                {dept.name}
-              </span>
-            ))}
+            {departments.map((dept) => {
+              if (editingDeptId === dept.id) {
+                return (
+                  <div key={dept.id} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800">
+                    <input
+                      type="text"
+                      className="rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-36"
+                      value={editingDeptName}
+                      onChange={(e) => setEditingDeptName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleUpdateDeptSubmit(dept.id);
+                        } else if (e.key === 'Escape') {
+                          setEditingDeptId(null);
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateDeptSubmit(dept.id)}
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-1"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingDeptId(null)}
+                      className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-1"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={dept.id}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 group"
+                >
+                  <span>{dept.name}</span>
+                  {hasPermission('auth', 'edit') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingDeptId(dept.id);
+                        setEditingDeptName(dept.name);
+                      }}
+                      title="Rename department"
+                      className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      ✏️
+                    </button>
+                  )}
+                  {hasPermission('auth', 'delete') && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteDept(dept.id)}
+                      title="Delete department"
+                      className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

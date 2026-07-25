@@ -109,6 +109,25 @@ export const createDepartment = async (data) => {
 };
 
 /**
+ * Update an existing department
+ * @param {string} id - Department UUID
+ * @param {Object} data - { name }
+ */
+export const updateDepartment = async (id, data) => {
+  const response = await axiosInstance.put(`/departments/${id}`, data);
+  return response.data;
+};
+
+/**
+ * Delete a department
+ * @param {string} id - Department UUID
+ */
+export const deleteDepartment = async (id) => {
+  const response = await axiosInstance.delete(`/departments/${id}`);
+  return response.data;
+};
+
+/**
  * Get paginated activity logs system-wide
  * @param {Object} filters - { page, limit, module, userId, startDate, endDate }
  */
@@ -163,6 +182,8 @@ export default {
   setRolePermissions,
   getDepartments,
   createDepartment,
+  updateDepartment,
+  deleteDepartment,
   getActivityLogs,
   getPendingUsers,
   approveUser,

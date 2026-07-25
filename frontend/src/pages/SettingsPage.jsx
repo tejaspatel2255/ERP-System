@@ -52,7 +52,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-all disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
@@ -64,9 +64,9 @@ export default function SettingsPage() {
         {fields.map((field) => (
           <label 
             key={field.key} 
-            className="block rounded-2xl border border-border-color bg-bg-card p-5 shadow-brand transition-all hover:border-accent-primary/50"
+            className="block rounded-2xl border border-border-color bg-bg-secondary p-5 shadow-xs transition-all hover:border-slate-300 dark:hover:border-slate-700"
           >
-            <span className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
+            <span className="block text-xs font-bold uppercase tracking-wider text-text-secondary mb-2">
               {field.label}
             </span>
             <textarea
@@ -74,7 +74,7 @@ export default function SettingsPage() {
               disabled={!canEdit}
               value={form[field.key] || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
-              className="w-full rounded-xl border border-border-color bg-bg-secondary px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none transition-colors disabled:opacity-60"
+              className="w-full rounded-xl border border-border-color bg-bg-secondary px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-60"
             />
           </label>
         ))}

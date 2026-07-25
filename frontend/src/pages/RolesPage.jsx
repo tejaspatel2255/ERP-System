@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { useRole } from '../context/RoleContext';
-import { getRoles, createRole, setRolePermissions, getDepartments, createDepartment, updateDepartment, deleteDepartment } from '../api/userApi';
+import { getRoles, createRole, updateRole, deleteRole, setRolePermissions, getDepartments, createDepartment, updateDepartment, deleteDepartment } from '../api/userApi';
 import PageHeader from '../components/PageHeader';
 
 // Define the exact list of modules and actions as they exist in the DB
@@ -41,6 +41,10 @@ const RolesPage = () => {
   // Selected state
   const [newRoleName, setNewRoleName] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
+
+  // Role Edit State
+  const [editingRoleId, setEditingRoleId] = useState(null);
+  const [editingRoleName, setEditingRoleName] = useState('');
   
   // Department Management State
   const [departments, setDepartments] = useState([]);
@@ -160,6 +164,39 @@ const RolesPage = () => {
     }
   };
 
+  // Role Edit & Delete Handlers
+  const handleUpdateRoleSubmit = async (roleId) => {
+    if (!editingRoleName.trim()) {
+      return toast.error('Role name is required.');
+    }
+    try {
+      const data = await updateRole(roleId, { name: editingRoleName.trim() });
+      if (data.success) {
+        toast.success('Role updated successfully.');
+        setEditingRoleId(null);
+        setEditingRoleName('');
+        fetchRolesList();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update role.');
+    }
+  };
+
+  const handleDeleteRole = async (roleId) => {
+    if (!window.confirm('Are you sure you want to delete this role?')) {
+      return;
+    }
+    try {
+      const data = await deleteRole(roleId);
+      if (data.success) {
+        toast.success('Role deleted successfully.');
+        fetchRolesList();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete role.');
+    }
+  };
+
   // Open Permission Matrix Modal
   const handleEditPermissions = (role) => {
     setSelectedRole(role);
@@ -214,7 +251,48 @@ const RolesPage = () => {
 
   // Columns for Roles overview table
   const columns = [
-    { key: 'name', label: 'Role Name' },
+    {
+      key: 'name',
+      label: 'Role Name',
+      render: (item) => {
+        if (editingRoleId === item.id) {
+          return (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                className="rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-48"
+                value={editingRoleName}
+                onChange={(e) => setEditingRoleName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleUpdateRoleSubmit(item.id);
+                  } else if (e.key === 'Escape') {
+                    setEditingRoleId(null);
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => handleUpdateRoleSubmit(item.id)}
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingRoleId(null)}
+                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                Cancel
+              </button>
+            </div>
+          );
+        }
+        return <span className="font-semibold text-slate-900 dark:text-white">{item.name}</span>;
+      }
+    },
     { key: 'user_count', label: 'Assigned Users Count' },
     {
       key: 'actions',
@@ -227,6 +305,25 @@ const RolesPage = () => {
               className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md transition-colors"
             >
               Configure Permissions
+            </button>
+          )}
+          {hasPermission('auth', 'edit') && (
+            <button
+              onClick={() => {
+                setEditingRoleId(item.id);
+                setEditingRoleName(item.name);
+              }}
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 font-semibold text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md transition-colors"
+            >
+              Rename
+            </button>
+          )}
+          {hasPermission('auth', 'delete') && item.name !== 'Admin' && (
+            <button
+              onClick={() => handleDeleteRole(item.id)}
+              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md transition-colors"
+            >
+              Delete
             </button>
           )}
         </div>

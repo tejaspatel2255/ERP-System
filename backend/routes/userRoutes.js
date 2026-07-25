@@ -16,6 +16,8 @@ import {
   deleteDepartment,
   getRoles,
   createRole,
+  updateRole,
+  deleteRole,
   setRolePermissions,
   getActivityLogs,
   getPendingUsers,
@@ -73,6 +75,8 @@ router.delete('/departments/:id', requirePermission('auth', 'delete'), deleteDep
 // Role & Permission Routes
 router.get('/roles', requirePermission('auth', 'view'), getRoles);
 router.post('/roles', requirePermission('auth', 'create'), createRoleValidation, createRole);
+router.put('/roles/:id', requirePermission('auth', 'edit'), updateRole);
+router.delete('/roles/:id', requirePermission('auth', 'delete'), deleteRole);
 router.put('/roles/:id/permissions', requirePermission('auth', 'edit'), setRolePermissions);
 
 // Activity Logs Routes

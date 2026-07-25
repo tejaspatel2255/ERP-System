@@ -736,6 +736,74 @@ export const deleteDepartment = async (req, res, next) => {
   }
 };
 
+/**
+ * PUT /api/roles/:id
+ * Rename an existing role
+ */
+export const updateRole = async (req, res, next) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ success: false, message: 'Role name is required.' });
+  }
+
+  try {
+    const updateText = `UPDATE roles SET name = $1 WHERE id = $2 RETURNING id, name`;
+    const result = await db.query(updateText, [name.trim(), id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Role not found.' });
+    }
+
+    await logActivity(req.user.id, 'UPDATE', 'roles', id, req);
+
+    return res.status(200).json({ success: true, message: 'Role updated successfully.', role: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/roles/:id
+ * Delete a role, only if no users currently hold it
+ */
+export const deleteRole = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const roleCheck = await db.query(`SELECT name FROM roles WHERE id = $1`, [id]);
+    if (roleCheck.rows[0]?.name === 'Admin') {
+      return res.status(400).json({ success: false, message: 'The Admin role cannot be deleted.' });
+    }
+
+    const usageCheck = await db.query(
+      `SELECT COUNT(*) AS user_count FROM user_roles WHERE role_id = $1`,
+      [id]
+    );
+    const userCount = parseInt(usageCheck.rows[0].user_count);
+
+    if (userCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete this role: it is still assigned to ${userCount} user(s). Reassign them first.`
+      });
+    }
+
+    const result = await db.query(`DELETE FROM roles WHERE id = $1 RETURNING id, name`, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Role not found.' });
+    }
+
+    await logActivity(req.user.id, 'DELETE', 'roles', id, req);
+
+    return res.status(200).json({ success: true, message: 'Role deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getUsers,
   getUserById,
@@ -750,6 +818,8 @@ export default {
   deleteDepartment,
   getRoles,
   createRole,
+  updateRole,
+  deleteRole,
   setRolePermissions,
   getActivityLogs,
   getPendingUsers,

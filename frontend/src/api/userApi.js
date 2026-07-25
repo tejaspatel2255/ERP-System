@@ -82,6 +82,25 @@ export const createRole = async (data) => {
 };
 
 /**
+ * Update an existing role
+ * @param {string} id - Role UUID
+ * @param {Object} data - { name }
+ */
+export const updateRole = async (id, data) => {
+  const response = await axiosInstance.put(`/roles/${id}`, data);
+  return response.data;
+};
+
+/**
+ * Delete a role
+ * @param {string} id - Role UUID
+ */
+export const deleteRole = async (id) => {
+  const response = await axiosInstance.delete(`/roles/${id}`);
+  return response.data;
+};
+
+/**
  * Update permissions for a role
  * @param {string} roleId - Role UUID
  * @param {Array<Object>} permissions - [{ module_name, action }, ...]
@@ -179,6 +198,8 @@ export default {
   assignUserRoles,
   getRoles,
   createRole,
+  updateRole,
+  deleteRole,
   setRolePermissions,
   getDepartments,
   createDepartment,

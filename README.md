@@ -1,6 +1,6 @@
 # ERP Nexus — Production-Grade Enterprise Resource Planning System
 
-A full-stack, modular ERP system built for **Hina Industries** with **React + Vite + Dual-Theme CSS System** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to HR Self-Service, hardened with `httpOnly` Cookie authentication, Content Security Policy, rate limiting, and role-based access control.
+A full-stack, modular ERP system built with **React + Vite + Dual-Theme CSS System** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to HR Self-Service, hardened with `httpOnly` Cookie authentication, Content Security Policy, rate limiting, and role-based access control (RBAC).
 
 ---
 
@@ -10,7 +10,7 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 |-------|-----------|
 | **Frontend** | React 18, Vite, Dual-Theme System (Dark/Light), React Portals, Recharts, Lucide Icons |
 | **Backend** | Node.js, Express.js (ESM), Helmet (CSP), Rate Limiter, Cookie-Parser |
-| **Database** | PostgreSQL (Supabase / Self-hosted pg pool) |
+| **Database** | PostgreSQL (Supabase / Self-hosted PostgreSQL) — Consolidated Single Master `schema.sql` |
 | **Auth** | JWT (in-memory access token + `httpOnly` refresh cookie), bcryptjs |
 | **Storage** | Supabase Storage (Design files, Proof-of-Delivery, QA reports) |
 | **Formatting** | `Intl.NumberFormat` Indian Rupee (₹ INR) currency standardisation |
@@ -40,7 +40,7 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 ## 🎨 Design System & Theme Engine
 
 - **Dual-Theme Support**: Instant switching between dark mode and light mode with an interactive Sun/Moon toggle button, OS color preference detection, and `localStorage` persistence.
-- **Dynamic Dashboard KPIs**: Real-time MoM comparison percentage calculation across all 6 operational metrics.
+- **Dynamic Dashboard KPIs**: Real-time MoM comparison percentage calculation across operational metrics.
 - **Precision Status Badges**: High contrast status indicators for document and workflow states.
 - **React Portal Modals**: Modals render directly into `document.body` via `createPortal`, guaranteeing full-viewport backdrop coverage with zero clipping seams, capped height (`max-h-[90vh]`), and internal content scrolling.
 - **Indian Rupee (₹ INR)**: Built-in `formatINR` formatter utilizing `en-IN` locale digit grouping (e.g. `₹1,50,000.00`).
@@ -49,12 +49,12 @@ A full-stack, modular ERP system built for **Hina Industries** with **React + Vi
 
 ## 🔒 Security & Safe Pushing Guidelines
 
-- **Environment File Protection**: `.env`, `.env.local`, and sensitive environment files are excluded via `.gitignore`. Never commit API keys or passwords.
+- **Environment File Protection**: `.env`, `.env.local`, and sensitive environment files are excluded via `.gitignore`. Never commit API keys, secrets, or passwords.
 - **XSS Protection**: Tokens stored in memory and `httpOnly`, `Secure`, `SameSite=Strict` cookies. Strict `Content-Security-Policy` active via `helmet`.
 - **Brute-Force Rate Limiting**: Sensitive auth endpoints (`/login`, `/register`) protected via `express-rate-limit` (10 attempts / 15 mins per IP).
 - **MIME & Extension Validation**: File uploads restricted by file extension and actual MIME header verification.
 - **SQL Injection Prevention**: 100% parameterized queries across all database operations.
-- **Idempotent Database Migrations**: Included under `backend/db/migrations/`.
+- **Idempotent Database Schema**: Consolidated master schema file under `backend/db/schema.sql`.
 
 ---
 
@@ -83,12 +83,12 @@ cd backend
 npm install
 ```
 
-Create `backend/.env` (Copy from `backend/.env.example` if available):
+Create `backend/.env` (Copy template from `backend/.env.example`):
 
 ```env
 PORT=5000
 NODE_ENV=development
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=http://localhost:3000
 
 # PostgreSQL / Supabase Connection
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
@@ -102,7 +102,7 @@ SUPABASE_URL=https://[YOUR_REF].supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-Run Database Migrations:
+Run Master Database Schema Setup:
 ```bash
 node scripts/run_migration.js
 ```
@@ -122,7 +122,7 @@ npm install
 npm run dev
 ```
 
-The frontend will start at `http://localhost:5173`.
+The frontend will start at `http://localhost:3000`.
 
 ---
 
@@ -131,14 +131,14 @@ The frontend will start at `http://localhost:5173`.
 To push your updates safely to GitHub without exposing secrets:
 
 ```bash
-# 1. Check status to confirm no sensitive files are tracked
+# 1. Check status to confirm no sensitive files (.env) are tracked
 git status
 
 # 2. Add all tracked changes
 git add .
 
 # 3. Commit with a descriptive message
-git commit -m "feat: complete ERP Nexus deployment with dynamic dashboard KPIs and department management"
+git commit -m "feat: complete ERP Nexus deployment with consolidated schema and optimized frontend build"
 
 # 4. Push safely to GitHub
 git push origin main
@@ -151,8 +151,8 @@ git push origin main
 ```
 ERP-System/
 ├── backend/
-│   ├── controllers/        # Business logic for all 13 modules (including dynamic dashboard MoM metrics)
-│   ├── db/                 # schema.sql and migrations/ (001 to 006)
+│   ├── controllers/        # Business logic for all 13 modules
+│   ├── db/                 # Consolidated master schema.sql
 │   ├── middleware/         # auth.js, rbac.js, upload.js, errorHandler.js
 │   ├── models/             # db.js (PostgreSQL pool)
 │   ├── routes/             # Express routers

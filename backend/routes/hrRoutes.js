@@ -44,7 +44,7 @@ router.put('/attendance/:id', requirePermission('hr', 'edit'), correctAttendance
 router.get('/attendance/summary/:empId/:year/:month', requirePermission('hr', 'view'), getAttendanceSummary);
 
 // Leave
-router.get('/leave-types', getLeaveTypes);
+router.get('/leave-types', requirePermission('hr', 'view'), getLeaveTypes);
 router.post('/leave-types', requirePermission('hr', 'create'), createLeaveType);
 router.get('/leave-applications', requirePermission('hr', 'view'), getLeaveApplications);
 router.post('/leave-applications', requirePermission('hr', 'edit'), applyLeave);

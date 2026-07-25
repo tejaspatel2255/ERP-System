@@ -1219,3 +1219,14 @@ INSERT INTO item_categories (name) VALUES
 ('Spare Parts')
 ON CONFLICT (name) DO NOTHING;
 
+-- 6. Seed Default Settings
+INSERT INTO settings (key, value) VALUES
+('company_name', 'ERP Nexus Manufacturing Ltd.'),
+('company_address', '100 Industrial Estate, Tech Zone, Industrial Hub 400001'),
+('company_gstin', '27AAAAA0000A1Z5'),
+('company_phone', '+91 98765 43210'),
+('company_email', 'contact@erpnexus.com'),
+('po_approval_threshold', '50000')
+ON CONFLICT (key) DO NOTHING;
+
+

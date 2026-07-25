@@ -100,6 +100,13 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 7c. Document Number Sequences Table
+CREATE TABLE IF NOT EXISTS doc_number_sequences (
+    doc_key VARCHAR(50) PRIMARY KEY,
+    last_value INTEGER NOT NULL DEFAULT 0
+);
+
+
 
 -- ============================================================================
 -- MODULE: STORE / INVENTORY
@@ -814,65 +821,184 @@ CREATE TABLE IF NOT EXISTS settings (
 -- AUTO-UPDATE UPDATED_AT TRIGGERS
 -- ============================================================================
 
+DROP TRIGGER IF EXISTS trigger_update_departments_updated_at ON departments;
 CREATE TRIGGER trigger_update_departments_updated_at BEFORE UPDATE ON departments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_users_updated_at ON users;
 CREATE TRIGGER trigger_update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_roles_updated_at ON roles;
 CREATE TRIGGER trigger_update_roles_updated_at BEFORE UPDATE ON roles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_user_roles_updated_at ON user_roles;
 CREATE TRIGGER trigger_update_user_roles_updated_at BEFORE UPDATE ON user_roles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_permissions_updated_at ON permissions;
 CREATE TRIGGER trigger_update_permissions_updated_at BEFORE UPDATE ON permissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_role_permissions_updated_at ON role_permissions;
 CREATE TRIGGER trigger_update_role_permissions_updated_at BEFORE UPDATE ON role_permissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_activity_logs_updated_at ON activity_logs;
 CREATE TRIGGER trigger_update_activity_logs_updated_at BEFORE UPDATE ON activity_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_refresh_tokens_updated_at ON refresh_tokens;
 CREATE TRIGGER trigger_update_refresh_tokens_updated_at BEFORE UPDATE ON refresh_tokens FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_item_categories_updated_at ON item_categories;
 CREATE TRIGGER trigger_update_item_categories_updated_at BEFORE UPDATE ON item_categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_items_updated_at ON items;
 CREATE TRIGGER trigger_update_items_updated_at BEFORE UPDATE ON items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_customers_updated_at ON customers;
 CREATE TRIGGER trigger_update_customers_updated_at BEFORE UPDATE ON customers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_quotations_updated_at ON quotations;
 CREATE TRIGGER trigger_update_quotations_updated_at BEFORE UPDATE ON quotations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_quotation_items_updated_at ON quotation_items;
 CREATE TRIGGER trigger_update_quotation_items_updated_at BEFORE UPDATE ON quotation_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_sales_orders_updated_at ON sales_orders;
 CREATE TRIGGER trigger_update_sales_orders_updated_at BEFORE UPDATE ON sales_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_sales_order_items_updated_at ON sales_order_items;
 CREATE TRIGGER trigger_update_sales_order_items_updated_at BEFORE UPDATE ON sales_order_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_invoices_updated_at ON invoices;
 CREATE TRIGGER trigger_update_invoices_updated_at BEFORE UPDATE ON invoices FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_payments_updated_at ON payments;
 CREATE TRIGGER trigger_update_payments_updated_at BEFORE UPDATE ON payments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_vendors_updated_at ON vendors;
 CREATE TRIGGER trigger_update_vendors_updated_at BEFORE UPDATE ON vendors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_purchase_orders_updated_at ON purchase_orders;
 CREATE TRIGGER trigger_update_purchase_orders_updated_at BEFORE UPDATE ON purchase_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_purchase_order_items_updated_at ON purchase_order_items;
 CREATE TRIGGER trigger_update_purchase_order_items_updated_at BEFORE UPDATE ON purchase_order_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_vendor_invoices_updated_at ON vendor_invoices;
 CREATE TRIGGER trigger_update_vendor_invoices_updated_at BEFORE UPDATE ON vendor_invoices FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_stock_transactions_updated_at ON stock_transactions;
 CREATE TRIGGER trigger_update_stock_transactions_updated_at BEFORE UPDATE ON stock_transactions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_grn_updated_at ON grn;
 CREATE TRIGGER trigger_update_grn_updated_at BEFORE UPDATE ON grn FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_grn_items_updated_at ON grn_items;
 CREATE TRIGGER trigger_update_grn_items_updated_at BEFORE UPDATE ON grn_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_bom_updated_at ON bom;
 CREATE TRIGGER trigger_update_bom_updated_at BEFORE UPDATE ON bom FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_bom_items_updated_at ON bom_items;
 CREATE TRIGGER trigger_update_bom_items_updated_at BEFORE UPDATE ON bom_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_work_orders_updated_at ON work_orders;
 CREATE TRIGGER trigger_update_work_orders_updated_at BEFORE UPDATE ON work_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_material_consumption_updated_at ON material_consumption;
 CREATE TRIGGER trigger_update_material_consumption_updated_at BEFORE UPDATE ON material_consumption FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_production_costs_updated_at ON production_costs;
 CREATE TRIGGER trigger_update_production_costs_updated_at BEFORE UPDATE ON production_costs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_assets_updated_at ON assets;
 CREATE TRIGGER trigger_update_assets_updated_at BEFORE UPDATE ON assets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_maintenance_schedules_updated_at ON maintenance_schedules;
 CREATE TRIGGER trigger_update_maintenance_schedules_updated_at BEFORE UPDATE ON maintenance_schedules FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_maintenance_logs_updated_at ON maintenance_logs;
 CREATE TRIGGER trigger_update_maintenance_logs_updated_at BEFORE UPDATE ON maintenance_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_issue_logs_updated_at ON issue_logs;
 CREATE TRIGGER trigger_update_issue_logs_updated_at BEFORE UPDATE ON issue_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_checklists_updated_at ON qa_checklists;
 CREATE TRIGGER trigger_update_qa_checklists_updated_at BEFORE UPDATE ON qa_checklists FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_checklist_items_updated_at ON qa_checklist_items;
 CREATE TRIGGER trigger_update_qa_checklist_items_updated_at BEFORE UPDATE ON qa_checklist_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_tests_updated_at ON qa_tests;
 CREATE TRIGGER trigger_update_qa_tests_updated_at BEFORE UPDATE ON qa_tests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_test_results_updated_at ON qa_test_results;
 CREATE TRIGGER trigger_update_qa_test_results_updated_at BEFORE UPDATE ON qa_test_results FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_reports_updated_at ON qa_reports;
 CREATE TRIGGER trigger_update_qa_reports_updated_at BEFORE UPDATE ON qa_reports FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qa_approvals_updated_at ON qa_approvals;
 CREATE TRIGGER trigger_update_qa_approvals_updated_at BEFORE UPDATE ON qa_approvals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qc_raw_material_updated_at ON qc_raw_material;
 CREATE TRIGGER trigger_update_qc_raw_material_updated_at BEFORE UPDATE ON qc_raw_material FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qc_in_process_updated_at ON qc_in_process;
 CREATE TRIGGER trigger_update_qc_in_process_updated_at BEFORE UPDATE ON qc_in_process FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_qc_final_updated_at ON qc_final;
 CREATE TRIGGER trigger_update_qc_final_updated_at BEFORE UPDATE ON qc_final FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_ncr_updated_at ON ncr;
 CREATE TRIGGER trigger_update_ncr_updated_at BEFORE UPDATE ON ncr FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_packing_slips_updated_at ON packing_slips;
 CREATE TRIGGER trigger_update_packing_slips_updated_at BEFORE UPDATE ON packing_slips FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_packing_slip_items_updated_at ON packing_slip_items;
 CREATE TRIGGER trigger_update_packing_slip_items_updated_at BEFORE UPDATE ON packing_slip_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_delivery_challans_updated_at ON delivery_challans;
 CREATE TRIGGER trigger_update_delivery_challans_updated_at BEFORE UPDATE ON delivery_challans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_transport_details_updated_at ON transport_details;
 CREATE TRIGGER trigger_update_transport_details_updated_at BEFORE UPDATE ON transport_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_proof_of_delivery_updated_at ON proof_of_delivery;
 CREATE TRIGGER trigger_update_proof_of_delivery_updated_at BEFORE UPDATE ON proof_of_delivery FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_employees_updated_at ON employees;
 CREATE TRIGGER trigger_update_employees_updated_at BEFORE UPDATE ON employees FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_attendance_updated_at ON attendance;
 CREATE TRIGGER trigger_update_attendance_updated_at BEFORE UPDATE ON attendance FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_leave_types_updated_at ON leave_types;
 CREATE TRIGGER trigger_update_leave_types_updated_at BEFORE UPDATE ON leave_types FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_leave_applications_updated_at ON leave_applications;
 CREATE TRIGGER trigger_update_leave_applications_updated_at BEFORE UPDATE ON leave_applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_leave_balances_updated_at ON leave_balances;
 CREATE TRIGGER trigger_update_leave_balances_updated_at BEFORE UPDATE ON leave_balances FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_training_sessions_updated_at ON training_sessions;
 CREATE TRIGGER trigger_update_training_sessions_updated_at BEFORE UPDATE ON training_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_training_attendance_updated_at ON training_attendance;
 CREATE TRIGGER trigger_update_training_attendance_updated_at BEFORE UPDATE ON training_attendance FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_design_files_updated_at ON design_files;
 CREATE TRIGGER trigger_update_design_files_updated_at BEFORE UPDATE ON design_files FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_design_versions_updated_at ON design_versions;
 CREATE TRIGGER trigger_update_design_versions_updated_at BEFORE UPDATE ON design_versions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_design_tasks_updated_at ON design_tasks;
 CREATE TRIGGER trigger_update_design_tasks_updated_at BEFORE UPDATE ON design_tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_design_reviews_updated_at ON design_reviews;
 CREATE TRIGGER trigger_update_design_reviews_updated_at BEFORE UPDATE ON design_reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trigger_update_settings_updated_at ON settings;
 CREATE TRIGGER trigger_update_settings_updated_at BEFORE UPDATE ON settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
@@ -880,132 +1006,132 @@ CREATE TRIGGER trigger_update_settings_updated_at BEFORE UPDATE ON settings FOR 
 -- ============================================================================
 
 -- Foreign Key Indexes for Auth & Roles
-CREATE INDEX idx_users_department_id ON users(department_id);
-CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
-CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
-CREATE INDEX idx_role_permissions_role_id ON role_permissions(role_id);
-CREATE INDEX idx_role_permissions_permission_id ON role_permissions(permission_id);
-CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_users_department_id ON users(department_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_role_id ON role_permissions(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_permission_id ON role_permissions(permission_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user_id ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
 
 -- Foreign Key Indexes for Sales
-CREATE INDEX idx_items_category_id ON items(category_id);
-CREATE INDEX idx_quotations_customer_id ON quotations(customer_id);
-CREATE INDEX idx_quotation_items_quotation_id ON quotation_items(quotation_id);
-CREATE INDEX idx_quotation_items_item_id ON quotation_items(item_id);
-CREATE INDEX idx_sales_orders_quotation_id ON sales_orders(quotation_id);
-CREATE INDEX idx_sales_orders_customer_id ON sales_orders(customer_id);
-CREATE INDEX idx_sales_order_items_order_id ON sales_order_items(order_id);
-CREATE INDEX idx_sales_order_items_item_id ON sales_order_items(item_id);
-CREATE INDEX idx_invoices_order_id ON invoices(order_id);
-CREATE INDEX idx_invoices_customer_id ON invoices(customer_id);
-CREATE INDEX idx_payments_invoice_id ON payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_items_category_id ON items(category_id);
+CREATE INDEX IF NOT EXISTS idx_quotations_customer_id ON quotations(customer_id);
+CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation_id ON quotation_items(quotation_id);
+CREATE INDEX IF NOT EXISTS idx_quotation_items_item_id ON quotation_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_quotation_id ON sales_orders(quotation_id);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_customer_id ON sales_orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_order_items_order_id ON sales_order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_sales_order_items_item_id ON sales_order_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON invoices(order_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_customer_id ON invoices(customer_id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
 
 -- Foreign Key Indexes for Purchase
-CREATE INDEX idx_purchase_orders_vendor_id ON purchase_orders(vendor_id);
-CREATE INDEX idx_purchase_orders_approved_by ON purchase_orders(approved_by);
-CREATE INDEX idx_purchase_order_items_po_id ON purchase_order_items(po_id);
-CREATE INDEX idx_purchase_order_items_item_id ON purchase_order_items(item_id);
-CREATE INDEX idx_vendor_invoices_po_id ON vendor_invoices(po_id);
-CREATE INDEX idx_vendor_invoices_vendor_id ON vendor_invoices(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_vendor_id ON purchase_orders(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_approved_by ON purchase_orders(approved_by);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_po_id ON purchase_order_items(po_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_item_id ON purchase_order_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_invoices_po_id ON vendor_invoices(po_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_invoices_vendor_id ON vendor_invoices(vendor_id);
 
 -- Foreign Key Indexes for Inventory
-CREATE INDEX idx_stock_transactions_item_id ON stock_transactions(item_id);
-CREATE INDEX idx_stock_transactions_created_by ON stock_transactions(created_by);
-CREATE INDEX idx_grn_po_id ON grn(po_id);
-CREATE INDEX idx_grn_received_by ON grn(received_by);
-CREATE INDEX idx_grn_items_grn_id ON grn_items(grn_id);
-CREATE INDEX idx_grn_items_item_id ON grn_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_stock_transactions_item_id ON stock_transactions(item_id);
+CREATE INDEX IF NOT EXISTS idx_stock_transactions_created_by ON stock_transactions(created_by);
+CREATE INDEX IF NOT EXISTS idx_grn_po_id ON grn(po_id);
+CREATE INDEX IF NOT EXISTS idx_grn_received_by ON grn(received_by);
+CREATE INDEX IF NOT EXISTS idx_grn_items_grn_id ON grn_items(grn_id);
+CREATE INDEX IF NOT EXISTS idx_grn_items_item_id ON grn_items(item_id);
 
 -- Foreign Key Indexes for Production
-CREATE INDEX idx_bom_finished_item_id ON bom(finished_item_id);
-CREATE INDEX idx_bom_items_bom_id ON bom_items(bom_id);
-CREATE INDEX idx_bom_items_raw_material_id ON bom_items(raw_material_id);
-CREATE INDEX idx_work_orders_bom_id ON work_orders(bom_id);
-CREATE INDEX idx_work_orders_sales_order_id ON work_orders(sales_order_id);
-CREATE INDEX idx_work_orders_created_by ON work_orders(created_by);
-CREATE INDEX idx_material_consumption_work_order_id ON material_consumption(work_order_id);
-CREATE INDEX idx_material_consumption_item_id ON material_consumption(item_id);
-CREATE INDEX idx_material_consumption_issued_by ON material_consumption(issued_by);
-CREATE INDEX idx_production_costs_work_order_id ON production_costs(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_bom_finished_item_id ON bom(finished_item_id);
+CREATE INDEX IF NOT EXISTS idx_bom_items_bom_id ON bom_items(bom_id);
+CREATE INDEX IF NOT EXISTS idx_bom_items_raw_material_id ON bom_items(raw_material_id);
+CREATE INDEX IF NOT EXISTS idx_work_orders_bom_id ON work_orders(bom_id);
+CREATE INDEX IF NOT EXISTS idx_work_orders_sales_order_id ON work_orders(sales_order_id);
+CREATE INDEX IF NOT EXISTS idx_work_orders_created_by ON work_orders(created_by);
+CREATE INDEX IF NOT EXISTS idx_material_consumption_work_order_id ON material_consumption(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_material_consumption_item_id ON material_consumption(item_id);
+CREATE INDEX IF NOT EXISTS idx_material_consumption_issued_by ON material_consumption(issued_by);
+CREATE INDEX IF NOT EXISTS idx_production_costs_work_order_id ON production_costs(work_order_id);
 
 -- Foreign Key Indexes for Maintenance
-CREATE INDEX idx_maintenance_schedules_asset_id ON maintenance_schedules(asset_id);
-CREATE INDEX idx_maintenance_schedules_assigned_to ON maintenance_schedules(assigned_to);
-CREATE INDEX idx_maintenance_logs_asset_id ON maintenance_logs(asset_id);
-CREATE INDEX idx_maintenance_logs_schedule_id ON maintenance_logs(schedule_id);
-CREATE INDEX idx_maintenance_logs_performed_by ON maintenance_logs(performed_by);
-CREATE INDEX idx_issue_logs_asset_id ON issue_logs(asset_id);
-CREATE INDEX idx_issue_logs_reported_by ON issue_logs(reported_by);
-CREATE INDEX idx_issue_logs_assigned_to ON issue_logs(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_asset_id ON maintenance_schedules(asset_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_assigned_to ON maintenance_schedules(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_asset_id ON maintenance_logs(asset_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_schedule_id ON maintenance_logs(schedule_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_performed_by ON maintenance_logs(performed_by);
+CREATE INDEX IF NOT EXISTS idx_issue_logs_asset_id ON issue_logs(asset_id);
+CREATE INDEX IF NOT EXISTS idx_issue_logs_reported_by ON issue_logs(reported_by);
+CREATE INDEX IF NOT EXISTS idx_issue_logs_assigned_to ON issue_logs(assigned_to);
 
 -- Foreign Key Indexes for QA
-CREATE INDEX idx_qa_checklist_items_checklist_id ON qa_checklist_items(checklist_id);
-CREATE INDEX idx_qa_tests_work_order_id ON qa_tests(work_order_id);
-CREATE INDEX idx_qa_tests_checklist_id ON qa_tests(checklist_id);
-CREATE INDEX idx_qa_tests_tested_by ON qa_tests(tested_by);
-CREATE INDEX idx_qa_test_results_test_id ON qa_test_results(test_id);
-CREATE INDEX idx_qa_test_results_checklist_item_id ON qa_test_results(checklist_item_id);
-CREATE INDEX idx_qa_reports_test_id ON qa_reports(test_id);
-CREATE INDEX idx_qa_approvals_test_id ON qa_approvals(test_id);
-CREATE INDEX idx_qa_approvals_approved_by ON qa_approvals(approved_by);
+CREATE INDEX IF NOT EXISTS idx_qa_checklist_items_checklist_id ON qa_checklist_items(checklist_id);
+CREATE INDEX IF NOT EXISTS idx_qa_tests_work_order_id ON qa_tests(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_qa_tests_checklist_id ON qa_tests(checklist_id);
+CREATE INDEX IF NOT EXISTS idx_qa_tests_tested_by ON qa_tests(tested_by);
+CREATE INDEX IF NOT EXISTS idx_qa_test_results_test_id ON qa_test_results(test_id);
+CREATE INDEX IF NOT EXISTS idx_qa_test_results_checklist_item_id ON qa_test_results(checklist_item_id);
+CREATE INDEX IF NOT EXISTS idx_qa_reports_test_id ON qa_reports(test_id);
+CREATE INDEX IF NOT EXISTS idx_qa_approvals_test_id ON qa_approvals(test_id);
+CREATE INDEX IF NOT EXISTS idx_qa_approvals_approved_by ON qa_approvals(approved_by);
 
 -- Foreign Key Indexes for QC
-CREATE INDEX idx_qc_raw_material_grn_id ON qc_raw_material(grn_id);
-CREATE INDEX idx_qc_raw_material_item_id ON qc_raw_material(item_id);
-CREATE INDEX idx_qc_raw_material_inspected_by ON qc_raw_material(inspected_by);
-CREATE INDEX idx_qc_in_process_work_order_id ON qc_in_process(work_order_id);
-CREATE INDEX idx_qc_in_process_inspected_by ON qc_in_process(inspected_by);
-CREATE INDEX idx_qc_final_work_order_id ON qc_final(work_order_id);
-CREATE INDEX idx_qc_final_inspected_by ON qc_final(inspected_by);
-CREATE INDEX idx_ncr_raised_by ON ncr(raised_by);
-CREATE INDEX idx_ncr_source_id ON ncr(source_id);
+CREATE INDEX IF NOT EXISTS idx_qc_raw_material_grn_id ON qc_raw_material(grn_id);
+CREATE INDEX IF NOT EXISTS idx_qc_raw_material_item_id ON qc_raw_material(item_id);
+CREATE INDEX IF NOT EXISTS idx_qc_raw_material_inspected_by ON qc_raw_material(inspected_by);
+CREATE INDEX IF NOT EXISTS idx_qc_in_process_work_order_id ON qc_in_process(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_qc_in_process_inspected_by ON qc_in_process(inspected_by);
+CREATE INDEX IF NOT EXISTS idx_qc_final_work_order_id ON qc_final(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_qc_final_inspected_by ON qc_final(inspected_by);
+CREATE INDEX IF NOT EXISTS idx_ncr_raised_by ON ncr(raised_by);
+CREATE INDEX IF NOT EXISTS idx_ncr_source_id ON ncr(source_id);
 
 -- Foreign Key Indexes for Dispatch
-CREATE INDEX idx_packing_slips_order_id ON packing_slips(order_id);
-CREATE INDEX idx_packing_slips_packed_by ON packing_slips(packed_by);
-CREATE INDEX idx_packing_slip_items_packing_slip_id ON packing_slip_items(packing_slip_id);
-CREATE INDEX idx_packing_slip_items_item_id ON packing_slip_items(item_id);
-CREATE INDEX idx_delivery_challans_packing_slip_id ON delivery_challans(packing_slip_id);
-CREATE INDEX idx_delivery_challans_order_id ON delivery_challans(order_id);
-CREATE INDEX idx_transport_details_challan_id ON transport_details(challan_id);
-CREATE INDEX idx_proof_of_delivery_challan_id ON proof_of_delivery(challan_id);
+CREATE INDEX IF NOT EXISTS idx_packing_slips_order_id ON packing_slips(order_id);
+CREATE INDEX IF NOT EXISTS idx_packing_slips_packed_by ON packing_slips(packed_by);
+CREATE INDEX IF NOT EXISTS idx_packing_slip_items_packing_slip_id ON packing_slip_items(packing_slip_id);
+CREATE INDEX IF NOT EXISTS idx_packing_slip_items_item_id ON packing_slip_items(item_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_challans_packing_slip_id ON delivery_challans(packing_slip_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_challans_order_id ON delivery_challans(order_id);
+CREATE INDEX IF NOT EXISTS idx_transport_details_challan_id ON transport_details(challan_id);
+CREATE INDEX IF NOT EXISTS idx_proof_of_delivery_challan_id ON proof_of_delivery(challan_id);
 
 -- Foreign Key Indexes for HR
-CREATE INDEX idx_employees_department_id ON employees(department_id);
-CREATE INDEX idx_employees_user_id ON employees(user_id);
-CREATE INDEX idx_attendance_employee_id ON attendance(employee_id);
-CREATE INDEX idx_leave_applications_employee_id ON leave_applications(employee_id);
-CREATE INDEX idx_leave_applications_leave_type_id ON leave_applications(leave_type_id);
-CREATE INDEX idx_leave_applications_approved_by ON leave_applications(approved_by);
-CREATE INDEX idx_leave_balances_employee_id ON leave_balances(employee_id);
-CREATE INDEX idx_leave_balances_leave_type_id ON leave_balances(leave_type_id);
-CREATE INDEX idx_training_attendance_session_id ON training_attendance(session_id);
-CREATE INDEX idx_training_attendance_employee_id ON training_attendance(employee_id);
+CREATE INDEX IF NOT EXISTS idx_employees_department_id ON employees(department_id);
+CREATE INDEX IF NOT EXISTS idx_employees_user_id ON employees(user_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_employee_id ON attendance(employee_id);
+CREATE INDEX IF NOT EXISTS idx_leave_applications_employee_id ON leave_applications(employee_id);
+CREATE INDEX IF NOT EXISTS idx_leave_applications_leave_type_id ON leave_applications(leave_type_id);
+CREATE INDEX IF NOT EXISTS idx_leave_applications_approved_by ON leave_applications(approved_by);
+CREATE INDEX IF NOT EXISTS idx_leave_balances_employee_id ON leave_balances(employee_id);
+CREATE INDEX IF NOT EXISTS idx_leave_balances_leave_type_id ON leave_balances(leave_type_id);
+CREATE INDEX IF NOT EXISTS idx_training_attendance_session_id ON training_attendance(session_id);
+CREATE INDEX IF NOT EXISTS idx_training_attendance_employee_id ON training_attendance(employee_id);
 
 -- Foreign Key Indexes for Design
-CREATE INDEX idx_design_files_uploaded_by ON design_files(uploaded_by);
-CREATE INDEX idx_design_versions_design_file_id ON design_versions(design_file_id);
-CREATE INDEX idx_design_versions_uploaded_by ON design_versions(uploaded_by);
-CREATE INDEX idx_design_tasks_assigned_to ON design_tasks(assigned_to);
-CREATE INDEX idx_design_tasks_design_file_id ON design_tasks(design_file_id);
-CREATE INDEX idx_design_reviews_design_file_id ON design_reviews(design_file_id);
-CREATE INDEX idx_design_reviews_version_id ON design_reviews(version_id);
-CREATE INDEX idx_design_reviews_reviewed_by ON design_reviews(reviewed_by);
+CREATE INDEX IF NOT EXISTS idx_design_files_uploaded_by ON design_files(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_design_versions_design_file_id ON design_versions(design_file_id);
+CREATE INDEX IF NOT EXISTS idx_design_versions_uploaded_by ON design_versions(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_design_tasks_assigned_to ON design_tasks(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_design_tasks_design_file_id ON design_tasks(design_file_id);
+CREATE INDEX IF NOT EXISTS idx_design_reviews_design_file_id ON design_reviews(design_file_id);
+CREATE INDEX IF NOT EXISTS idx_design_reviews_version_id ON design_reviews(version_id);
+CREATE INDEX IF NOT EXISTS idx_design_reviews_reviewed_by ON design_reviews(reviewed_by);
 
 -- Performance Indexes (Searched Fields)
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_customers_email ON customers(email);
-CREATE INDEX idx_quotations_status ON quotations(status);
-CREATE INDEX idx_sales_orders_status ON sales_orders(status);
-CREATE INDEX idx_invoices_status ON invoices(status);
-CREATE INDEX idx_purchase_orders_status ON purchase_orders(status);
-CREATE INDEX idx_purchase_orders_approval_status ON purchase_orders(approval_status);
-CREATE INDEX idx_work_orders_status ON work_orders(status);
-CREATE INDEX idx_leave_applications_status ON leave_applications(status);
-CREATE INDEX idx_stock_transactions_date ON stock_transactions(date);
-CREATE INDEX idx_payments_payment_date ON payments(payment_date);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_quotations_status ON quotations(status);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_status ON sales_orders(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_status ON purchase_orders(status);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_approval_status ON purchase_orders(approval_status);
+CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(status);
+CREATE INDEX IF NOT EXISTS idx_leave_applications_status ON leave_applications(status);
+CREATE INDEX IF NOT EXISTS idx_stock_transactions_date ON stock_transactions(date);
+CREATE INDEX IF NOT EXISTS idx_payments_payment_date ON payments(payment_date);
 
 -- ============================================================================
 -- SEED DATA
@@ -1014,8 +1140,16 @@ CREATE INDEX idx_payments_payment_date ON payments(payment_date);
 -- 1. Seed Departments
 INSERT INTO departments (name) VALUES
 ('Sales'),
+('Purchase'),
+('Store'),
 ('Production'),
-('HR')
+('Maintenance'),
+('QA'),
+('QC'),
+('Dispatch'),
+('HR'),
+('Design'),
+('IT')
 ON CONFLICT (name) DO NOTHING;
 
 -- 2. Seed Default Roles
@@ -1028,12 +1162,17 @@ ON CONFLICT (name) DO NOTHING;
 -- 3. Seed Admin User
 -- Email: admin@erp.com
 -- Password: admin123 (bcrypt hash: $2a$12$R9h/lIPzNgb.O7IQEqbpK.2E9tWb.X42/8.b3L8fS8tK07D1E/u0e)
-INSERT INTO users (id, name, email, password_hash, is_active, department_id) VALUES
-('f1111111-1111-1111-1111-111111111111', 'System Administrator', 'admin@erp.com', '$2a$12$R9h/lIPzNgb.O7IQEqbpK.2E9tWb.X42/8.b3L8fS8tK07D1E/u0e', TRUE, 'd3333333-3333-3333-3333-333333333333');
+INSERT INTO users (name, email, password_hash, is_active, department_id)
+SELECT 'System Administrator', 'admin@erp.com', '$2a$12$R9h/lIPzNgb.O7IQEqbpK.2E9tWb.X42/8.b3L8fS8tK07D1E/u0e', TRUE, d.id
+FROM departments d WHERE d.name = 'IT'
+ON CONFLICT (email) DO NOTHING;
 
 -- Link Admin user to Admin role
-INSERT INTO user_roles (user_id, role_id) VALUES
-('f1111111-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111');
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u, roles r
+WHERE u.email = 'admin@erp.com' AND r.name = 'Admin'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- 4. Seed Permissions
 INSERT INTO permissions (module_name, action) VALUES
@@ -1060,12 +1199,16 @@ INSERT INTO permissions (module_name, action) VALUES
 -- Design
 ('design', 'view'), ('design', 'create'), ('design', 'edit'), ('design', 'delete'), ('design', 'review'),
 -- Dashboard
-('dashboard', 'view');
+('dashboard', 'view')
+ON CONFLICT (module_name, action) DO NOTHING;
 
 -- Link all permissions to the Admin Role
 INSERT INTO role_permissions (role_id, permission_id)
-SELECT 'a1111111-1111-1111-1111-111111111111', id FROM permissions;
-
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.name = 'Admin'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- 5. Seed Item Categories
 INSERT INTO item_categories (name) VALUES
@@ -1073,4 +1216,6 @@ INSERT INTO item_categories (name) VALUES
 ('Finished Goods'),
 ('Packaging'),
 ('Consumables'),
-('Spare Parts');
+('Spare Parts')
+ON CONFLICT (name) DO NOTHING;
+

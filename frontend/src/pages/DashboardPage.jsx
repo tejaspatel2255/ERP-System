@@ -5,6 +5,7 @@ import { Activity, Boxes, ClipboardList, DollarSign, Factory, PackageSearch, Arr
 import { getDashboardActivity, getDashboardCharts, getDashboardSummary } from '../api/dashboardApi';
 import Table from '../components/Table';
 import StatusBadge from '../components/StatusBadge';
+import PageHeader from '../components/PageHeader';
 import { formatINR } from '../utils/formatCurrency';
 
 const kpiConfig = [
@@ -68,11 +69,11 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-text-secondary">A live snapshot of the ERP across sales, operations, and quality.</p>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300 space-y-8">
+      <PageHeader
+        title="Dashboard"
+        description="A live snapshot of the ERP across sales, operations, and quality."
+      />
 
       {error && (
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-sm font-medium text-rose-600 dark:text-rose-400">

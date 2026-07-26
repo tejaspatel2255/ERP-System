@@ -1,73 +1,119 @@
-# ERP Nexus — Production-Grade Enterprise Resource Planning System
+<div align="center">
 
-A full-stack, modular ERP system built with **React + Vite + Dual-Theme CSS System** (frontend) and **Node.js + Express + PostgreSQL / Supabase** (backend). Features 13 integrated operational modules ranging from Sales to HR Self-Service, hardened with `httpOnly` Cookie authentication, Content Security Policy, rate limiting, and role-based access control (RBAC).
+# ⚡ ERP Nexus — Enterprise Resource Planning System
 
----
+**A modern, production-ready, full-stack ERP platform engineered for manufacturing, supply chain, and enterprise operations.**
 
-## 📦 Tech Stack
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=vite)
+![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react)
+![Node.js](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-339933?style=for-the-badge&logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20Supabase-4169E1?style=for-the-badge&logo=postgresql)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18, Vite, Dual-Theme System (Dark/Light), React Portals, Recharts, Lucide Icons |
-| **Backend** | Node.js, Express.js (ESM), Helmet (CSP), Rate Limiter, Cookie-Parser |
-| **Database** | PostgreSQL (Supabase / Self-hosted PostgreSQL) — Consolidated Single Master `schema.sql` |
-| **Auth** | JWT (in-memory access token + `httpOnly` refresh cookie), bcryptjs |
-| **Storage** | Supabase Storage (Design files, Proof-of-Delivery, QA reports) |
-| **Formatting** | `Intl.NumberFormat` Indian Rupee (₹ INR) currency standardisation |
+[Features](#-key-features) • [Architecture](#-system-architecture) • [Modules](#-module-overview) • [Quick Start](#-quick-start) • [Deployment](#-production-deployment) • [License](#-license)
 
----
-
-## 🗂️ Core Modules
-
-| # | Module | Features & Capabilities |
-|---|--------|------------------------|
-| 1 | **Auth & Roles** | `httpOnly` refresh token, rate-limited login, RBAC permissions, user approval workflow, activity audit logs, inline department management |
-| 2 | **Sales** | Customers, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Collections in ₹ |
-| 3 | **Purchase** | Vendors, Purchase Orders (`po_no`), Approval Workflow, Vendor Invoices, Rejection Tracking |
-| 4 | **Store / Inventory** | Item Master (`item_type`), GRN (`grn_no`), Stock Transactions, Stock Position, Stock Ledger |
-| 5 | **Production** | Bill of Materials (versioned), Work Orders (`wo_no`), Material Consumption, Costing |
-| 6 | **Maintenance** | Asset Management, Preventive Maintenance Schedules, Asset Issue Ticketing |
-| 7 | **Quality Assurance** | QA Checklists, Test Reports, File Uploads, Approval Workflow (`approval_status`) |
-| 8 | **Quality Control** | Incoming Raw Material QC, In-Process QC, Final Product QC, NCR Management (`ncr_no`) |
-| 9 | **Dispatch** | Packing Slips (`packing_slip_no`), Delivery Challans (`challan_no`), Transport Details, POD Upload |
-| 10 | **HR & Self-Service** | Employee Directory, User-Employee Linkage, Attendance Matrix, Leave Applications & Quotas, Self-Service |
-| 11 | **Design** | File Versioning (CAD/PDF), Design Kanban Tasks, Review & Approval Workflows |
-| 12 | **Dashboard** | Dynamic real-time KPI Cards in ₹, Month-over-Month (MoM) live trend calculations, Sales Trend Analytics, Inventory Breakdown, Activity Feed |
-| 13 | **Settings** | System-wide settings & company configuration in dual-theme layout |
+</div>
 
 ---
 
-## 🎨 Design System & Theme Engine
+## 📋 Executive Overview
 
-- **Dual-Theme Support**: Instant switching between dark mode and light mode with an interactive Sun/Moon toggle button, OS color preference detection, and `localStorage` persistence.
-- **Dynamic Dashboard KPIs**: Real-time MoM comparison percentage calculation across operational metrics.
-- **Precision Status Badges**: High contrast status indicators for document and workflow states.
-- **React Portal Modals**: Modals render directly into `document.body` via `createPortal`, guaranteeing full-viewport backdrop coverage with zero clipping seams, capped height (`max-h-[90vh]`), and internal content scrolling.
-- **Indian Rupee (₹ INR)**: Built-in `formatINR` formatter utilizing `en-IN` locale digit grouping (e.g. `₹1,50,000.00`).
+**ERP Nexus** is a complete, modular Enterprise Resource Planning (ERP) platform built to manage end-to-end industrial workflows. From sales quotations and purchase orders to bill of materials (BOM), quality control (QC/QA), dispatch tracking, HR self-service, and CAD design reviews, ERP Nexus consolidates core enterprise functions into a unified, high-performance web interface.
+
+Built with a **dual-theme industrial design system** (Light & Dark modes), real-time financial KPI analytics formatted in Indian Rupee (`₹ INR`), strict Role-Based Access Control (RBAC), and security hardening, ERP Nexus is optimized for both desktop and mobile operations.
 
 ---
 
-## 🔒 Security & Safe Pushing Guidelines
+## 🏛️ System Architecture
 
-- **Environment File Protection**: `.env`, `.env.local`, and sensitive environment files are excluded via `.gitignore`. Never commit API keys, secrets, or passwords.
-- **XSS Protection**: Tokens stored in memory and `httpOnly`, `Secure`, `SameSite=Strict` cookies. Strict `Content-Security-Policy` active via `helmet`.
-- **Brute-Force Rate Limiting**: Sensitive auth endpoints (`/login`, `/register`) protected via `express-rate-limit` (10 attempts / 15 mins per IP).
-- **MIME & Extension Validation**: File uploads restricted by file extension and actual MIME header verification.
-- **SQL Injection Prevention**: 100% parameterized queries across all database operations.
-- **Idempotent Database Schema**: Consolidated master schema file under `backend/db/schema.sql`.
+```
+                               ┌─────────────────────────────────────────┐
+                               │             React 18 + Vite             │
+                               │        Dual-Theme CSS System            │
+                               │    (Context API + Recharts + Lucide)    │
+                               └────────────────────┬────────────────────┘
+                                                    │
+                                         REST API / Axios (JSON)
+                                         httpOnly Refresh Cookie
+                                                    │
+                               ┌────────────────────▼────────────────────┐
+                               │           Node.js + Express API         │
+                               │   Helmet (CSP) | Rate Limiter | RBAC    │
+                               └────────────────────┬────────────────────┘
+                                                    │
+                                       Parameterized SQL (pg pool)
+                                                    │
+                               ┌────────────────────▼────────────────────┐
+                               │      PostgreSQL (Supabase / Self-host)   │
+                               │  59 Tables | Triggers | Sequences | FKs │
+                               └─────────────────────────────────────────┘
+```
 
 ---
 
-## 🚀 Quick Start & Installation
+## ✨ Key Features
+
+- 🌓 **Dual-Theme Industrial Engine**: Instant seamless toggle between dark mode and light mode, system preference auto-detection, and `localStorage` state persistence.
+- 📊 **Real-Time Financial & MoM Analytics**: Dashboard KPI cards featuring Month-over-Month (MoM) trend calculations formatted in Indian Rupee (`₹ INR`).
+- 🛡️ **Role-Based Access Control (RBAC)**: Fine-grained permission system protecting API endpoints and UI components across 45 module actions (`view`, `create`, `edit`, `delete`, `review`).
+- 🔒 **Enterprise-Grade Security**:
+  - `httpOnly`, `Secure`, `SameSite` cookie handling for token refresh authentication.
+  - Helmet Content-Security-Policy (CSP) headers & `express-rate-limit` brute-force protection.
+  - 100% Parameterized SQL queries preventing SQL injection risks.
+- 🗄️ **Consolidated Database Architecture**: Single source of truth master `schema.sql` defining 59 relational tables, auto-updating `updated_at` triggers, foreign key constraints, and document sequence generators.
+- 🖨️ **Print & Document Generation**: Dedicated printable views for Invoices, Purchase Orders, Quotations, Delivery Challans, and Packing Slips.
+
+---
+
+## 🗂️ Module Overview
+
+ERP Nexus includes 13 fully integrated operational modules:
+
+| # | Module | Core Functionality & Deliverables |
+|---|--------|----------------------------------|
+| **01** | **Auth & User Security** | `httpOnly` JWT refresh tokens, rate-limited login, user approval queue, activity audit log tracking, department assignment. |
+| **02** | **Sales Management** | Customer directory, Quotations (`quotation_no`), Sales Orders (`order_no`), Invoices (`invoice_no`), Collections in ₹. |
+| **03** | **Procurement & Purchase** | Vendor database, Purchase Orders (`po_no`), Multi-level PO approval workflow, Vendor Invoices, Rejection tracking. |
+| **04** | **Store & Inventory** | Master Item Catalog (`item_type`), Goods Receipt Notes (`grn_no`), Stock Transactions, Warehouse Ledger, Min/Max stock alerts. |
+| **05** | **Production & Manufacturing** | Versioned Bill of Materials (BOM), Work Orders (`wo_no`), Material Consumption tracking, Direct & Indirect Costing calculations. |
+| **06** | **Equipment Maintenance** | Asset Registry, Preventive Maintenance Schedules, Technician assignments, Asset Breakdown & Repair Issue Ticketing. |
+| **07** | **Quality Assurance (QA)** | QA Checklists, Work Order Testing, QA Test Reports, Attachments, Multi-stage Approval Workflow (`approval_status`). |
+| **08** | **Quality Control (QC)** | Incoming Raw Material QC, In-Process QC, Final Product QC, Non-Conformance Reports (NCR - `ncr_no`). |
+| **09** | **Logistics & Dispatch** | Packing Slips (`packing_slip_no`), Delivery Challans (`challan_no`), Transport & Carrier details, Proof of Delivery (POD) attachments. |
+| **10** | **HR & Employee Self-Service**| Employee Profiles, User-Employee Linkage, Daily Attendance Matrix, Leave Quota Balances & Self-Service Applications. |
+| **11** | **Design & Engineering** | CAD & PDF File Version Control, Kanban Task Board, Design Review Workflows & Approval Sign-offs. |
+| **12** | **Executive Dashboard** | Real-time MoM KPI Cards in ₹, Live Sales Trend Charts, Inventory Breakdown, Recent Activity Feed, Quick Actions. |
+| **13** | **System Settings** | Global Company Profiles (GSTIN, Address, Bank Details), PO Threshold configurations, Dual-theme UI customization. |
+
+---
+
+## 🛠️ Tech Stack & Dependencies
+
+### Frontend
+- **Framework**: React 18 + Vite
+- **Styling**: Custom Dual-Theme CSS Token Engine + TailwindCSS Utilities
+- **State & Routing**: React Context API, React Router v6
+- **UI & Analytics**: Recharts (Data Visualization), Lucide React (Icons), React Hot Toast (Notifications), React Portals (Modals)
+
+### Backend
+- **Runtime**: Node.js (ES Modules)
+- **Framework**: Express.js
+- **Security**: Helmet, Express Rate Limit, Cookie Parser, bcryptjs, JsonWebToken
+- **Database Driver**: `pg` (Node-Postgres connection pool)
+- **Database**: PostgreSQL / Supabase
+
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-- **Node.js**: ≥ 18.x
-- **PostgreSQL**: Local instance or [Supabase](https://supabase.com) project
-- **npm**
+- **Node.js**: `v18.x` or higher
+- **PostgreSQL**: Local PostgreSQL or a free [Supabase](https://supabase.com) instance
+- **Package Manager**: `npm`
 
 ---
 
-### 1. Clone & Setup
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/tejaspatel2255/ERP-System.git
@@ -76,14 +122,9 @@ cd ERP-System
 
 ---
 
-### 2. Backend Setup
+### 2. Configure Environment Variables
 
-```bash
-cd backend
-npm install
-```
-
-Create `backend/.env` (Copy template from `backend/.env.example`):
+Create `backend/.env` (refer to `backend/.env.example`):
 
 ```env
 PORT=5000
@@ -93,84 +134,109 @@ CLIENT_URL=http://localhost:3000
 # PostgreSQL / Supabase Connection
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
 
-# JWT Secrets (use long random strings)
-JWT_SECRET=your_jwt_secret_64_chars
-JWT_REFRESH_SECRET=your_jwt_refresh_secret_64_chars
+# JWT Secret Keys
+JWT_SECRET=your_jwt_access_secret_min_64_chars
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_min_64_chars
 
-# Supabase Storage
-SUPABASE_URL=https://[YOUR_REF].supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-```
-
-Run Master Database Schema Setup:
-```bash
-node scripts/run_migration.js
-```
-
-Start Backend:
-```bash
-npm run dev
+# Supabase Storage Integration
+SUPABASE_URL=https://[REF].supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
 ---
 
-### 3. Frontend Setup
+### 3. Initialize Database Schema
 
+Execute the consolidated master schema to create all 59 tables, triggers, indexes, sequences, and seed data:
+
+```bash
+cd backend
+npm install
+node scripts/run_migration.js
+```
+
+---
+
+### 4. Start Development Servers
+
+**Backend**:
+```bash
+cd backend
+npm run dev
+```
+*(Backend runs on `http://localhost:5000`)*
+
+**Frontend**:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-The frontend will start at `http://localhost:3000`.
-
----
-
-## 📤 Pushing Safely to GitHub
-
-To push your updates safely to GitHub without exposing secrets:
-
-```bash
-# 1. Check status to confirm no sensitive files (.env) are tracked
-git status
-
-# 2. Add all tracked changes
-git add .
-
-# 3. Commit with a descriptive message
-git commit -m "feat: complete ERP Nexus deployment with consolidated schema and optimized frontend build"
-
-# 4. Push safely to GitHub
-git push origin main
-```
+*(Frontend runs on `http://localhost:3000`)*
 
 ---
 
-## 📁 Project Structure
+### 5. Initial Login Credentials
+
+Once the database is initialized, log in with the pre-seeded System Administrator account:
+- **Email**: `admin@erp.com`
+- **Password**: `admin123`
+
+---
+
+## 📦 Production Deployment
+
+### Frontend (e.g. Vercel / Netlify)
+1. Set Root Directory: `frontend`
+2. Build Command: `npm run build`
+3. Output Directory: `dist`
+4. Environment Variable: `VITE_API_BASE_URL=https://your-api-domain.com/api`
+
+### Backend (e.g. Render / Railway / Fly.io)
+1. Set Root Directory: `backend`
+2. Build Command: `npm install`
+3. Start Command: `npm start`
+4. Set Environment Variables: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL`, `NODE_ENV=production`
+
+---
+
+## 📁 Repository Structure
 
 ```
 ERP-System/
 ├── backend/
-│   ├── controllers/        # Business logic for all 13 modules
-│   ├── db/                 # Consolidated master schema.sql
-│   ├── middleware/         # auth.js, rbac.js, upload.js, errorHandler.js
-│   ├── models/             # db.js (PostgreSQL pool)
-│   ├── routes/             # Express routers
-│   ├── scripts/            # Admin seed, migration runner, and schema check scripts
+│   ├── controllers/        # Express request handlers for all 13 modules
+│   ├── db/                 # Master idempotent schema.sql (59 tables)
+│   ├── middleware/         # Auth, RBAC, Upload, Rate-Limiting, Error Handler
+│   ├── models/             # Database connection pool (pg)
+│   ├── routes/             # API route definitions
+│   ├── scripts/            # Database initialization and diagnostic scripts
 │   └── server.js           # Server entry point
 │
-└── frontend/
-    ├── src/
-    │   ├── api/            # Axios instance with refresh interceptor & API endpoints
-    │   ├── components/     # Modal (Portal), PageHeader, Table, StatusBadge, Navbar
-    │   ├── context/        # AuthContext, RoleContext, ThemeContext
-    │   ├── pages/          # 13 Module Pages + Print Views
-    │   └── utils/          # Currency (formatINR), date, and CSV export helpers
-    └── index.html
+├── frontend/
+│   ├── src/
+│   │   ├── api/            # Axios instance with token refresh interceptors
+│   │   ├── components/     # Table, Portal Modal, PageHeader, Navbar, Badges
+│   │   ├── context/        # AuthContext, RoleContext, ThemeContext
+│   │   ├── pages/          # 13 Operational Module Views & Printable Templates
+│   │   └── utils/          # Indian Rupee formatter (formatINR), Date utilities
+│   ├── index.html
+│   └── vite.config.js      # Optimized build & manual chunking config
+│
+├── .gitignore              # Protected secrets & build outputs
+├── LICENSE                 # MIT License
+└── README.md               # Enterprise Documentation
 ```
 
 ---
 
 ## 📄 License
 
-MIT — open for production use and customization.
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by Tejas Patel for Enterprise Excellence</sub>
+</div>

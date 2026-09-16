@@ -3,16 +3,40 @@
 # ─────────────────────────────────────────────
 .env
 .env.*
+.env.local
+.env.*.local
 !.env.example
 *.env
+*.local
 backend/.env
 backend/.env.*
+backend/.env.local
+backend/.env.*.local
 frontend/.env
 frontend/.env.*
+frontend/.env.local
+frontend/.env.*.local
 *.pem
 *.key
-*.cert
+*.p12
 *.crt
+*.cer
+*.jks
+*.pfx
+
+# ─────────────────────────────────────────────
+# DATABASE / LOCAL DATA / BACKUPS
+# ─────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.dump
+*.sql.gz
+backup/
+backups/
+local-data/
+postgres-data/
 
 # ─────────────────────────────────────────────
 # DEPENDENCIES
@@ -30,9 +54,14 @@ backend/dist/
 frontend/dist/
 frontend/.vite/
 backend/uploads/
+backend/uploads/**
 backend/logs/
+backend/logs/**
 *.log
+*.log.*
 .vercel/
+.cache/
+.parcel-cache/
 
 # ─────────────────────────────────────────────
 # TESTING & COVERAGE
@@ -41,10 +70,19 @@ coverage/
 .nyc_output/
 
 # ─────────────────────────────────────────────
-# IDE & OS METADATA
+# TEMP / GENERATED FILES
 # ─────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
 .DS_Store
 Thumbs.db
+
+# ─────────────────────────────────────────────
+# IDE & OS METADATA
+# ─────────────────────────────────────────────
 .vscode/
 !.vscode/extensions.json
 .idea/
@@ -53,3 +91,13 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# ─────────────────────────────────────────────
+# GITHUB / SECURITY CHECKS
+# ─────────────────────────────────────────────
+*.secret
+secrets/
+private/
+
+# Optional: keep this repo lean for public GitHub pushes
+package-lock.json

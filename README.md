@@ -124,25 +124,22 @@ cd ERP-System
 
 ### 2. Configure Environment Variables
 
-Create `backend/.env` (refer to `backend/.env.example`):
+Create local environment files for each app. Never commit real secrets to GitHub. Use placeholders and keep your actual values only in local files:
 
-```env
+```bash
+# backend/.env
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:3000
-
-# PostgreSQL / Supabase Connection
 DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
-
-# JWT Secret Keys
 JWT_SECRET=your_jwt_access_secret_min_64_chars
 JWT_REFRESH_SECRET=your_jwt_refresh_secret_min_64_chars
-
-# Supabase Storage Integration
 SUPABASE_URL=https://[REF].supabase.co
 SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
+
+> The repository is configured to ignore `.env` files, local database files, uploads, logs, and generated build assets. Only commit safe example values or `.env.example` templates.
 
 ---
 
@@ -185,7 +182,33 @@ Once the database is initialized, log in with the pre-seeded System Administrato
 
 ---
 
-## 📦 Production Deployment
+## � GitHub Safety Checklist
+
+Before pushing this project to GitHub, make sure the following are true:
+
+- `.env`, `.env.local`, `backend/.env`, and similar secret files are not tracked.
+- Uploaded files, generated logs, local database dumps, and temporary files are excluded by `.gitignore`.
+- No real SSL keys, service account files, or production credentials are added to the repository.
+- You use a local-only environment for development data and credentials.
+
+To verify before pushing:
+
+```bash
+git status --short
+git ls-files | grep -E "(\.env|uploads|\.pem|\.key|\.crt|\.db|\.sqlite|logs)"
+```
+
+If a secret was already committed in git history, remove it from tracking and rotate the exposed secret immediately:
+
+```bash
+git rm -r --cached .env backend/.env frontend/.env backend/uploads
+```
+
+Then create a fresh commit and push normally.
+
+---
+
+## �📦 Production Deployment
 
 ### Frontend (e.g. Vercel / Netlify)
 1. Set Root Directory: `frontend`

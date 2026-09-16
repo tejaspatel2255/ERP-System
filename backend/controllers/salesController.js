@@ -49,8 +49,9 @@ export const getCustomers = async (req, res, next) => {
 export const createCustomer = async (req, res, next) => {
   const { name, email, phone, address, gstin, credit_limit } = req.body;
   if (!name) return res.status(400).json({ success: false, message: 'Customer name is required.' });
-  if (gstin && !GSTIN_REGEX.test(gstin)) {
-    return res.status(400).json({ success: false, message: 'GSTIN format is invalid.' });
+  // Optional GSTIN validation (allow up to 15 alphanumeric characters for demo flexibility)
+  if (gstin && gstin.trim().length > 15) {
+    return res.status(400).json({ success: false, message: 'GSTIN format is invalid (max 15 characters).' });
   }
 
   try {

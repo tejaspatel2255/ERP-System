@@ -96,9 +96,9 @@ const CustomersPage = () => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error('Customer name is required.');
 
-    // Validate GSTIN format if provided (15 character alpha-numeric)
-    if (formData.gstin.trim() && formData.gstin.trim().length !== 15) {
-      return toast.error('GSTIN must be exactly 15 characters long.');
+    // Validate GSTIN format if provided (max 15 character alpha-numeric)
+    if (formData.gstin.trim() && formData.gstin.trim().length > 15) {
+      return toast.error('GSTIN cannot exceed 15 characters.');
     }
 
     try {

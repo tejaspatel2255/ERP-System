@@ -3,8 +3,9 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getWorkOrders, createWorkOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder, issueToWorkOrder, updateCosting, getBOMs } from '../../api/productionApi';
+import { getWorkOrders, createWorkOrder, createWorkOrderFromSalesOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder, issueToWorkOrder, updateCosting, getBOMs } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
+import { getOrders } from '../../api/salesApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -20,6 +21,7 @@ const WorkOrdersPage = () => {
   const { hasPermission } = useRole();
   const [wos, setWos] = useState([]);
   const [boms, setBoms] = useState([]);
+  const [openOrders, setOpenOrders] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
@@ -53,7 +55,36 @@ const WorkOrdersPage = () => {
 
   useEffect(() => {
     getBOMs().then(d => { if (d.success) setBoms(d.boms.filter(b => b.is_active)); }).catch(() => {});
+    getOrders({ limit: 100 }).then(d => { if (d.success) setOpenOrders(d.orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled')); }).catch(() => {});
     getItems({ limit: 500 }).then(d => { if (d.success) setAllItems(d.items); }).catch(() => {});
+  }, []);
+
+  const handleSalesOrderSelect = async (soId) => {
+    setForm(p => ({ ...p, sales_order_id: soId }));
+    if (!soId) return;
+    try {
+      const d = await createWorkOrderFromSalesOrder(soId);
+      if (d.success && d.drafts?.length > 0) {
+        const draft = d.drafts.find(dr => dr.has_active_bom) || d.drafts[0];
+        if (draft.bom_id) {
+          setForm(p => ({ ...p, bom_id: draft.bom_id, planned_qty: draft.planned_qty }));
+          toast.success(`Pre-filled WO for ${draft.finished_item_name} from ${draft.sales_order_no}`);
+        } else {
+          toast.error(`No active BOM found for item ${draft.finished_item_name}`);
+        }
+      }
+    } catch {
+      toast.error('Failed to pre-fill from Sales Order.');
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const soId = params.get('so_id');
+    if (soId) {
+      setIsFormOpen(true);
+      handleSalesOrderSelect(soId);
+    }
   }, []);
 
   const openCreate = () => {
@@ -184,7 +215,18 @@ const WorkOrdersPage = () => {
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Sales Order Ref (optional)</label>
-              <input value={form.sales_order_id} onChange={e => setForm(p => ({ ...p, sales_order_id: e.target.value }))} placeholder="SO ID or leave blank" className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <select
+                value={form.sales_order_id}
+                onChange={e => handleSalesOrderSelect(e.target.value)}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+              >
+                <option value="">— Direct Production (No SO) —</option>
+                {openOrders.map(o => (
+                  <option key={o.id} value={o.id}>
+                    {o.order_no} - {o.customer_name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Planned Start</label>

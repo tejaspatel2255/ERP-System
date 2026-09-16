@@ -3,7 +3,7 @@ import { verifyToken } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import {
   getBOMs, createBOM, getBOMById, updateBOM, activateBOM,
-  getWorkOrders, createWorkOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder,
+  getWorkOrders, createWorkOrder, createWorkOrderFromSalesOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder,
   issueToWorkOrder, getConsumptionByWO,
   getCosting, updateCosting
 } from '../controllers/productionController.js';
@@ -21,6 +21,7 @@ router.patch('/bom/:id/activate', requirePermission('production', 'edit'), activ
 // Work Orders
 router.get('/work-orders', requirePermission('production', 'view'), getWorkOrders);
 router.post('/work-orders', requirePermission('production', 'create'), createWorkOrder);
+router.post('/work-orders/from-sales-order/:soId', requirePermission('production', 'create'), createWorkOrderFromSalesOrder);
 router.get('/work-orders/:id', requirePermission('production', 'view'), getWorkOrderById);
 router.patch('/work-orders/:id/start', requirePermission('production', 'edit'), startWorkOrder);
 router.patch('/work-orders/:id/complete', requirePermission('production', 'edit'), completeWorkOrder);

@@ -25,6 +25,7 @@ const OrdersPage = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
   const [viewingItems, setViewingItems] = useState([]);
+  const [viewingAvailability, setViewingAvailability] = useState([]);
   const [linkedInvoice, setLinkedInvoice] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -55,6 +56,7 @@ const OrdersPage = () => {
       if (res.success) {
         setViewingOrder(res.order);
         setViewingItems(res.items);
+        setViewingAvailability(res.availability || []);
         setLinkedInvoice(res.invoice);
         setIsViewOpen(true);
       }
@@ -272,6 +274,56 @@ const OrdersPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Stock Availability Breakdown */}
+            {viewingAvailability?.length > 0 && (
+              <div className="space-y-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Inventory Stock Availability</h4>
+                  {viewingAvailability.some(a => a.shortfall > 0) ? (
+                    <span className="text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950/40 px-2 py-0.5 rounded border border-red-200">
+                      Stock Shortfall Detected
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold text-green-600 bg-green-100 dark:bg-green-950/40 px-2 py-0.5 rounded border border-green-200">
+                      In Stock
+                    </span>
+                  )}
+                </div>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {viewingAvailability.map((a, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-1 text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-900 dark:text-white">{a.item_name}</span>
+                        <span className="text-[10px] text-slate-400 ml-2">({a.item_code})</span>
+                      </div>
+                      <div className="flex gap-4 text-slate-600 dark:text-slate-400">
+                        <span>Required: <strong>{a.required_qty}</strong></span>
+                        <span>Available: <strong>{a.available_qty}</strong></span>
+                        {a.shortfall > 0 ? (
+                          <span className="text-red-600 font-bold">Shortfall: -{a.shortfall}</span>
+                        ) : (
+                          <span className="text-green-600 font-bold">OK</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {hasPermission('production', 'create') && (
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      onClick={() => {
+                        setIsViewOpen(false);
+                        window.location.href = `/production/work-orders?so_id=${viewingOrder.id}`;
+                      }}
+                      className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                    >
+                      + Create Work Order for SO
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Bottom summary */}
             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">

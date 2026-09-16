@@ -13,6 +13,7 @@ export const activateBOM = (id) => api.patch(`/production/bom/${id}/activate`).t
 // Work Orders
 export const getWorkOrders = (filters = {}) => api.get(`/production/work-orders?${p(filters)}`).then(r => r.data);
 export const createWorkOrder = (data) => api.post('/production/work-orders', data).then(r => r.data);
+export const createWorkOrderFromSalesOrder = (soId) => api.post(`/production/work-orders/from-sales-order/${soId}`).then(r => r.data);
 export const getWorkOrderById = (id) => api.get(`/production/work-orders/${id}`).then(r => r.data);
 export const startWorkOrder = (id) => api.patch(`/production/work-orders/${id}/start`).then(r => r.data);
 export const completeWorkOrder = (id, produced_qty) => api.patch(`/production/work-orders/${id}/complete`, { produced_qty }).then(r => r.data);

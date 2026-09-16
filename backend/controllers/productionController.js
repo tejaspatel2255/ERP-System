@@ -216,6 +216,53 @@ export const completeWorkOrder = async (req, res, next) => {
   } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 
+export const createWorkOrderFromSalesOrder = async (req, res, next) => {
+  const { soId } = req.params;
+  try {
+    const soRes = await db.query(`
+      SELECT so.*, c.name AS customer_name
+      FROM sales_orders so
+      LEFT JOIN customers c ON so.customer_id = c.id
+      WHERE so.id = $1
+    `, [soId]);
+
+    if (soRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Sales Order not found.' });
+    }
+
+    const so = soRes.rows[0];
+    const itemsRes = await db.query(`
+      SELECT soi.*, i.name AS item_name, i.item_code, i.unit,
+             b.id AS active_bom_id, b.version AS bom_version
+      FROM sales_order_items soi
+      JOIN items i ON soi.item_id = i.id
+      LEFT JOIN bom b ON b.finished_item_id = i.id AND b.is_active = TRUE
+      WHERE soi.order_id = $1
+    `, [soId]);
+
+    const drafts = itemsRes.rows.map(item => ({
+      sales_order_id: so.id,
+      sales_order_no: so.order_no,
+      customer_name: so.customer_name,
+      finished_item_id: item.item_id,
+      finished_item_name: item.item_name,
+      finished_item_code: item.item_code,
+      bom_id: item.active_bom_id || null,
+      bom_version: item.bom_version || null,
+      planned_qty: parseFloat(item.qty || 0),
+      has_active_bom: !!item.active_bom_id
+    }));
+
+    return res.status(200).json({
+      success: true,
+      salesOrder: so,
+      drafts
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export const cancelWorkOrder = async (req, res, next) => {
   const { id } = req.params;
   try {

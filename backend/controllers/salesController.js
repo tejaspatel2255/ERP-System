@@ -549,11 +549,25 @@ export const getOrderById = async (req, res, next) => {
     if (orderRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Sales Order not found.' });
 
     const itemsRes = await db.query(`
-      SELECT soi.*, i.name AS item_name, i.item_code
+      SELECT soi.*, i.name AS item_name, i.item_code, COALESCE(i.current_stock, 0)::float AS current_stock
       FROM sales_order_items soi
       LEFT JOIN items i ON soi.item_id = i.id
       WHERE soi.order_id = $1
     `, [id]);
+
+    const availability = itemsRes.rows.map(item => {
+      const requiredQty = parseFloat(item.qty || 0);
+      const availableQty = parseFloat(item.current_stock || 0);
+      const shortfall = Math.max(0, requiredQty - availableQty);
+      return {
+        item_id: item.item_id,
+        item_name: item.item_name,
+        item_code: item.item_code,
+        required_qty: requiredQty,
+        available_qty: availableQty,
+        shortfall
+      };
+    });
 
     const invoiceRes = await db.query(`
       SELECT id, invoice_no, invoice_date, due_date, status, total_amount, paid_amount 
@@ -565,6 +579,8 @@ export const getOrderById = async (req, res, next) => {
       success: true,
       order: orderRes.rows[0],
       items: itemsRes.rows,
+      availability,
+      hasShortfall: availability.some(a => a.shortfall > 0),
       invoice: invoiceRes.rows[0] || null
     });
   } catch (error) {

@@ -160,17 +160,17 @@ export const updateItem = async (req, res, next) => {
 export const deleteItem = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const stockCheck = await db.query(`SELECT current_stock FROM items WHERE id = $1`, [id]);
-    if (stockCheck.rows.length === 0) return res.status(404).json({ success: false, message: 'Item not found.' });
-
-    if (parseFloat(stockCheck.rows[0].current_stock) > 0) {
-      return res.status(400).json({ success: false, message: 'Cannot delete item with existing stock. Issue or adjust stock first.' });
-    }
+    const itemCheck = await db.query(`SELECT id FROM items WHERE id = $1`, [id]);
+    if (itemCheck.rows.length === 0) return res.status(404).json({ success: false, message: 'Item not found.' });
 
     await db.query(`DELETE FROM items WHERE id = $1`, [id]);
     await logActivity(req.user.id, 'DELETE_ITEM', 'store', id, req);
     return res.status(200).json({ success: true, message: 'Item deleted successfully.' });
   } catch (error) {
+    // FK violation — item is referenced in BOM / GRN etc.
+    if (error.code === '23503') {
+      return res.status(400).json({ success: false, message: 'Cannot delete: item is referenced in existing transactions (GRN, BOM, etc.).' });
+    }
     next(error);
   }
 };

@@ -14,6 +14,7 @@ export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [alertCount, setAlertCount] = useState(0);
   const [qaCount, setQaCount] = useState(0);
 
@@ -100,15 +101,71 @@ export default function Navbar({ onMenuClick }) {
           <Search size={18} />
         </button>
 
-        {/* Bell Icon Button with count badge */}
-        <button className="relative rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors">
-          <Bell size={18} />
-          {totalNotifications > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-danger text-[9px] font-black text-white">
-              {totalNotifications}
-            </span>
+        {/* Bell Icon Button with count badge + Notification Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setNotifOpen(prev => !prev)}
+            className="relative rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+          >
+            <Bell size={18} />
+            {totalNotifications > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-danger text-[9px] font-black text-white">
+                {totalNotifications}
+              </span>
+            )}
+          </button>
+
+          {notifOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+              <div className="absolute right-0 mt-2 w-72 z-50 origin-top-right rounded-xl border border-border-color bg-bg-card shadow-brand">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border-color">
+                  <span className="text-sm font-bold text-text-primary">Notifications</span>
+                  {totalNotifications > 0 && (
+                    <span className="rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-black text-white">{totalNotifications}</span>
+                  )}
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {alertCount > 0 && (
+                    <Link
+                      to="/store/stock-position"
+                      onClick={() => setNotifOpen(false)}
+                      className="flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors border-b border-border-color"
+                    >
+                      <span className="mt-0.5 h-2 w-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-text-primary">{alertCount} Low / Critical Stock Item{alertCount > 1 ? 's' : ''}</p>
+                        <p className="text-xs text-text-muted mt-0.5">Click to view stock position</p>
+                      </div>
+                    </Link>
+                  )}
+                  {qaCount > 0 && (
+                    <Link
+                      to="/qa/reports"
+                      onClick={() => setNotifOpen(false)}
+                      className="flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors border-b border-border-color"
+                    >
+                      <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-500 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-text-primary">{qaCount} QA Report{qaCount > 1 ? 's' : ''} Pending Approval</p>
+                        <p className="text-xs text-text-muted mt-0.5">Click to review QA reports</p>
+                      </div>
+                    </Link>
+                  )}
+                  {totalNotifications === 0 && (
+                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
+                      <Bell size={24} className="mb-2 opacity-30" />
+                      <p className="text-xs">No new notifications</p>
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 py-2 border-t border-border-color">
+                  <p className="text-[10px] text-text-muted text-center">Alerts refresh on page load</p>
+                </div>
+              </div>
+            </>
           )}
-        </button>
+        </div>
 
         {/* Vertical divider */}
         <div className="h-6 w-[1px] bg-border-color" />

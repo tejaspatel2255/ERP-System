@@ -53,7 +53,7 @@ export const createPackingSlip = async (req, res, next) => {
       }
     }
 
-    // 2. Check quantity to pack (cannot exceed remaining)
+    // 2. Check quantity to pack (cannot exceed remaining) & check current stock
     for (const item of items) {
       const qtyToPack = parseFloat(item.qty);
       if (qtyToPack <= 0) {
@@ -91,6 +91,27 @@ export const createPackingSlip = async (req, res, next) => {
           message: `Requested pack quantity (${qtyToPack}) exceeds remaining quantity to dispatch (${remaining}) for this item.`
         });
       }
+
+      // Check current_stock >= qtyToPack for item_id
+      const itemStockRes = await client.query(`
+        SELECT id, name, current_stock FROM items WHERE id = $1 FOR UPDATE
+      `, [item.item_id]);
+
+      if (itemStockRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ success: false, message: 'Item not found in inventory.' });
+      }
+
+      const currentStock = parseFloat(itemStockRes.rows[0].current_stock || 0);
+      const itemName = itemStockRes.rows[0].name;
+
+      if (currentStock < qtyToPack) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for item "${itemName}". Available stock: ${currentStock}, Requested pack quantity: ${qtyToPack}.`
+        });
+      }
     }
 
     // 3. Create packing slip
@@ -101,12 +122,24 @@ export const createPackingSlip = async (req, res, next) => {
     `, [order_id, req.user.id, notes || null, psNo]);
     const psId = psRes.rows[0].id;
 
-    // 4. Create packing slip items
+    // 4. Create packing slip items, insert stock transactions, and update current_stock
     for (const item of items) {
+      const qtyToPack = parseFloat(item.qty);
       await client.query(`
         INSERT INTO packing_slip_items (packing_slip_id, item_id, qty, batch_no)
         VALUES ($1, $2, $3, $4)
-      `, [psId, item.item_id, parseFloat(item.qty), item.batch_no || null]);
+      `, [psId, item.item_id, qtyToPack, item.batch_no || null]);
+
+      await client.query(`
+        INSERT INTO stock_transactions (item_id, transaction_type, qty, reference_type, reference_id, date, notes, created_by)
+        VALUES ($1, 'OUT', $2, 'PackingSlip', $3, CURRENT_DATE, $4, $5)
+      `, [item.item_id, qtyToPack, psId, `Dispatched via Packing Slip ${psNo}`, req.user.id]);
+
+      await client.query(`
+        UPDATE items
+        SET current_stock = current_stock - $1, updated_at = NOW()
+        WHERE id = $2
+      `, [qtyToPack, item.item_id]);
     }
 
     await client.query('COMMIT');

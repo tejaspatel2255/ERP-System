@@ -73,9 +73,9 @@ export default function PackingSlipsPage() {
       item_id: item.item_id,
       item_name: item.item_name,
       item_code: item.item_code,
-      packed_qty: parseFloat(packQuantities[item.item_id] || 0),
+      qty: parseFloat(packQuantities[item.item_id] || 0),
       batch_no: batchNumbers[item.item_id] || ''
-    })).filter(i => i.packed_qty > 0);
+    })).filter(i => i.qty > 0);
 
     if (itemsToPack.length === 0) {
       setError('Please specify packed quantity for at least one item.');
@@ -84,9 +84,9 @@ export default function PackingSlipsPage() {
 
     try {
       await createPackingSlip({
-        sales_order_id: selectedOrderId,
+        order_id: selectedOrderId,
         notes,
-        packed_items: itemsToPack
+        items: itemsToPack
       });
       setSuccess('Packing slip created successfully!');
       setShowModal(false);

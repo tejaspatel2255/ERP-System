@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getRawMaterialQC, createRawMaterialQC } from '../../api/qcApi';
+import { getRawMaterialQC, createRawMaterialQC, approveRawMaterialQC } from '../../api/qcApi';
 import { getGRNs, getGRNById } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
 
@@ -63,17 +63,44 @@ const RawMaterialQCPage = () => {
     }
   };
 
+  const handleApprove = async (id, result) => {
+    try {
+      const res = await approveRawMaterialQC(id, { result });
+      if (res.success) {
+        toast.success(`QC updated to ${result}!`);
+        fetchRecords();
+      }
+    } catch {
+      toast.error('Failed to update QC status.');
+    }
+  };
+
   const columns = [
     { key: 'grn_no', label: 'GRN No' },
     { key: 'item_name', label: 'Raw Material Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
     { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
     { key: 'result', label: 'Inspection Result', render: i => {
-      const cls = i.result === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200 font-bold';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{i.result}</span>;
+      let cls = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      if (i.result === 'Pass' || i.result === 'Approved') cls = 'bg-green-100 text-green-800 border-green-200';
+      if (i.result === 'Fail' || i.result === 'Rejected') cls = 'bg-red-100 text-red-800 border-red-200 font-bold';
+      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{i.result || 'Pending'}</span>;
     }},
-    { key: 'rejection_qty', label: 'Rejected Qty', render: i => parseFloat(i.rejection_qty) },
-    { key: 'notes', label: 'Notes', render: i => i.notes || '—' }
+    { key: 'actions', label: 'Actions', render: i => {
+      if (i.result === 'Pending' || !i.result) {
+        return (
+          <div className="flex gap-2">
+            <button onClick={() => handleApprove(i.id, 'Pass')} className="px-2.5 py-1 text-xs font-semibold bg-accent-success/20 text-accent-success hover:bg-accent-success hover:text-white rounded-lg transition-colors">
+              Pass & Stock IN
+            </button>
+            <button onClick={() => handleApprove(i.id, 'Fail')} className="px-2.5 py-1 text-xs font-semibold bg-accent-danger/20 text-accent-danger hover:bg-accent-danger hover:text-white rounded-lg transition-colors">
+              Fail (NCR)
+            </button>
+          </div>
+        );
+      }
+      return <span className="text-xs text-text-muted">Completed</span>;
+    }}
   ];
 
   return (

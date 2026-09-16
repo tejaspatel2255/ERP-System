@@ -184,12 +184,22 @@ export const completeWorkOrder = async (req, res, next) => {
     const woRes = await client.query(`SELECT * FROM work_orders WHERE id = $1`, [id]);
     if (!woRes.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, message: 'WO not found.' }); }
     const wo = woRes.rows[0];
-    const bomRes = await client.query(`SELECT finished_item_id FROM bom WHERE id = $1`, [wo.bom_id]);
-    const finishedItemId = bomRes.rows[0]?.finished_item_id;
-    if (finishedItemId) {
-      await client.query(`INSERT INTO stock_transactions (item_id, transaction_type, qty, reference_type, reference_id, date, notes, created_by) VALUES ($1,'IN',$2,'WorkOrder',$3,CURRENT_DATE,$4,$5)`, [finishedItemId, parseFloat(produced_qty), id, `WO Completion: ${wo.wo_no}`, req.user.id]);
-      await client.query(`UPDATE items SET current_stock = current_stock + $1, updated_at = NOW() WHERE id = $2`, [parseFloat(produced_qty), finishedItemId]);
+    // Update work order status and wo_qc_status to Pending inspection
+    await client.query(`
+      UPDATE work_orders
+      SET status = 'Completed', wo_qc_status = 'Pending', actual_end = CURRENT_DATE, produced_qty = $1, updated_at = NOW()
+      WHERE id = $2
+    `, [parseFloat(produced_qty), id]);
+
+    // Auto-create pending qc_final record if one does not already exist
+    const existingQc = await client.query(`SELECT id FROM qc_final WHERE work_order_id = $1`, [id]);
+    if (existingQc.rows.length === 0) {
+      await client.query(`
+        INSERT INTO qc_final (work_order_id, inspected_by, inspection_date, result, notes)
+        VALUES ($1, $2, CURRENT_DATE, 'Pending', $3)
+      `, [id, req.user.id, `Pending final product QC approval for WO ${wo.wo_no}`]);
     }
+
     const matCostRes = await client.query(`
       SELECT COALESCE(SUM(mc.qty_issued * COALESCE((SELECT poi.unit_price FROM purchase_order_items poi JOIN purchase_orders po ON poi.po_id = po.id WHERE poi.item_id = mc.item_id AND po.approval_status = 'Approved' ORDER BY po.po_date DESC LIMIT 1), 0)), 0)::float AS material_cost
       FROM material_consumption mc WHERE mc.work_order_id = $1
@@ -199,10 +209,10 @@ export const completeWorkOrder = async (req, res, next) => {
       INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost) VALUES ($1,$2,0,0,$2)
       ON CONFLICT (work_order_id) DO UPDATE SET material_cost = $2, total_cost = $2 + production_costs.labor_cost + production_costs.overhead_cost, updated_at = NOW()
     `, [id, materialCost]);
-    await client.query(`UPDATE work_orders SET status = 'Completed', actual_end = CURRENT_DATE, produced_qty = $1, updated_at = NOW() WHERE id = $2`, [parseFloat(produced_qty), id]);
+
     await client.query('COMMIT');
     await logActivity(req.user.id, 'COMPLETE_WORK_ORDER', 'production', id, req);
-    return res.status(200).json({ success: true, message: 'Work Order completed. Stock updated.' });
+    return res.status(200).json({ success: true, message: 'Work Order completed and submitted for Final QC inspection.' });
   } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 

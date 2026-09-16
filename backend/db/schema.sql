@@ -326,6 +326,7 @@ CREATE TABLE IF NOT EXISTS grn_items (
     ordered_qty NUMERIC(15, 4) NOT NULL,
     received_qty NUMERIC(15, 4) NOT NULL,
     rejected_qty NUMERIC(15, 4) DEFAULT 0.0000,
+    qc_status VARCHAR(20) DEFAULT 'Pending' CHECK (qc_status IN ('Pending','Passed','Failed')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -369,6 +370,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
     actual_start DATE,
     actual_end DATE,
     status VARCHAR(50) DEFAULT 'Pending', -- Pending, In Progress, QA Hold, Completed, Cancelled
+    wo_qc_status VARCHAR(20) DEFAULT 'Pending' CHECK (wo_qc_status IN ('Pending','Passed','Failed')),
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

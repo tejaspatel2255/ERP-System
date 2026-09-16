@@ -38,7 +38,7 @@ const ItemsPage = () => {
   const [editing, setEditing] = useState(null);
   const [codeError, setCodeError] = useState('');
   const [newCatName, setNewCatName] = useState('');
-  const [form, setForm] = useState({ item_code: '', name: '', description: '', unit: 'Pcs', category_id: '', reorder_level: 0, item_type: 'Raw Material' });
+  const [form, setForm] = useState({ item_code: '', name: '', description: '', unit: 'Pcs', category_id: '', reorder_level: 0, item_type: 'Raw Material', opening_stock: 0 });
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -57,13 +57,13 @@ const ItemsPage = () => {
 
   const openCreate = () => {
     setEditing(null); setCodeError('');
-    setForm({ item_code: '', name: '', description: '', unit: 'Pcs', category_id: '', reorder_level: 0, item_type: 'Raw Material' });
+    setForm({ item_code: '', name: '', description: '', unit: 'Pcs', category_id: '', reorder_level: 0, item_type: 'Raw Material', opening_stock: 0 });
     setIsFormOpen(true);
   };
 
   const openEdit = (item) => {
     setEditing(item); setCodeError('');
-    setForm({ item_code: item.item_code, name: item.name, description: item.description || '', unit: item.unit, category_id: item.category_id || '', reorder_level: parseFloat(item.reorder_level), item_type: item.item_type || 'Raw Material' });
+    setForm({ item_code: item.item_code, name: item.name, description: item.description || '', unit: item.unit, category_id: item.category_id || '', reorder_level: parseFloat(item.reorder_level), item_type: item.item_type || 'Raw Material', opening_stock: parseFloat(item.current_stock) || 0 });
     setIsFormOpen(true);
   };
 
@@ -184,13 +184,18 @@ const ItemsPage = () => {
               <input type="number" min="0" step="any" value={form.reorder_level} onChange={e => setForm(p => ({ ...p, reorder_level: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
             </div>
             <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{editing ? 'Current Stock' : 'Opening Stock'}</label>
+              <input type="number" min="0" step="any" value={form.opening_stock} onChange={e => setForm(p => ({ ...p, opening_stock: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="0" />
+              <p className="text-xs text-slate-400 mt-1">{editing ? 'Directly update stock level' : 'Initial stock on creation'}</p>
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Category</label>
               <select value={form.category_id} onChange={e => setForm(p => ({ ...p, category_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
                 <option value="">No Category</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div>
+            <div className="col-span-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
               <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
             </div>

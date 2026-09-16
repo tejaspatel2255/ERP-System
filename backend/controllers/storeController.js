@@ -93,7 +93,7 @@ export const getItems = async (req, res, next) => {
 };
 
 export const createItem = async (req, res, next) => {
-  const { item_code, name, description, unit, category_id, reorder_level, item_type } = req.body;
+  const { item_code, name, description, unit, category_id, reorder_level, item_type, opening_stock } = req.body;
   if (!item_code?.trim() || !name?.trim() || !unit?.trim()) {
     return res.status(400).json({ success: false, message: 'item_code, name, and unit are required.' });
   }
@@ -101,9 +101,9 @@ export const createItem = async (req, res, next) => {
   try {
     const result = await db.query(`
       INSERT INTO items (item_code, name, description, unit, category_id, reorder_level, current_stock, item_type)
-      VALUES ($1, $2, $3, $4, $5, $6, 0, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
-    `, [item_code.trim(), name.trim(), description || null, unit.trim(), category_id || null, reorder_level || 0, item_type || 'Raw Material']);
+    `, [item_code.trim(), name.trim(), description || null, unit.trim(), category_id || null, reorder_level || 0, opening_stock || 0, item_type || 'Raw Material']);
 
     await logActivity(req.user.id, 'CREATE_ITEM', 'store', result.rows[0].id, req);
     return res.status(201).json({ success: true, item: result.rows[0] });
@@ -137,15 +137,16 @@ export const getItemById = async (req, res, next) => {
 
 export const updateItem = async (req, res, next) => {
   const { id } = req.params;
-  const { item_code, name, description, unit, category_id, reorder_level, item_type } = req.body;
+  const { item_code, name, description, unit, category_id, reorder_level, item_type, opening_stock } = req.body;
 
   try {
     const result = await db.query(`
       UPDATE items
-      SET item_code = $1, name = $2, description = $3, unit = $4, category_id = $5, reorder_level = $6, item_type = $7, updated_at = NOW()
-      WHERE id = $8
+      SET item_code = $1, name = $2, description = $3, unit = $4, category_id = $5, reorder_level = $6, item_type = $7,
+          current_stock = COALESCE($8, current_stock), updated_at = NOW()
+      WHERE id = $9
       RETURNING *
-    `, [item_code, name, description, unit, category_id || null, reorder_level || 0, item_type || 'Raw Material', id]);
+    `, [item_code, name, description, unit, category_id || null, reorder_level || 0, item_type || 'Raw Material', opening_stock !== undefined ? opening_stock : null, id]);
 
     if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Item not found.' });
     await logActivity(req.user.id, 'UPDATE_ITEM', 'store', id, req);

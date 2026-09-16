@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Package } from 'lucide-react';
 import { getPackingSlips, createPackingSlip } from '../../api/dispatchApi';
 import { getOrders } from '../../api/salesApi';
+// JSX component references are not recognized by the project's core no-unused-vars rule.
+/* eslint-disable no-unused-vars */
 import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
 import Modal from '../../components/Modal';
 import Table from '../../components/Table';
+/* eslint-enable no-unused-vars */
 
 export default function PackingSlipsPage() {
   const [packingSlips, setPackingSlips] = useState([]);
@@ -84,9 +87,14 @@ export default function PackingSlipsPage() {
 
     try {
       await createPackingSlip({
-        sales_order_id: selectedOrderId,
+        order_id: selectedOrderId,
         notes,
-        packed_items: itemsToPack
+        items: itemsToPack.map(item => ({
+          item_id: item.item_id,
+          item_name: item.item_name,
+          qty: item.packed_qty,
+          batch_no: item.batch_no
+        }))
       });
       setSuccess('Packing slip created successfully!');
       setShowModal(false);
@@ -95,7 +103,10 @@ export default function PackingSlipsPage() {
       setNotes('');
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create packing slip.');
+      const message = err.response?.data?.message || 'Failed to create packing slip.';
+      setError(message.toLowerCase().includes('insufficient stock')
+        ? `Insufficient stock: ${message.replace(/^Insufficient stock for /i, '')}`
+        : message);
     }
   };
 
@@ -152,7 +163,12 @@ export default function PackingSlipsPage() {
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
+      {error && (
+        <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">
+          {error.toLowerCase().startsWith('insufficient stock:') && <p className="font-semibold mb-1">Packing slip rejected</p>}
+          <p>{error}</p>
+        </div>
+      )}
       {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
 
       {packingSlips.length === 0 && !loading ? (

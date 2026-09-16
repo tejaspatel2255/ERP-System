@@ -103,10 +103,37 @@ export const createPackingSlip = async (req, res, next) => {
 
     // 4. Create packing slip items
     for (const item of items) {
+      const qty = parseFloat(item.qty);
+      const stockRes = await client.query(`
+        SELECT current_stock, name
+        FROM items
+        WHERE id = $1
+        FOR UPDATE
+      `, [item.item_id]);
+      const availableStock = parseFloat(stockRes.rows[0]?.current_stock || 0);
+      const itemName = stockRes.rows[0]?.name || item.item_name || item.item_id;
+
+      if (!stockRes.rows.length || availableStock < qty) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${itemName}. Available: ${availableStock}, requested: ${qty}.`
+        });
+      }
+
       await client.query(`
         INSERT INTO packing_slip_items (packing_slip_id, item_id, qty, batch_no)
         VALUES ($1, $2, $3, $4)
-      `, [psId, item.item_id, parseFloat(item.qty), item.batch_no || null]);
+      `, [psId, item.item_id, qty, item.batch_no || null]);
+      await client.query(`
+        INSERT INTO stock_transactions (item_id, transaction_type, qty, reference_type, reference_id, date, notes, created_by)
+        VALUES ($1, 'OUT', $2, 'PackingSlip', $3, CURRENT_DATE, $4, $5)
+      `, [item.item_id, qty, psId, `Packing Slip: ${psNo}`, req.user.id]);
+      await client.query(`
+        UPDATE items
+        SET current_stock = current_stock - $1, updated_at = NOW()
+        WHERE id = $2
+      `, [qty, item.item_id]);
     }
 
     await client.query('COMMIT');

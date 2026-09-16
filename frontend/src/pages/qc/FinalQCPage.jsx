@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getFinalQC, createFinalQC } from '../../api/qcApi';
+import { getFinalQC, approveFinalQC } from '../../api/qcApi';
 import { getWorkOrders } from '../../api/productionApi';
 import { formatDate } from '../../utils/formatDate';
 
@@ -14,7 +14,7 @@ const FinalQCPage = () => {
   const [loading, setLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const [form, setForm] = useState({ work_order_id: '', result: 'Approved', notes: '' });
+  const [form, setForm] = useState({ work_order_id: '', result: 'Pass', notes: '' });
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -31,16 +31,18 @@ const FinalQCPage = () => {
   }, [fetchRecords]);
 
   const openCreate = () => {
-    setForm({ work_order_id: wos[0]?.id || '', result: 'Approved', notes: '' });
+    setForm({ work_order_id: wos[0]?.id || '', result: 'Pass', notes: '' });
     setIsFormOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const d = await createFinalQC(form);
+      const record = records.find(r => r.work_order_id === form.work_order_id && r.wo_qc_status === 'Pending');
+      if (!record) return toast.error('No pending final QC record exists for this work order.');
+      const d = await approveFinalQC(form.work_order_id, { result: form.result, notes: form.notes });
       if (d.success) {
-        toast.success(`Final QC inspection recorded.${form.result === 'Rejected' ? ' NCR generated & Dispatch blocked.' : ''}`);
+        toast.success(`Final QC ${form.result === 'Fail' ? 'failed; NCR generated.' : 'passed; stock updated.'}`);
         setIsFormOpen(false);
         fetchRecords();
       }
@@ -52,8 +54,9 @@ const FinalQCPage = () => {
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
     { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
     { key: 'result', label: 'Final Result', render: i => {
-      const cls = i.result === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200 font-bold';
-      return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{i.result}</span>;
+      const cls = i.wo_qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.wo_qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-amber-100 text-amber-800 border-amber-200';
+      const label = i.wo_qc_status === 'Pending' ? 'Pending stock update' : i.result;
+      return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{label}</span>;
     }},
     { key: 'notes', label: 'Notes', render: i => i.notes || '—' }
   ];
@@ -83,8 +86,8 @@ const FinalQCPage = () => {
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Result *</label>
             <select value={form.result} onChange={e => setForm(p => ({ ...p, result: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
-              <option value="Approved">Approved (Pass for dispatch)</option>
-              <option value="Rejected">Rejected (Block release)</option>
+              <option value="Pass">Pass (Add to stock)</option>
+              <option value="Fail">Fail (Block release)</option>
             </select>
           </div>
           <div>

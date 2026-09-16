@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getRawMaterialQC, createRawMaterialQC } from '../../api/qcApi';
+import { getRawMaterialQC, approveRawMaterialQC } from '../../api/qcApi';
 import { getGRNs, getGRNById } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
 
@@ -15,7 +15,7 @@ const RawMaterialQCPage = () => {
   const [loading, setLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const [form, setForm] = useState({ grn_id: '', item_id: '', result: 'Approved', rejection_qty: '0', notes: '' });
+  const [form, setForm] = useState({ grn_id: '', item_id: '', result: 'Pass', rejection_qty: '0', notes: '' });
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -42,7 +42,7 @@ const RawMaterialQCPage = () => {
   };
 
   const openCreate = () => {
-    setForm({ grn_id: grns[0]?.id || '', item_id: '', result: 'Approved', rejection_qty: '0', notes: '' });
+    setForm({ grn_id: grns[0]?.id || '', item_id: '', result: 'Pass', rejection_qty: '0', notes: '' });
     setGrnItems([]);
     if (grns[0]?.id) handleGRNChange(grns[0].id);
     setIsFormOpen(true);
@@ -52,9 +52,11 @@ const RawMaterialQCPage = () => {
     e.preventDefault();
     if (!form.item_id) return toast.error('Select an item to inspect.');
     try {
-      const d = await createRawMaterialQC(form);
+      const record = records.find(r => r.grn_id === form.grn_id && r.item_id === form.item_id && r.qc_status === 'Pending');
+      if (!record) return toast.error('No pending QC record exists for this GRN item.');
+      const d = await approveRawMaterialQC(record.id, { result: form.result, notes: form.notes });
       if (d.success) {
-        toast.success(`QC recorded.${form.result === 'Rejected' ? ' NCR automatically raised!' : ''}`);
+        toast.success(`QC ${form.result === 'Fail' ? 'failed; NCR automatically raised.' : 'passed; stock updated.'}`);
         setIsFormOpen(false);
         fetchRecords();
       }
@@ -69,8 +71,9 @@ const RawMaterialQCPage = () => {
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
     { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
     { key: 'result', label: 'Inspection Result', render: i => {
-      const cls = i.result === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200 font-bold';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{i.result}</span>;
+      const cls = i.qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-amber-100 text-amber-800 border-amber-200';
+      const label = i.qc_status === 'Pending' ? 'Pending stock update' : i.result;
+      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{label}</span>;
     }},
     { key: 'rejection_qty', label: 'Rejected Qty', render: i => parseFloat(i.rejection_qty) },
     { key: 'notes', label: 'Notes', render: i => i.notes || '—' }
@@ -109,8 +112,8 @@ const RawMaterialQCPage = () => {
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Result *</label>
               <select value={form.result} onChange={e => setForm(p => ({ ...p, result: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
-                <option value="Approved">Approved (Add to stock)</option>
-                <option value="Rejected">Rejected (Isolate / Gate Out)</option>
+                <option value="Pass">Pass (Add to stock)</option>
+                <option value="Fail">Fail (Isolate / Gate Out)</option>
               </select>
             </div>
             <div>

@@ -333,6 +333,7 @@ CREATE TABLE IF NOT EXISTS grn_items (
     ordered_qty NUMERIC(15, 4) NOT NULL,
     received_qty NUMERIC(15, 4) NOT NULL,
     rejected_qty NUMERIC(15, 4) DEFAULT 0.0000,
+    qc_status VARCHAR(20) DEFAULT 'Pending' CHECK (qc_status IN ('Pending','Passed','Failed')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -369,6 +370,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
     wo_no VARCHAR(100) UNIQUE NOT NULL,
     bom_id UUID REFERENCES bom(id) ON DELETE SET NULL,
     sales_order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
+    asset_id UUID,
     planned_qty NUMERIC(15, 4) NOT NULL,
     produced_qty NUMERIC(15, 4) DEFAULT 0.0000,
     planned_start DATE,
@@ -376,6 +378,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
     actual_start DATE,
     actual_end DATE,
     status VARCHAR(50) DEFAULT 'Pending', -- Pending, In Progress, QA Hold, Completed, Cancelled
+    wo_qc_status VARCHAR(20) DEFAULT 'Pending' CHECK (wo_qc_status IN ('Pending','Passed','Failed')),
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -421,6 +424,17 @@ CREATE TABLE IF NOT EXISTS assets (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'work_orders_asset_id_fkey'
+    ) THEN
+        ALTER TABLE work_orders
+            ADD CONSTRAINT work_orders_asset_id_fkey
+            FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- 30. Maintenance Schedules
 CREATE TABLE IF NOT EXISTS maintenance_schedules (
@@ -1050,6 +1064,7 @@ CREATE INDEX IF NOT EXISTS idx_bom_items_bom_id ON bom_items(bom_id);
 CREATE INDEX IF NOT EXISTS idx_bom_items_raw_material_id ON bom_items(raw_material_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_bom_id ON work_orders(bom_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_sales_order_id ON work_orders(sales_order_id);
+CREATE INDEX IF NOT EXISTS idx_work_orders_asset_id ON work_orders(asset_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_created_by ON work_orders(created_by);
 CREATE INDEX IF NOT EXISTS idx_material_consumption_work_order_id ON material_consumption(work_order_id);
 CREATE INDEX IF NOT EXISTS idx_material_consumption_item_id ON material_consumption(item_id);

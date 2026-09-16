@@ -77,6 +77,22 @@ const AssetsPage = () => {
       setIsFormOpen(false);
       fetchAssets();
     } catch (err) {
+      const warning = err.response?.data;
+      if (editing && warning?.warning && warning.affectedWorkOrders?.length) {
+        const workOrderList = warning.affectedWorkOrders.map(workOrder => `${workOrder.wo_no} (${workOrder.status})`).join(', ');
+        if (window.confirm(`${warning.message}\n\nAffected work orders: ${workOrderList}\n\nContinue status change?`)) {
+          try {
+            await updateAsset(editing.id, { ...form, confirm_affected_work_orders: true });
+            toast.success('Asset updated. Active work orders were flagged.');
+            setIsFormOpen(false);
+            fetchAssets();
+          } catch (retryError) {
+            toast.error(retryError.response?.data?.message || 'Save failed.');
+          }
+          return;
+        }
+        return;
+      }
       toast.error(err.response?.data?.message || 'Save failed.');
     }
   };

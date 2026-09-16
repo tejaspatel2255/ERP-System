@@ -256,18 +256,11 @@ export const createGRN = async (req, res, next) => {
         VALUES ($1, $2, $3, $4, $5)
       `, [grnId, item.item_id, orderedQty, receivedQty, rejectedQty]);
 
-      if (receivedQty > 0) {
-        // Insert stock transaction (IN) — only received qty (not rejected)
-        await client.query(`
-          INSERT INTO stock_transactions (item_id, transaction_type, qty, reference_type, reference_id, date, notes, created_by)
-          VALUES ($1, 'IN', $2, 'GRN', $3, $4, $5, $6)
-        `, [item.item_id, receivedQty, grnId, received_date || new Date().toISOString().slice(0, 10), `GRN: ${grnNo}`, req.user.id]);
-
-        // Update items.current_stock
-        await client.query(`
-          UPDATE items SET current_stock = current_stock + $1, updated_at = NOW() WHERE id = $2
-        `, [receivedQty, item.item_id]);
-      }
+      // Hold received stock until raw-material QC passes.
+      await client.query(`
+        INSERT INTO qc_raw_material (grn_id, item_id, inspection_date, result, rejection_qty, notes)
+        VALUES ($1, $2, CURRENT_DATE, 'Pending', 0, 'Awaiting raw-material QC approval.')
+      `, [grnId, item.item_id]);
     }
 
     // Recalculate PO delivery status

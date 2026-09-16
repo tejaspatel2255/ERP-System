@@ -5,6 +5,8 @@ import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
 import { getWorkOrders, createWorkOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder, issueToWorkOrder, updateCosting, getBOMs } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
+import { getOrders } from '../../api/salesApi';
+import { getAssets } from '../../api/maintenanceApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -21,6 +23,9 @@ const WorkOrdersPage = () => {
   const [wos, setWos] = useState([]);
   const [boms, setBoms] = useState([]);
   const [allItems, setAllItems] = useState([]);
+  const [salesOrders, setSalesOrders] = useState([]);
+  const [salesOrderSearch, setSalesOrderSearch] = useState('');
+  const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -32,7 +37,7 @@ const WorkOrdersPage = () => {
   const [detailConsumption, setDetailConsumption] = useState([]);
   const [detailCosting, setDetailCosting] = useState(null);
   const [activeTab, setActiveTab] = useState('plan');
-  const [form, setForm] = useState({ bom_id: '', sales_order_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
+  const [form, setForm] = useState({ bom_id: '', sales_order_id: '', asset_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
   const [materialPlan, setMaterialPlan] = useState([]);
   const [completeQty, setCompleteQty] = useState('');
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
@@ -54,13 +59,25 @@ const WorkOrdersPage = () => {
   useEffect(() => {
     getBOMs().then(d => { if (d.success) setBoms(d.boms.filter(b => b.is_active)); }).catch(() => {});
     getItems({ limit: 500 }).then(d => { if (d.success) setAllItems(d.items); }).catch(() => {});
+    getOrders({ limit: 500 }).then(d => {
+      if (d.success) setSalesOrders((d.orders || []).filter(order => !['Completed', 'Cancelled', 'Delivered'].includes(order.status)));
+    }).catch(() => {});
+    getAssets().then(d => {
+      if (d.success) setAssets((d.assets || []).filter(asset => asset.status === 'Active'));
+    }).catch(() => {});
   }, []);
 
   const openCreate = () => {
-    setForm({ bom_id: boms[0]?.id || '', sales_order_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
+    setForm({ bom_id: boms[0]?.id || '', sales_order_id: '', asset_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
+    setSalesOrderSearch('');
     setMaterialPlan([]);
     setIsFormOpen(true);
   };
+
+  const filteredSalesOrders = salesOrders.filter(order => {
+    const search = salesOrderSearch.trim().toLowerCase();
+    return !search || `${order.order_no} ${order.customer_name}`.toLowerCase().includes(search);
+  });
 
   const handlePreviewMaterials = async () => {
     if (!form.bom_id || !form.planned_qty) return;
@@ -78,6 +95,7 @@ const WorkOrdersPage = () => {
       if (d.success) {
         toast.success(`WO ${d.workOrder.wo_no} created.${d.hasShortages ? ' ⚠ Stock shortages detected!' : ''}`);
         if (d.hasShortages) toast.error('Some materials are below required stock levels.', { duration: 5000 });
+        if (d.warning?.message) toast.error(`Warning: ${d.warning.message}`, { duration: 6000 });
         setIsFormOpen(false);
         fetchWOs();
       }
@@ -98,7 +116,7 @@ const WorkOrdersPage = () => {
   };
 
   const handleStart = async () => {
-    try { const d = await startWorkOrder(detailWO.id); if (d.success) { toast.success('Work Order started.'); setDetailWO(prev => ({ ...prev, status: 'In Progress', actual_start: d.workOrder.actual_start })); fetchWOs(); } }
+    try { const d = await startWorkOrder(detailWO.id); if (d.success) { toast.success('Work Order started.'); if (d.warning?.message) toast.error(`Warning: ${d.warning.message}`, { duration: 6000 }); setDetailWO(prev => ({ ...prev, status: 'In Progress', actual_start: d.workOrder.actual_start })); fetchWOs(); } }
     catch (err) { toast.error(err.response?.data?.message || 'Start failed.'); }
   };
 
@@ -107,13 +125,19 @@ const WorkOrdersPage = () => {
     if (!completeQty || parseFloat(completeQty) <= 0) return toast.error('Enter produced qty > 0.');
     try {
       const d = await completeWorkOrder(detailWO.id, completeQty);
-      if (d.success) { toast.success('Work Order completed. Finished goods added to stock.'); setIsCompleteOpen(false); setIsDetailOpen(false); fetchWOs(); }
+      if (d.success) { toast.success('Work Order completed.'); if (d.warning?.message) toast.error(`Warning: ${d.warning.message}`, { duration: 6000 }); setIsCompleteOpen(false); setIsDetailOpen(false); fetchWOs(); }
     } catch (err) { toast.error(err.response?.data?.message || 'Complete failed.'); }
   };
 
   const handleCancel = async () => {
     if (!window.confirm('Cancel this work order?')) return;
-    try { await cancelWorkOrder(detailWO.id); toast.success('WO Cancelled.'); setIsDetailOpen(false); fetchWOs(); }
+    try {
+      const d = await cancelWorkOrder(detailWO.id);
+      toast.success('WO Cancelled.');
+      if (d.warning?.message) toast.error(`Warning: ${d.warning.message}`, { duration: 6000 });
+      setIsDetailOpen(false);
+      fetchWOs();
+    }
     catch { toast.error('Cancel failed.'); }
   };
 
@@ -139,6 +163,7 @@ const WorkOrdersPage = () => {
   const columns = [
     { key: 'wo_no', label: 'WO No' },
     { key: 'finished_item_name', label: 'Finished Item' },
+    { key: 'asset_name', label: 'Machine/Asset', render: i => i.asset_name || '—' },
     { key: 'planned_qty', label: 'Planned Qty', render: i => parseFloat(i.planned_qty) },
     { key: 'planned_start', label: 'Planned Start', render: i => formatDate(i.planned_start) },
     { key: 'planned_end', label: 'Planned End', render: i => formatDate(i.planned_end) },
@@ -183,8 +208,19 @@ const WorkOrdersPage = () => {
               <input type="number" min="0.0001" step="any" required value={form.planned_qty} onChange={e => setForm(p => ({ ...p, planned_qty: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Sales Order Ref (optional)</label>
-              <input value={form.sales_order_id} onChange={e => setForm(p => ({ ...p, sales_order_id: e.target.value }))} placeholder="SO ID or leave blank" className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Sales Order (optional)</label>
+              <input value={salesOrderSearch} onChange={e => setSalesOrderSearch(e.target.value)} placeholder="Search order or customer" className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none mb-2" />
+              <select value={form.sales_order_id} onChange={e => setForm(p => ({ ...p, sales_order_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+                <option value="">— No Sales Order —</option>
+                {filteredSalesOrders.map(order => <option key={order.id} value={order.id}>{order.order_no} · {order.customer_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Machine/Asset (optional)</label>
+              <select value={form.asset_id} onChange={e => setForm(p => ({ ...p, asset_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+                <option value="">— No Machine/Asset —</option>
+                {assets.map(asset => <option key={asset.id} value={asset.id}>{asset.name} ({asset.asset_code})</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Planned Start</label>
@@ -239,6 +275,7 @@ const WorkOrdersPage = () => {
               <div className="text-xs space-y-0.5">
                 <p className="font-bold text-slate-900 dark:text-white">{detailWO.finished_item_name} <span className="text-slate-400 font-normal">· Qty: {parseFloat(detailWO.planned_qty)}</span></p>
                 <p className="text-slate-500">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
+                {detailWO.asset_name && <p className={['Under Repair', 'Maintenance'].includes(detailWO.asset_status) ? 'text-orange-600 font-semibold' : 'text-slate-500'}>Machine: {detailWO.asset_name} ({detailWO.asset_status})</p>}
                 {detailWO.actual_start && <p className="text-blue-600">Started: {formatDate(detailWO.actual_start)}</p>}
               </div>
               <div className="flex gap-2 flex-wrap">

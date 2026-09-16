@@ -469,6 +469,15 @@ export const convertQuotationToOrder = async (req, res, next) => {
       `, [newOrder.id, qItem.item_id, qItem.qty, qItem.unit_price, qItem.line_total]);
     }
 
+    const availabilityRes = await client.query(`
+      SELECT i.name AS item, i.id AS item_id, soi.qty AS required_qty,
+             i.current_stock AS available_qty,
+             GREATEST(soi.qty - i.current_stock, 0) AS shortfall
+      FROM sales_order_items soi
+      JOIN items i ON i.id = soi.item_id
+      WHERE soi.order_id = $1
+    `, [newOrder.id]);
+
     // 4. Update Quotation Status to indicate it was converted
     await client.query(`UPDATE quotations SET status = 'Accepted', updated_at = NOW() WHERE id = $1`, [id]);
 
@@ -476,7 +485,7 @@ export const convertQuotationToOrder = async (req, res, next) => {
 
     await logActivity(req.user.id, 'CONVERT_QUOTATION_TO_ORDER', 'sales', newOrder.id, req);
 
-    return res.status(201).json({ success: true, order: newOrder });
+    return res.status(201).json({ success: true, order: newOrder, availability: availabilityRes.rows });
   } catch (error) {
     await client.query('ROLLBACK');
     next(error);
@@ -549,7 +558,8 @@ export const getOrderById = async (req, res, next) => {
     if (orderRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Sales Order not found.' });
 
     const itemsRes = await db.query(`
-      SELECT soi.*, i.name AS item_name, i.item_code
+      SELECT soi.*, i.name AS item_name, i.item_code, i.current_stock AS available_qty,
+             GREATEST(soi.qty - i.current_stock, 0) AS shortfall
       FROM sales_order_items soi
       LEFT JOIN items i ON soi.item_id = i.id
       WHERE soi.order_id = $1
@@ -565,6 +575,13 @@ export const getOrderById = async (req, res, next) => {
       success: true,
       order: orderRes.rows[0],
       items: itemsRes.rows,
+      availability: itemsRes.rows.map(item => ({
+        item: item.item_name,
+        item_id: item.item_id,
+        required_qty: item.qty,
+        available_qty: item.available_qty,
+        shortfall: item.shortfall
+      })),
       invoice: invoiceRes.rows[0] || null
     });
   } catch (error) {

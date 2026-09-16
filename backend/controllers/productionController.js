@@ -3,6 +3,20 @@ import { logActivity } from './userController.js';
 import { generateDocNumber } from '../utils/generateDocNumber.js';
 const db = { query: dbQuery, pool };
 
+const getAssetWarning = async (client, assetId) => {
+  if (!assetId) return null;
+  const result = await client.query(`SELECT id, name, status FROM assets WHERE id = $1`, [assetId]);
+  if (!result.rows.length) return { missing: true };
+  const asset = result.rows[0];
+  if (!['Under Repair', 'Maintenance'].includes(asset.status)) return null;
+  return {
+    asset_id: asset.id,
+    asset_name: asset.name,
+    status: asset.status,
+    message: `Asset ${asset.name} is currently ${asset.status}.`
+  };
+};
+
 // BOM
 export const getBOMs = async (req, res, next) => {
   try {
@@ -98,11 +112,12 @@ export const getWorkOrders = async (req, res, next) => {
     const result = await db.query(`
       SELECT wo.id, wo.wo_no, wo.planned_qty, wo.produced_qty, wo.planned_start, wo.planned_end,
              wo.actual_start, wo.actual_end, wo.status, wo.created_at,
-             i.name AS finished_item_name, i.item_code AS finished_item_code, b.version AS bom_version,
-             so.order_no AS sales_order_no
+                  i.name AS finished_item_name, i.item_code AS finished_item_code, b.version AS bom_version,
+                  so.order_no AS sales_order_no, a.name AS asset_name, a.status AS asset_status
       FROM work_orders wo
       LEFT JOIN bom b ON wo.bom_id = b.id LEFT JOIN items i ON b.finished_item_id = i.id
       LEFT JOIN sales_orders so ON wo.sales_order_id = so.id
+                LEFT JOIN assets a ON wo.asset_id = a.id
       ${where} ORDER BY wo.planned_start ASC, wo.created_at DESC
     `, params);
     return res.status(200).json({ success: true, workOrders: result.rows });
@@ -110,11 +125,16 @@ export const getWorkOrders = async (req, res, next) => {
 };
 
 export const createWorkOrder = async (req, res, next) => {
-  const { bom_id, sales_order_id, planned_qty, planned_start, planned_end } = req.body;
+  const { bom_id, sales_order_id, asset_id, planned_qty, planned_start, planned_end } = req.body;
   if (!bom_id || !planned_qty || planned_qty <= 0) return res.status(400).json({ success: false, message: 'bom_id and planned_qty > 0 required.' });
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
+    const assetWarning = await getAssetWarning(client, asset_id);
+    if (assetWarning?.missing) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Selected asset not found.' });
+    }
     const woNo = await generateDocNumber(client, 'WO');
     const bomItemsRes = await client.query(`
       SELECT bi.raw_material_id, bi.qty_required, bi.unit, i.name AS material_name, i.item_code, i.current_stock
@@ -126,12 +146,74 @@ export const createWorkOrder = async (req, res, next) => {
       return { item_id: m.raw_material_id, material_name: m.material_name, item_code: m.item_code, unit: m.unit, required_qty: required, available_qty: available, shortage: Math.max(0, required - available), status: available >= required ? 'OK' : 'Shortage' };
     });
     const woRes = await client.query(`
-      INSERT INTO work_orders (wo_no, bom_id, sales_order_id, planned_qty, planned_start, planned_end, status, created_by)
-      VALUES ($1,$2,$3,$4,$5,$6,'Pending',$7) RETURNING *
-    `, [woNo, bom_id, sales_order_id || null, planned_qty, planned_start || null, planned_end || null, req.user.id]);
+      INSERT INTO work_orders (wo_no, bom_id, sales_order_id, asset_id, planned_qty, planned_start, planned_end, status, created_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'Pending',$8) RETURNING *
+    `, [woNo, bom_id, sales_order_id || null, asset_id || null, planned_qty, planned_start || null, planned_end || null, req.user.id]);
     await client.query('COMMIT');
     await logActivity(req.user.id, 'CREATE_WORK_ORDER', 'production', woRes.rows[0].id, req);
-    return res.status(201).json({ success: true, workOrder: woRes.rows[0], materialPlan, hasShortages: materialPlan.some(m => m.status === 'Shortage') });
+    return res.status(201).json({ success: true, workOrder: woRes.rows[0], materialPlan, hasShortages: materialPlan.some(m => m.status === 'Shortage'), warning: assetWarning });
+  } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
+};
+
+export const createWorkOrderFromSalesOrder = async (req, res, next) => {
+  const { soId } = req.params;
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    const orderRes = await client.query(`
+      SELECT so.id, so.order_no, soi.item_id, soi.qty, b.id AS bom_id,
+             b.version AS bom_version, i.name AS finished_item_name
+      FROM sales_orders so
+      JOIN sales_order_items soi ON soi.order_id = so.id
+      JOIN bom b ON b.finished_item_id = soi.item_id AND b.is_active = TRUE
+      JOIN items i ON i.id = soi.item_id
+      WHERE so.id = $1 AND so.status NOT IN ('Cancelled', 'Delivered')
+      ORDER BY soi.created_at
+      LIMIT 1
+    `, [soId]);
+    if (!orderRes.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Sales Order has no open line with an active BOM.' });
+    }
+
+    const source = orderRes.rows[0];
+    const woNo = await generateDocNumber(client, 'WO');
+    const bomItemsRes = await client.query(`
+      SELECT bi.raw_material_id, bi.qty_required, bi.unit, i.name AS material_name,
+             i.item_code, i.current_stock
+      FROM bom_items bi
+      LEFT JOIN items i ON i.id = bi.raw_material_id
+      WHERE bi.bom_id = $1
+    `, [source.bom_id]);
+    const plannedQty = parseFloat(source.qty);
+    const materialPlan = bomItemsRes.rows.map(material => {
+      const requiredQty = parseFloat(material.qty_required) * plannedQty;
+      const availableQty = parseFloat(material.current_stock || 0);
+      return {
+        item_id: material.raw_material_id,
+        material_name: material.material_name,
+        item_code: material.item_code,
+        unit: material.unit,
+        required_qty: requiredQty,
+        available_qty: availableQty,
+        shortage: Math.max(0, requiredQty - availableQty),
+        status: availableQty >= requiredQty ? 'OK' : 'Shortage'
+      };
+    });
+
+    const woRes = await client.query(`
+      INSERT INTO work_orders (wo_no, bom_id, sales_order_id, planned_qty, status, created_by)
+      VALUES ($1, $2, $3, $4, 'Pending', $5)
+      RETURNING *
+    `, [woNo, source.bom_id, soId, plannedQty, req.user.id]);
+    await client.query('COMMIT');
+    await logActivity(req.user.id, 'CREATE_WORK_ORDER_FROM_SALES_ORDER', 'production', woRes.rows[0].id, req);
+    return res.status(201).json({
+      success: true,
+      workOrder: { ...woRes.rows[0], bom_version: source.bom_version, finished_item_name: source.finished_item_name },
+      materialPlan,
+      hasShortages: materialPlan.some(material => material.status === 'Shortage')
+    });
   } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 
@@ -139,10 +221,12 @@ export const getWorkOrderById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const woRes = await db.query(`
-      SELECT wo.*, b.version AS bom_version, i.name AS finished_item_name, i.item_code AS finished_item_code,
-             i.unit AS finished_item_unit, so.order_no AS sales_order_no, u.name AS created_by_name
+            SELECT wo.*, b.version AS bom_version, i.name AS finished_item_name, i.item_code AS finished_item_code,
+              i.unit AS finished_item_unit, so.order_no AS sales_order_no, u.name AS created_by_name,
+              a.name AS asset_name, a.status AS asset_status
       FROM work_orders wo LEFT JOIN bom b ON wo.bom_id = b.id LEFT JOIN items i ON b.finished_item_id = i.id
-      LEFT JOIN sales_orders so ON wo.sales_order_id = so.id LEFT JOIN users u ON wo.created_by = u.id WHERE wo.id = $1
+            LEFT JOIN sales_orders so ON wo.sales_order_id = so.id LEFT JOIN users u ON wo.created_by = u.id
+            LEFT JOIN assets a ON wo.asset_id = a.id WHERE wo.id = $1
     `, [id]);
     if (!woRes.rows.length) return res.status(404).json({ success: false, message: 'Work Order not found.' });
     const wo = woRes.rows[0];
@@ -165,12 +249,13 @@ export const getWorkOrderById = async (req, res, next) => {
 export const startWorkOrder = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const check = await db.query(`SELECT status FROM work_orders WHERE id = $1`, [id]);
+    const check = await db.query(`SELECT status, asset_id FROM work_orders WHERE id = $1`, [id]);
     if (!check.rows.length) return res.status(404).json({ success: false, message: 'WO not found.' });
     if (['Completed', 'Cancelled'].includes(check.rows[0].status)) return res.status(400).json({ success: false, message: `Cannot start a ${check.rows[0].status} WO.` });
+    const warning = await getAssetWarning(db, check.rows[0].asset_id);
     const result = await db.query(`UPDATE work_orders SET status = 'In Progress', actual_start = CURRENT_DATE, updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
     await logActivity(req.user.id, 'START_WORK_ORDER', 'production', id, req);
-    return res.status(200).json({ success: true, workOrder: result.rows[0] });
+    return res.status(200).json({ success: true, workOrder: result.rows[0], warning });
   } catch (e) { next(e); }
 };
 
@@ -184,12 +269,14 @@ export const completeWorkOrder = async (req, res, next) => {
     const woRes = await client.query(`SELECT * FROM work_orders WHERE id = $1`, [id]);
     if (!woRes.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, message: 'WO not found.' }); }
     const wo = woRes.rows[0];
+    if (wo.status === 'Completed') { await client.query('ROLLBACK'); return res.status(400).json({ success: false, message: 'Work Order is already completed.' }); }
+    const warning = await getAssetWarning(client, wo.asset_id);
     const bomRes = await client.query(`SELECT finished_item_id FROM bom WHERE id = $1`, [wo.bom_id]);
     const finishedItemId = bomRes.rows[0]?.finished_item_id;
-    if (finishedItemId) {
-      await client.query(`INSERT INTO stock_transactions (item_id, transaction_type, qty, reference_type, reference_id, date, notes, created_by) VALUES ($1,'IN',$2,'WorkOrder',$3,CURRENT_DATE,$4,$5)`, [finishedItemId, parseFloat(produced_qty), id, `WO Completion: ${wo.wo_no}`, req.user.id]);
-      await client.query(`UPDATE items SET current_stock = current_stock + $1, updated_at = NOW() WHERE id = $2`, [parseFloat(produced_qty), finishedItemId]);
-    }
+    await client.query(`
+      INSERT INTO qc_final (work_order_id, inspection_date, result, notes)
+      VALUES ($1, CURRENT_DATE, 'Pending', 'Awaiting final-product QC approval.')
+    `, [id]);
     const matCostRes = await client.query(`
       SELECT COALESCE(SUM(mc.qty_issued * COALESCE((SELECT poi.unit_price FROM purchase_order_items poi JOIN purchase_orders po ON poi.po_id = po.id WHERE poi.item_id = mc.item_id AND po.approval_status = 'Approved' ORDER BY po.po_date DESC LIMIT 1), 0)), 0)::float AS material_cost
       FROM material_consumption mc WHERE mc.work_order_id = $1
@@ -199,20 +286,23 @@ export const completeWorkOrder = async (req, res, next) => {
       INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost) VALUES ($1,$2,0,0,$2)
       ON CONFLICT (work_order_id) DO UPDATE SET material_cost = $2, total_cost = $2 + production_costs.labor_cost + production_costs.overhead_cost, updated_at = NOW()
     `, [id, materialCost]);
-    await client.query(`UPDATE work_orders SET status = 'Completed', actual_end = CURRENT_DATE, produced_qty = $1, updated_at = NOW() WHERE id = $2`, [parseFloat(produced_qty), id]);
+    await client.query(`UPDATE work_orders SET status = 'Completed', wo_qc_status = 'Pending', actual_end = CURRENT_DATE, produced_qty = $1, updated_at = NOW() WHERE id = $2`, [parseFloat(produced_qty), id]);
     await client.query('COMMIT');
     await logActivity(req.user.id, 'COMPLETE_WORK_ORDER', 'production', id, req);
-    return res.status(200).json({ success: true, message: 'Work Order completed. Stock updated.' });
+    return res.status(200).json({ success: true, message: 'Work Order completed. Awaiting final QC approval.', warning });
   } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 
 export const cancelWorkOrder = async (req, res, next) => {
   const { id } = req.params;
   try {
+    const current = await db.query(`SELECT asset_id FROM work_orders WHERE id = $1`, [id]);
+    if (!current.rows.length) return res.status(400).json({ success: false, message: 'Cannot cancel this WO.' });
+    const warning = await getAssetWarning(db, current.rows[0].asset_id);
     const result = await db.query(`UPDATE work_orders SET status = 'Cancelled', updated_at = NOW() WHERE id = $1 AND status NOT IN ('Completed','Cancelled') RETURNING *`, [id]);
     if (!result.rows.length) return res.status(400).json({ success: false, message: 'Cannot cancel this WO.' });
     await logActivity(req.user.id, 'CANCEL_WORK_ORDER', 'production', id, req);
-    return res.status(200).json({ success: true, workOrder: result.rows[0] });
+    return res.status(200).json({ success: true, workOrder: result.rows[0], warning });
   } catch (e) { next(e); }
 };
 

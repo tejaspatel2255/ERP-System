@@ -6,6 +6,7 @@ import Pagination from '../../components/Pagination';
 import { useRole } from '../../context/RoleContext';
 import axiosInstance from '../../api/axiosInstance';
 import { getOrders, getOrderById, updateOrderStatus, createInvoiceFromOrder } from '../../api/salesApi';
+import { createWorkOrderFromSalesOrder } from '../../api/productionApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -106,6 +107,18 @@ const OrdersPage = () => {
     }
   };
 
+  const handleCreateWorkOrder = async () => {
+    if (!viewingOrder) return;
+    try {
+      const data = await createWorkOrderFromSalesOrder(viewingOrder.id);
+      if (data.success) {
+        toast.success(`Work Order ${data.workOrder.wo_no} created for ${parseFloat(data.workOrder.planned_qty)} units.`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Work Order creation failed.');
+    }
+  };
+
   // Columns for main list
   const columns = [
     { key: 'order_no', label: 'Order No' },
@@ -203,6 +216,14 @@ const OrdersPage = () => {
                     className="block rounded border border-slate-350 bg-white dark:bg-slate-900 text-xs px-2 py-1 focus:outline-none"
                   >
                     <option value="Pending">Pending</option>
+                {hasPermission('production', 'create') && (
+                  <button
+                    onClick={handleCreateWorkOrder}
+                    className="mt-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-500"
+                  >
+                    Create Work Order
+                  </button>
+                )}
                     <option value="Processing">Processing</option>
                     <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
@@ -227,6 +248,8 @@ const OrdersPage = () => {
                     )
                   },
                   { key: 'qty', label: 'Qty', render: (item) => parseFloat(item.qty) },
+                  { key: 'available_qty', label: 'Available', render: (item) => parseFloat(item.available_qty) },
+                  { key: 'shortfall', label: 'Shortfall', render: (item) => <span className={parseFloat(item.shortfall) > 0 ? 'font-bold text-red-600' : 'text-green-600'}>{parseFloat(item.shortfall)}</span> },
                   { key: 'unit_price', label: 'Unit Price', render: (item) => formatINR(item.unit_price) },
                   { key: 'line_total', label: 'Total Price', render: (item) => formatINR(item.line_total) }
                 ]}

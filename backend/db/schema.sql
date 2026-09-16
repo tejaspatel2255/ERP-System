@@ -363,6 +363,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
     wo_no VARCHAR(100) UNIQUE NOT NULL,
     bom_id UUID REFERENCES bom(id) ON DELETE SET NULL,
     sales_order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
+    asset_id UUID REFERENCES assets(id) ON DELETE SET NULL,
     planned_qty NUMERIC(15, 4) NOT NULL,
     produced_qty NUMERIC(15, 4) DEFAULT 0.0000,
     planned_start DATE,

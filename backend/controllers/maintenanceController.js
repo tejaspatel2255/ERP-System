@@ -63,13 +63,31 @@ export const updateAsset = async (req, res, next) => {
   const { id } = req.params;
   const { name, asset_code, location, purchase_date, purchase_value, status } = req.body;
   try {
+    let affectedWorkOrders = [];
+    if (['Under Repair', 'Maintenance'].includes(status)) {
+      const woRes = await db.query(`
+        SELECT id, wo_no, status, planned_qty
+        FROM work_orders
+        WHERE asset_id = $1 AND status IN ('Pending', 'In Progress')
+      `, [id]);
+      affectedWorkOrders = woRes.rows;
+    }
+
     const result = await db.query(`
       UPDATE assets SET name=$1, asset_code=$2, location=$3, purchase_date=$4, purchase_value=$5, status=$6, updated_at=NOW()
       WHERE id=$7 RETURNING *
     `, [name, asset_code, location, purchase_date || null, purchase_value || null, status, id]);
+
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Asset not found.' });
     await logActivity(req.user.id, 'UPDATE_ASSET', 'maintenance', id, req);
-    return res.status(200).json({ success: true, asset: result.rows[0] });
+
+    return res.status(200).json({
+      success: true,
+      asset: result.rows[0],
+      affectedWorkOrdersCount: affectedWorkOrders.length,
+      affectedWorkOrders,
+      warning: affectedWorkOrders.length > 0 ? `${affectedWorkOrders.length} active work order(s) are currently scheduled on this machine.` : null
+    });
   } catch (e) { next(e); }
 };
 

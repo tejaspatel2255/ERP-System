@@ -6,6 +6,7 @@ import { useRole } from '../../context/RoleContext';
 import { getWorkOrders, createWorkOrder, createWorkOrderFromSalesOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder, issueToWorkOrder, updateCosting, getBOMs } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
 import { getOrders } from '../../api/salesApi';
+import { getAssets } from '../../api/maintenanceApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
@@ -22,6 +23,7 @@ const WorkOrdersPage = () => {
   const [wos, setWos] = useState([]);
   const [boms, setBoms] = useState([]);
   const [openOrders, setOpenOrders] = useState([]);
+  const [assets, setAssets] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
@@ -34,7 +36,7 @@ const WorkOrdersPage = () => {
   const [detailConsumption, setDetailConsumption] = useState([]);
   const [detailCosting, setDetailCosting] = useState(null);
   const [activeTab, setActiveTab] = useState('plan');
-  const [form, setForm] = useState({ bom_id: '', sales_order_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
+  const [form, setForm] = useState({ bom_id: '', sales_order_id: '', asset_id: '', planned_qty: 1, planned_start: '', planned_end: '' });
   const [materialPlan, setMaterialPlan] = useState([]);
   const [completeQty, setCompleteQty] = useState('');
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
@@ -56,6 +58,7 @@ const WorkOrdersPage = () => {
   useEffect(() => {
     getBOMs().then(d => { if (d.success) setBoms(d.boms.filter(b => b.is_active)); }).catch(() => {});
     getOrders({ limit: 100 }).then(d => { if (d.success) setOpenOrders(d.orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled')); }).catch(() => {});
+    getAssets().then(d => { if (d.success) setAssets(d.assets); }).catch(() => {});
     getItems({ limit: 500 }).then(d => { if (d.success) setAllItems(d.items); }).catch(() => {});
   }, []);
 
@@ -224,6 +227,21 @@ const WorkOrdersPage = () => {
                 {openOrders.map(o => (
                   <option key={o.id} value={o.id}>
                     {o.order_no} - {o.customer_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Machine / Asset (optional)</label>
+              <select
+                value={form.asset_id}
+                onChange={e => setForm(p => ({ ...p, asset_id: e.target.value }))}
+                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+              >
+                <option value="">— Unassigned Machine —</option>
+                {assets.map(a => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.asset_code}) [{a.status}]
                   </option>
                 ))}
               </select>

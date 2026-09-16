@@ -110,11 +110,22 @@ export const getWorkOrders = async (req, res, next) => {
 };
 
 export const createWorkOrder = async (req, res, next) => {
-  const { bom_id, sales_order_id, planned_qty, planned_start, planned_end } = req.body;
+  const { bom_id, sales_order_id, asset_id, planned_qty, planned_start, planned_end } = req.body;
   if (!bom_id || !planned_qty || planned_qty <= 0) return res.status(400).json({ success: false, message: 'bom_id and planned_qty > 0 required.' });
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
+    let assetWarning = null;
+    if (asset_id) {
+      const assetRes = await client.query(`SELECT name, status FROM assets WHERE id = $1`, [asset_id]);
+      if (assetRes.rows.length > 0) {
+        const asset = assetRes.rows[0];
+        if (['Under Repair', 'Maintenance'].includes(asset.status)) {
+          assetWarning = `Warning: Machine/Asset "${asset.name}" is currently ${asset.status}.`;
+        }
+      }
+    }
+
     const woNo = await generateDocNumber(client, 'WO');
     const bomItemsRes = await client.query(`
       SELECT bi.raw_material_id, bi.qty_required, bi.unit, i.name AS material_name, i.item_code, i.current_stock
@@ -126,12 +137,12 @@ export const createWorkOrder = async (req, res, next) => {
       return { item_id: m.raw_material_id, material_name: m.material_name, item_code: m.item_code, unit: m.unit, required_qty: required, available_qty: available, shortage: Math.max(0, required - available), status: available >= required ? 'OK' : 'Shortage' };
     });
     const woRes = await client.query(`
-      INSERT INTO work_orders (wo_no, bom_id, sales_order_id, planned_qty, planned_start, planned_end, status, created_by)
-      VALUES ($1,$2,$3,$4,$5,$6,'Pending',$7) RETURNING *
-    `, [woNo, bom_id, sales_order_id || null, planned_qty, planned_start || null, planned_end || null, req.user.id]);
+      INSERT INTO work_orders (wo_no, bom_id, sales_order_id, asset_id, planned_qty, planned_start, planned_end, status, created_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'Pending',$8) RETURNING *
+    `, [woNo, bom_id, sales_order_id || null, asset_id || null, planned_qty, planned_start || null, planned_end || null, req.user.id]);
     await client.query('COMMIT');
     await logActivity(req.user.id, 'CREATE_WORK_ORDER', 'production', woRes.rows[0].id, req);
-    return res.status(201).json({ success: true, workOrder: woRes.rows[0], materialPlan, hasShortages: materialPlan.some(m => m.status === 'Shortage') });
+    return res.status(201).json({ success: true, workOrder: woRes.rows[0], materialPlan, hasShortages: materialPlan.some(m => m.status === 'Shortage'), warning: assetWarning });
   } catch (e) { await client.query('ROLLBACK'); next(e); } finally { client.release(); }
 };
 

@@ -103,17 +103,18 @@ export const createItem = async (req, res, next) => {
       INSERT INTO items (item_code, name, description, unit, category_id, reorder_level, current_stock, item_type)
       VALUES ($1, $2, $3, $4, $5, $6, 0, $7)
       RETURNING *
-    `, [item_code.trim(), name.trim(), description, category_id || null, reorder_level || 0, reorder_level || 0, item_type || 'Raw Material']);
+    `, [item_code.trim(), name.trim(), description || null, unit.trim(), category_id || null, reorder_level || 0, item_type || 'Raw Material']);
 
     await logActivity(req.user.id, 'CREATE_ITEM', 'store', result.rows[0].id, req);
     return res.status(201).json({ success: true, item: result.rows[0] });
   } catch (error) {
     if (error.code === '23505') {
-      return res.status(409).json({ success: false, message: `Item code '${item_code}' already exists.` });
+      return res.status(409).json({ success: false, message: `Item code '${item_code}' already exists. Please use a different code.` });
     }
     next(error);
   }
 };
+
 
 export const getItemById = async (req, res, next) => {
   const { id } = req.params;

@@ -38,7 +38,7 @@ export const createPackingSlip = async (req, res, next) => {
       const qcRes = await client.query(`
         SELECT work_order_id, result 
         FROM qc_final 
-        WHERE work_order_id = ANY($1) AND result = 'Approved'
+        WHERE work_order_id = ANY($1) AND result IN ('Pass', 'Approved')
       `, [woIds]);
 
       const approvedWoIds = new Set(qcRes.rows.map(q => q.work_order_id));

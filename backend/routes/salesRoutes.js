@@ -11,6 +11,7 @@ import {
   createQuotation,
   getQuotationById,
   updateQuotation,
+  deleteQuotation,
   updateQuotationStatus,
   convertQuotationToOrder,
   getOrders,
@@ -48,6 +49,7 @@ router.get('/quotations', requirePermission('sales', 'view'), getQuotations);
 router.post('/quotations', requirePermission('sales', 'create'), createQuotation);
 router.get('/quotations/:id', requirePermission('sales', 'view'), getQuotationById);
 router.put('/quotations/:id', requirePermission('sales', 'edit'), updateQuotation);
+router.delete('/quotations/:id', requirePermission('sales', 'delete'), deleteQuotation);
 router.patch('/quotations/:id/status', requirePermission('sales', 'edit'), updateQuotationStatus);
 router.post('/quotations/:id/convert', requirePermission('sales', 'edit'), convertQuotationToOrder);
 

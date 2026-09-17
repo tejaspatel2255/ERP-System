@@ -11,7 +11,9 @@ import {
   updateQuotation, 
   updateQuotationStatus, 
   convertQuotationToOrder, 
-  getCustomers 
+  getCustomers,
+  getQuotationById,
+  deleteQuotation
 } from '../../api/salesApi';
 import { getItems as getStoreItems } from '../../api/storeApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -275,6 +277,18 @@ const QuotationsPage = () => {
     }
   };
 
+  // Delete Quotation
+  const handleDelete = async (quotation) => {
+    if (!window.confirm(`Delete Quotation ${quotation.quotation_no}?`)) return;
+    try {
+      await deleteQuotation(quotation.id);
+      toast.success('Quotation deleted successfully.');
+      fetchQuotationsList();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete quotation.');
+    }
+  };
+
   // Columns for main table
   const columns = [
     { key: 'quotation_no', label: 'Quotation No' },
@@ -313,6 +327,14 @@ const QuotationsPage = () => {
               className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
             >
               Edit
+            </button>
+          )}
+          {item.status === 'Draft' && hasPermission('sales', 'delete') && (
+            <button
+              onClick={() => handleDelete(item)}
+              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md"
+            >
+              Delete
             </button>
           )}
         </div>

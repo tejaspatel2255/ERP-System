@@ -226,6 +226,33 @@ export const getQuotations = async (req, res, next) => {
   }
 };
 
+export const deleteQuotation = async (req, res, next) => {
+  const { id } = req.params;
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    const qRes = await client.query('SELECT status FROM quotations WHERE id = $1', [id]);
+    if (!qRes.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Quotation not found.' });
+    }
+    if (qRes.rows[0].status !== 'Draft') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Only Draft quotations can be deleted.' });
+    }
+    await client.query('DELETE FROM quotation_items WHERE quotation_id = $1', [id]);
+    await client.query('DELETE FROM quotations WHERE id = $1', [id]);
+    await client.query('COMMIT');
+    await logActivity(req.user.id, 'DELETE_QUOTATION', 'sales', id, req);
+    return res.status(200).json({ success: true, message: 'Quotation deleted successfully.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    next(error);
+  } finally {
+    client.release();
+  }
+};
+
 export const createQuotation = async (req, res, next) => {
   const { customer_id, date, valid_until, notes, items } = req.body;
 

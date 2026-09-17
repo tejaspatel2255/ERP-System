@@ -480,19 +480,39 @@ const WorkOrdersPage = () => {
 
       {/* Complete WO Modal */}
       <Modal isOpen={isCompleteOpen} onClose={() => setIsCompleteOpen(false)} title="Complete Work Order">
-        <form onSubmit={handleComplete} className="space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Produced Qty (Finished Goods) *</label>
-            <input type="number" min="0.0001" step="any" required value={completeQty} onChange={e => setCompleteQty(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+            <input type="number" min="0.0001" step="any" value={completeQty} onChange={e => setCompleteQty(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
             <p className="text-xs text-slate-400 mt-1">This qty will be added to finished goods stock automatically.</p>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button type="button" onClick={() => setIsCompleteOpen(false)} disabled={completing} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={completing} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50">
+            <button
+              type="button"
+              disabled={completing}
+              onClick={async () => {
+                if (completing) return;
+                if (!completeQty || parseFloat(completeQty) <= 0) { toast.error('Enter produced qty > 0.'); return; }
+                setCompleting(true);
+                try {
+                  await completeWorkOrder(detailWO.id, completeQty);
+                  toast.success('Work Order completed! Finished goods added to stock.');
+                  setIsCompleteOpen(false);
+                  setIsDetailOpen(false);
+                  fetchWOs();
+                } catch (err) {
+                  toast.error(err.response?.data?.message || err.message || 'Complete failed.', { duration: 6000 });
+                } finally {
+                  setCompleting(false);
+                }
+              }}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50"
+            >
               {completing ? 'Completing...' : 'Confirm Complete'}
             </button>
           </div>
-        </form>
+        </div>
       </Modal>
     </div>
   );

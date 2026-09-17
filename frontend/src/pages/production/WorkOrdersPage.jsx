@@ -412,7 +412,10 @@ const WorkOrdersPage = () => {
                               toast.success(`${m.material_name} issued.`);
                               const d = await getWorkOrderById(detailWO.id);
                               if (d.success) { setDetailPlan(d.materialPlan); setDetailConsumption(d.consumption); }
-                            } catch (err) { toast.error(err.response?.data?.message || 'Issue failed.'); }
+                            } catch (err) { 
+                              const msg = err.response?.data?.message || err.message || 'Issue failed.';
+                              toast.error(msg, { duration: 6000 });
+                            }
                           }}
                         />
                       ))}

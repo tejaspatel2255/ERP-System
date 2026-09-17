@@ -22,6 +22,7 @@ const GRNPage = () => {
   const [rejectedQtys, setRejectedQtys] = useState({});
   const [notes, setNotes] = useState('');
   const [receivedDate, setReceivedDate] = useState(new Date().toISOString().slice(0, 10));
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchGRNs = useCallback(async () => {
     setLoading(true);
@@ -56,7 +57,7 @@ const GRNPage = () => {
         setPoItems(items);
         const initReceived = {};
         const initRejected = {};
-        items.forEach(it => { initReceived[it.item_id] = ''; initRejected[it.item_id] = '0'; });
+        items.forEach(it => { initReceived[it.item_id] = String(it.qty || ''); initRejected[it.item_id] = '0'; });
         setReceivedQtys(initReceived);
         setRejectedQtys(initRejected);
       }
@@ -71,6 +72,7 @@ const GRNPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     if (!selectedPO) return toast.error('Please select a Purchase Order.');
     const items = poItems.map(it => ({
       item_id: it.item_id,
@@ -80,10 +82,16 @@ const GRNPage = () => {
     }));
     const anyReceived = items.some(i => i.received_qty > 0);
     if (!anyReceived) return toast.error('At least one item must have received quantity > 0.');
+    
+    setSubmitting(true);
     try {
       const res = await createGRN({ po_id: selectedPO.id, received_date: receivedDate, notes, items });
       if (res.success) { toast.success(`GRN ${res.grn.grn_no} created. Stock updated.`); setIsFormOpen(false); fetchGRNs(); }
-    } catch (err) { toast.error(err.response?.data?.message || 'GRN creation failed.'); }
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'GRN creation failed.'); 
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleView = async (grn) => {
@@ -170,7 +178,9 @@ const GRNPage = () => {
 
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">Confirm Receipt & Update Stock</button>
+            <button type="submit" disabled={submitting} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50">
+              {submitting ? 'Confirming...' : 'Confirm Receipt & Update Stock'}
+            </button>
           </div>
         </form>
       </Modal>

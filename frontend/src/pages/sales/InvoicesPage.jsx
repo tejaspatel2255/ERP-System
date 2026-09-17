@@ -35,6 +35,7 @@ const InvoicesPage = () => {
     reference_no: '',
     notes: ''
   });
+  const [submittingPayment, setSubmittingPayment] = useState(false);
 
   // Fetch Invoices
   const fetchInvoicesList = useCallback(async () => {
@@ -101,10 +102,12 @@ const InvoicesPage = () => {
   // Submit Payment Input
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
+    if (submittingPayment) return;
     if (!paymentData.amount || parseFloat(paymentData.amount) <= 0) {
       return toast.error('Please enter a valid amount.');
     }
 
+    setSubmittingPayment(true);
     try {
       const payload = {
         invoice_id: viewingInvoice.id,
@@ -123,6 +126,8 @@ const InvoicesPage = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Recording payment failed.');
+    } finally {
+      setSubmittingPayment(false);
     }
   };
 
@@ -443,9 +448,10 @@ const InvoicesPage = () => {
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-550"
+                disabled={submittingPayment}
+                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-550 disabled:opacity-50"
               >
-                Post Payment
+                {submittingPayment ? 'Posting...' : 'Post Payment'}
               </button>
             </div>
           </form>

@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getBOMs, createBOM, getBOMById, activateBOM, deleteBOM } from '../../api/productionApi';
+import { getBOMs, createBOM, getBOMById, activateBOM, deleteBOM, updateBOM } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
 
@@ -133,7 +133,7 @@ const BOMPage = () => {
     { key: 'actions', label: 'Actions', render: i => (
       <div className="flex gap-2">
         <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View</button>
-        {hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
+        {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
         {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(i.id)} className="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded-md hover:bg-green-100">Activate</button>}
         {hasPermission('production', 'delete') && <button onClick={() => handleDelete(i)} className="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md hover:bg-red-100">Delete</button>}
       </div>
@@ -158,7 +158,7 @@ const BOMPage = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Finished / Semi-Finished Item *</label>
-              <select required disabled={!!editingBom} value={form.finished_item_id} onChange={e => setForm(p => ({ ...p, finished_item_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none disabled:opacity-75 disabled:bg-slate-100 dark:disabled:bg-slate-900">
+              <select required value={form.finished_item_id} onChange={e => !editingBom && setForm(p => ({ ...p, finished_item_id: e.target.value }))} className={`block w-full rounded-lg border border-slate-200 dark:border-slate-800 py-2 px-3 text-sm focus:outline-none ${editingBom ? 'bg-slate-100 dark:bg-slate-900 text-slate-500 pointer-events-none' : 'bg-white dark:bg-slate-950 text-slate-900 dark:text-white'}`}>
                 <option value="">— Select Item —</option>
                 {finishedGoods.length > 0 ? finishedGoods.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>) : allItems.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>)}
               </select>
@@ -239,7 +239,7 @@ const BOMPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${viewBom.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{viewBom.is_active ? 'Active' : 'Draft'}</span>
-                {hasPermission('production', 'edit') && (
+                {!viewBom.is_active && hasPermission('production', 'edit') && (
                   <button onClick={() => openEdit(viewBom)} className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500">
                     Edit BOM
                   </button>

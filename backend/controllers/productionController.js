@@ -225,11 +225,23 @@ export const completeWorkOrder = async (req, res, next) => {
       SELECT COALESCE(SUM(mc.qty_issued * COALESCE((SELECT poi.unit_price FROM purchase_order_items poi JOIN purchase_orders po ON poi.po_id = po.id WHERE poi.item_id = mc.item_id AND po.approval_status = 'Approved' ORDER BY po.po_date DESC LIMIT 1), 0)), 0)::float AS material_cost
       FROM material_consumption mc WHERE mc.work_order_id = $1
     `, [id]);
-    const materialCost = matCostRes.rows[0].material_cost;
-    await client.query(`
-      INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost) VALUES ($1,$2,0,0,$2)
-      ON CONFLICT (work_order_id) DO UPDATE SET material_cost = $2, total_cost = $2 + production_costs.labor_cost + production_costs.overhead_cost, updated_at = NOW()
-    `, [id, materialCost]);
+    const materialCost = matCostRes.rows[0]?.material_cost || 0;
+
+    const existingCost = await client.query(`SELECT id, labor_cost, overhead_cost FROM production_costs WHERE work_order_id = $1`, [id]);
+    if (existingCost.rows.length > 0) {
+      const labor = parseFloat(existingCost.rows[0].labor_cost || 0);
+      const overhead = parseFloat(existingCost.rows[0].overhead_cost || 0);
+      await client.query(`
+        UPDATE production_costs
+        SET material_cost = $1, total_cost = $2, updated_at = NOW()
+        WHERE work_order_id = $3
+      `, [materialCost, materialCost + labor + overhead, id]);
+    } else {
+      await client.query(`
+        INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost)
+        VALUES ($1, $2, 0, 0, $2)
+      `, [id, materialCost]);
+    }
 
     await client.query('COMMIT');
     await logActivity(req.user.id, 'COMPLETE_WORK_ORDER', 'production', id, req);
@@ -352,10 +364,19 @@ export const updateCosting = async (req, res, next) => {
     const labor = parseFloat(labor_cost || 0);
     const overhead = parseFloat(overhead_cost || 0);
     const total = matCost + labor + overhead;
-    const result = await db.query(`
-      INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost) VALUES ($1,$2,$3,$4,$5)
-      ON CONFLICT (work_order_id) DO UPDATE SET labor_cost = $3, overhead_cost = $4, total_cost = $5, updated_at = NOW() RETURNING *
-    `, [woId, matCost, labor, overhead, total]);
+    let result;
+    if (existing.rows.length > 0) {
+      result = await db.query(`
+        UPDATE production_costs
+        SET labor_cost = $1, overhead_cost = $2, total_cost = $3, updated_at = NOW()
+        WHERE work_order_id = $4 RETURNING *
+      `, [labor, overhead, total, woId]);
+    } else {
+      result = await db.query(`
+        INSERT INTO production_costs (work_order_id, material_cost, labor_cost, overhead_cost, total_cost)
+        VALUES ($1, $2, $3, $4, $5) RETURNING *
+      `, [woId, matCost, labor, overhead, total]);
+    }
     return res.status(200).json({ success: true, costing: result.rows[0] });
   } catch (e) { next(e); }
 };

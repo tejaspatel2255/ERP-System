@@ -31,8 +31,8 @@ export const createPackingSlip = async (req, res, next) => {
   try {
     await client.query('BEGIN');
 
-    // 1. Prerequisite check: final QC must be passed for the linked Work Order(s) (if applicable)
-    const wosRes = await client.query(`SELECT id, wo_no FROM work_orders WHERE sales_order_id = $1`, [order_id]);
+    // 1. Prerequisite check: final QC must be passed for completed linked Work Order(s) (ignore Cancelled)
+    const wosRes = await client.query(`SELECT id, wo_no FROM work_orders WHERE sales_order_id = $1 AND status = 'Completed'`, [order_id]);
     if (wosRes.rows.length > 0) {
       const woIds = wosRes.rows.map(w => w.id);
       const qcRes = await client.query(`

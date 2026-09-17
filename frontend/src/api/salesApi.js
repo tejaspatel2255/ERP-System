@@ -60,6 +60,11 @@ export const getQuotationById = async (id) => {
   return response.data;
 };
 
+export const deleteQuotation = async (id) => {
+  const response = await axiosInstance.delete(`/sales/quotations/${id}`);
+  return response.data;
+};
+
 export const updateQuotation = async (id, data) => {
   const response = await axiosInstance.put(`/sales/quotations/${id}`, data);
   return response.data;

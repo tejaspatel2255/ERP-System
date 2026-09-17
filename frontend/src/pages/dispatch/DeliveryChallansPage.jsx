@@ -22,6 +22,7 @@ export default function DeliveryChallansPage() {
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [submittingCreate, setSubmittingCreate] = useState(false);
   const [showTransportModal, setShowTransportModal] = useState(false);
   const [showPodModal, setShowPodModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -64,8 +65,10 @@ export default function DeliveryChallansPage() {
 
   const handleCreateChallan = async (e) => {
     e.preventDefault();
+    if (submittingCreate) return;
     setError('');
     setSuccess('');
+    setSubmittingCreate(true);
     try {
       await createChallan({ packing_slip_id: selectedPackingSlipId });
       setSuccess('Delivery Challan created successfully.');
@@ -74,6 +77,8 @@ export default function DeliveryChallansPage() {
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create challan.');
+    } finally {
+      setSubmittingCreate(false);
     }
   };
 
@@ -296,9 +301,10 @@ export default function DeliveryChallansPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              disabled={submittingCreate}
+              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm disabled:opacity-50"
             >
-              Generate DC
+              {submittingCreate ? 'Generating...' : 'Generate DC'}
             </button>
           </div>
         </form>

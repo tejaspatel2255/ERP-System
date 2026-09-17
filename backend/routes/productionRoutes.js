@@ -2,7 +2,7 @@ import express from 'express';
 import { verifyToken } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import {
-  getBOMs, createBOM, getBOMById, updateBOM, activateBOM,
+  getBOMs, createBOM, getBOMById, updateBOM, activateBOM, deleteBOM,
   getWorkOrders, createWorkOrder, createWorkOrderFromSalesOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder,
   issueToWorkOrder, getConsumptionByWO,
   getCosting, updateCosting
@@ -17,6 +17,7 @@ router.post('/bom', requirePermission('production', 'create'), createBOM);
 router.get('/bom/:id', requirePermission('production', 'view'), getBOMById);
 router.put('/bom/:id', requirePermission('production', 'edit'), updateBOM);
 router.patch('/bom/:id/activate', requirePermission('production', 'edit'), activateBOM);
+router.delete('/bom/:id', requirePermission('production', 'delete'), deleteBOM);
 
 // Work Orders
 router.get('/work-orders', requirePermission('production', 'view'), getWorkOrders);

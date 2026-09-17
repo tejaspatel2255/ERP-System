@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import { useRole } from '../../context/RoleContext';
-import { getBOMs, createBOM, getBOMById, activateBOM } from '../../api/productionApi';
+import { getBOMs, createBOM, getBOMById, activateBOM, deleteBOM } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
 
@@ -57,6 +57,12 @@ const BOMPage = () => {
     catch { toast.error('Activation failed.'); }
   };
 
+  const handleDelete = async (bom) => {
+    if (!window.confirm(`Delete BOM for "${bom.finished_item_name || 'this item'}" v${bom.version}? This cannot be undone.`)) return;
+    try { await deleteBOM(bom.id); toast.success('BOM deleted.'); fetchBOMs(); }
+    catch (err) { toast.error(err.response?.data?.message || 'Delete failed.'); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.finished_item_id) return toast.error('Select a finished item.');
@@ -79,6 +85,7 @@ const BOMPage = () => {
       <div className="flex gap-2">
         <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View</button>
         {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(i.id)} className="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded-md hover:bg-green-100">Activate</button>}
+        {hasPermission('production', 'delete') && <button onClick={() => handleDelete(i)} className="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md hover:bg-red-100">Delete</button>}
       </div>
     )}
   ];

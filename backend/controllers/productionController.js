@@ -86,6 +86,21 @@ export const activateBOM = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+export const deleteBOM = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const woCheck = await db.query(`SELECT COUNT(*)::int AS cnt FROM work_orders WHERE bom_id = $1`, [id]);
+    if (woCheck.rows[0].cnt > 0) {
+      return res.status(400).json({ success: false, message: 'Cannot delete BOM: it is linked to existing Work Orders.' });
+    }
+    await db.query(`DELETE FROM bom_items WHERE bom_id = $1`, [id]);
+    const result = await db.query(`DELETE FROM bom WHERE id = $1 RETURNING id`, [id]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'BOM not found.' });
+    await logActivity(req.user.id, 'DELETE_BOM', 'production', id, req);
+    return res.status(200).json({ success: true, message: 'BOM deleted successfully.' });
+  } catch (e) { next(e); }
+};
+
 // WORK ORDERS
 export const getWorkOrders = async (req, res, next) => {
   try {

@@ -9,6 +9,7 @@ export const createBOM = (data) => api.post('/production/bom', data).then(r => r
 export const getBOMById = (id) => api.get(`/production/bom/${id}`).then(r => r.data);
 export const updateBOM = (id, data) => api.put(`/production/bom/${id}`, data).then(r => r.data);
 export const activateBOM = (id) => api.patch(`/production/bom/${id}/activate`).then(r => r.data);
+export const deleteBOM = (id) => api.delete(`/production/bom/${id}`).then(r => r.data);
 
 // Work Orders
 export const getWorkOrders = (filters = {}) => api.get(`/production/work-orders?${p(filters)}`).then(r => r.data);

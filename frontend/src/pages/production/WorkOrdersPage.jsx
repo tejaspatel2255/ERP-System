@@ -18,6 +18,65 @@ const STATUS_BADGE = {
   'QA Hold': 'bg-yellow-100 text-yellow-800 border-yellow-200'
 };
 
+// Inline per-row issue component so all materials can be issued simultaneously
+const InlineMaterialIssueRow = ({ m, woStatus, onIssue }) => {
+  const [qty, setQty] = useState('');
+  const [issuing, setIssuing] = useState(false);
+  const canIssue = ['Pending', 'In Progress'].includes(woStatus);
+  const remaining = parseFloat(m.total_required) - parseFloat(m.total_issued);
+  const isFulfilled = remaining <= 0;
+
+  const handleIssue = async () => {
+    if (!qty || parseFloat(qty) <= 0) return toast.error('Enter a valid quantity.');
+    setIssuing(true);
+    await onIssue(m.item_id, qty);
+    setQty('');
+    setIssuing(false);
+  };
+
+  return (
+    <tr className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'bg-green-50 dark:bg-green-950/20' : ''}>
+      <td className="px-4 py-2">
+        <div className="font-semibold text-slate-900 dark:text-white">{m.material_name}</div>
+        <div className="text-[10px] text-slate-400">{m.item_code}</div>
+      </td>
+      <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-300">{parseFloat(m.total_required).toFixed(2)} {m.unit}</td>
+      <td className="px-3 py-2 text-right">
+        <span className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'text-green-600 font-bold' : 'text-orange-500 font-bold'}>
+          {parseFloat(m.total_issued).toFixed(2)}
+        </span>
+      </td>
+      <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-300">{parseFloat(m.current_stock).toFixed(2)}</td>
+      {canIssue && (
+        <td className="px-3 py-2">
+          {isFulfilled ? (
+            <span className="text-green-600 font-bold text-center block">✓ Done</span>
+          ) : (
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="0.0001"
+                step="any"
+                placeholder={`Max ${Math.min(remaining, parseFloat(m.current_stock)).toFixed(2)}`}
+                value={qty}
+                onChange={e => setQty(e.target.value)}
+                className="w-24 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-xs text-slate-900 dark:text-white focus:outline-none"
+              />
+              <button
+                onClick={handleIssue}
+                disabled={issuing}
+                className="rounded-md bg-orange-600 px-2 py-1 text-xs font-bold text-white hover:bg-orange-500 disabled:opacity-50 whitespace-nowrap"
+              >
+                {issuing ? '...' : 'Issue'}
+              </button>
+            </div>
+          )}
+        </td>
+      )}
+    </tr>
+  );
+};
+
 const WorkOrdersPage = () => {
   const { hasPermission } = useRole();
   const [wos, setWos] = useState([]);
@@ -328,27 +387,38 @@ const WorkOrdersPage = () => {
 
             {activeTab === 'plan' && (
               <div className="space-y-3">
-                <Table
-                  columns={[
-                    { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
-                    { key: 'total_required', label: 'Required', render: i => `${parseFloat(i.total_required).toFixed(4)} ${i.unit}` },
-                    { key: 'total_issued', label: 'Issued', render: i => <span className={parseFloat(i.total_issued) >= parseFloat(i.total_required) ? 'text-green-600 font-bold' : 'text-orange-600 font-bold'}>{parseFloat(i.total_issued).toFixed(4)}</span> },
-                    { key: 'current_stock', label: 'Stock', render: i => parseFloat(i.current_stock).toFixed(2) }
-                  ]}
-                  data={detailPlan}
-                  emptyMessage=""
-                />
-
-                {['Pending', 'In Progress'].includes(detailWO.status) && (
-                  <form onSubmit={handleIssue} className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <select required value={issueForm.item_id} onChange={e => setIssueForm(p => ({ ...p, item_id: e.target.value }))} className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-xs text-slate-900 dark:text-white focus:outline-none">
-                      <option value="">Select Material</option>
-                      {detailPlan.map(m => <option key={m.item_id} value={m.item_id}>{m.material_name} (need: {parseFloat(m.total_required - m.total_issued).toFixed(2)})</option>)}
-                    </select>
-                    <input type="number" min="0.0001" step="any" required placeholder="Qty" value={issueForm.qty_issued} onChange={e => setIssueForm(p => ({ ...p, qty_issued: e.target.value }))} className="w-28 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" />
-                    <button type="submit" className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-500">Issue</button>
-                  </form>
-                )}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="px-4 py-2 font-semibold text-slate-500 uppercase text-left">Material</th>
+                        <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-right">Required</th>
+                        <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-right">Issued</th>
+                        <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-right">Stock</th>
+                        {['Pending', 'In Progress'].includes(detailWO.status) && (
+                          <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-center">Issue Qty</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {detailPlan.map((m) => (
+                        <InlineMaterialIssueRow
+                          key={m.item_id}
+                          m={m}
+                          woStatus={detailWO.status}
+                          onIssue={async (itemId, qty) => {
+                            try {
+                              await issueToWorkOrder({ work_order_id: detailWO.id, item_id: itemId, qty_issued: qty });
+                              toast.success(`${m.material_name} issued.`);
+                              const d = await getWorkOrderById(detailWO.id);
+                              if (d.success) { setDetailPlan(d.materialPlan); setDetailConsumption(d.consumption); }
+                            } catch (err) { toast.error(err.response?.data?.message || 'Issue failed.'); }
+                          }}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

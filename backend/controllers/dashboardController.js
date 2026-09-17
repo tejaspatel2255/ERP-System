@@ -8,13 +8,13 @@ export const getSummary = async (req, res, next) => {
       || (req.user?.permissions || []).some((perm) => perm.module_name === 'hr' && perm.action === 'approve');
 
     const queries = [
-      // 1. Sales (Current month vs Previous month)
+      // 1. Sales (Current month vs Previous month) — includes Paid + Partially Paid invoices
       db.query(`
         SELECT 
-          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE) THEN total_amount ELSE 0 END), 0)::numeric AS current_total,
-          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND invoice_date < date_trunc('month', CURRENT_DATE) THEN total_amount ELSE 0 END), 0)::numeric AS last_total
+          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE) THEN COALESCE(paid_amount, total_amount) ELSE 0 END), 0)::numeric AS current_total,
+          COALESCE(SUM(CASE WHEN invoice_date >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') AND invoice_date < date_trunc('month', CURRENT_DATE) THEN COALESCE(paid_amount, total_amount) ELSE 0 END), 0)::numeric AS last_total
         FROM invoices
-        WHERE status = 'Paid'
+        WHERE status IN ('Paid', 'Partially Paid')
       `).catch(() => ({ rows: [{ current_total: 0, last_total: 0 }] })),
 
       // 2. Purchase Orders
@@ -217,7 +217,7 @@ export const getCharts = async (req, res, next) => {
         COALESCE(SUM(i.total_amount), 0)::numeric AS total
       FROM months
       LEFT JOIN invoices i
-        ON i.status = 'Paid'
+        ON i.status IN ('Paid', 'Partially Paid')
        AND date_trunc('month', i.invoice_date) = months.month_start
       GROUP BY months.month_start
       ORDER BY months.month_start ASC
@@ -235,7 +235,7 @@ export const getCharts = async (req, res, next) => {
       SELECT c.id, c.name AS customer, COALESCE(SUM(i.total_amount), 0)::numeric AS revenue
       FROM invoices i
       JOIN customers c ON i.customer_id = c.id
-      WHERE i.status = 'Paid'
+      WHERE i.status IN ('Paid', 'Partially Paid')
         AND i.invoice_date >= date_trunc('year', CURRENT_DATE)
       GROUP BY c.id, c.name
       ORDER BY revenue DESC

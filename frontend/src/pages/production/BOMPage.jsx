@@ -40,8 +40,9 @@ const BOMPage = () => {
   }, [fetchBOMs]);
 
   const openCreate = () => {
+    const defaultMat = rawMaterials[0] || allItems[0];
     setForm({ finished_item_id: finishedGoods[0]?.id || '', notes: '', is_active: false });
-    setBomLines([{ raw_material_id: rawMaterials[0]?.id || '', qty_required: 1, unit: 'Pcs' }]);
+    setBomLines([{ raw_material_id: defaultMat?.id || '', qty_required: 1, unit: defaultMat?.unit || 'Pcs' }]);
     setIsFormOpen(true);
   };
 
@@ -73,8 +74,17 @@ const BOMPage = () => {
     } catch (err) { toast.error(err.response?.data?.message || 'Create BOM failed.'); }
   };
 
-  const addLine = () => setBomLines(p => [...p, { raw_material_id: rawMaterials[0]?.id || '', qty_required: 1, unit: 'Pcs' }]);
+  const UNITS = ['Pcs', 'Kg', 'Ltr', 'Mtr', 'Box', 'Set', 'Nos', 'Pair', 'Roll', 'Sheet'];
+
+  const addLine = () => {
+    const defaultMat = rawMaterials[0] || allItems[0];
+    setBomLines(p => [...p, { raw_material_id: defaultMat?.id || '', qty_required: 1, unit: defaultMat?.unit || 'Pcs' }]);
+  };
   const removeLine = (i) => { if (bomLines.length === 1) return; setBomLines(p => p.filter((_, idx) => idx !== i)); };
+  const handleMaterialChange = (idx, itemId) => {
+    const selectedItem = allItems.find(i => String(i.id) === String(itemId));
+    setBomLines(p => p.map((l, i) => i === idx ? { ...l, raw_material_id: itemId, unit: selectedItem?.unit || l.unit || 'Pcs' } : l));
+  };
 
   const columns = [
     { key: 'finished_item_name', label: 'Finished Item', render: i => <div><div className="font-semibold">{i.finished_item_name}</div><div className="text-[10px] text-slate-400">{i.finished_item_code}</div></div> },
@@ -142,13 +152,17 @@ const BOMPage = () => {
                   {bomLines.map((line, idx) => (
                     <tr key={idx}>
                       <td className="px-2 py-2">
-                        <select required value={line.raw_material_id} onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, raw_material_id: e.target.value } : l))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none">
+                        <select required value={line.raw_material_id} onChange={e => handleMaterialChange(idx, e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none">
                           <option value="">Select Item</option>
                           {allItems.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>)}
                         </select>
                       </td>
                       <td className="px-2 py-2"><input type="number" min="0.0001" step="any" required value={line.qty_required} onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, qty_required: e.target.value } : l))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-center focus:outline-none" /></td>
-                      <td className="px-2 py-2"><input value={line.unit} onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, unit: e.target.value } : l))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm focus:outline-none" /></td>
+                      <td className="px-2 py-2">
+                        <select value={line.unit} onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, unit: e.target.value } : l))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm focus:outline-none text-slate-900 dark:text-white">
+                          {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                      </td>
                       <td className="px-2 py-2 text-center"><button type="button" onClick={() => removeLine(idx)} className="text-red-500 hover:text-red-700 p-1"><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button></td>
                     </tr>
                   ))}

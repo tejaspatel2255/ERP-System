@@ -111,6 +111,7 @@ const WorkOrdersPage = () => {
   const [laborCost, setLaborCost] = useState('');
   const [overheadCost, setOverheadCost] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const fetchWOs = useCallback(async () => {
     setLoading(true);
@@ -213,11 +214,22 @@ const WorkOrdersPage = () => {
 
   const handleComplete = async (e) => {
     e.preventDefault();
+    if (completing) return;
     if (!completeQty || parseFloat(completeQty) <= 0) return toast.error('Enter produced qty > 0.');
+    setCompleting(true);
     try {
       const d = await completeWorkOrder(detailWO.id, completeQty);
-      if (d.success) { toast.success('Work Order completed. Finished goods added to stock.'); setIsCompleteOpen(false); setIsDetailOpen(false); fetchWOs(); }
-    } catch (err) { toast.error(err.response?.data?.message || 'Complete failed.'); }
+      if (d.success) { 
+        toast.success('Work Order completed. Finished goods added to stock.'); 
+        setIsCompleteOpen(false); 
+        setIsDetailOpen(false); 
+        fetchWOs(); 
+      }
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Complete failed.'); 
+    } finally {
+      setCompleting(false);
+    }
   };
 
   const handleCancel = async () => {
@@ -476,8 +488,10 @@ const WorkOrdersPage = () => {
             <p className="text-xs text-slate-400 mt-1">This qty will be added to finished goods stock automatically.</p>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsCompleteOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">Confirm Complete</button>
+            <button type="button" onClick={() => setIsCompleteOpen(false)} disabled={completing} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
+            <button type="submit" disabled={completing} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50">
+              {completing ? 'Completing...' : 'Confirm Complete'}
+            </button>
           </div>
         </form>
       </Modal>

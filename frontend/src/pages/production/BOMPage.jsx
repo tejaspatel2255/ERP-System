@@ -12,14 +12,8 @@ const BOMPage = () => {
   const [boms, setBoms] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [finishedGoods, setFinishedGoods] = useState([]);
-  const [rawMaterials, setRawMaterials] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewBom, setViewBom] = useState(null);
-  const [viewItems, setViewItems] = useState([]);
-  const [form, setForm] = useState({ finished_item_id: '', notes: '', is_active: false });
-  const [bomLines, setBomLines] = useState([{ raw_material_id: '', qty_required: 1, unit: 'Pcs' }]);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingBom, setEditingBom] = useState(null);
 
   const fetchBOMs = useCallback(async () => {
     setLoading(true);
@@ -40,10 +34,30 @@ const BOMPage = () => {
   }, [fetchBOMs]);
 
   const openCreate = () => {
+    setEditingBom(null);
     const defaultMat = rawMaterials[0] || allItems[0];
     setForm({ finished_item_id: finishedGoods[0]?.id || '', notes: '', is_active: false });
     setBomLines([{ raw_material_id: defaultMat?.id || '', qty_required: 1, unit: defaultMat?.unit || 'Pcs' }]);
     setIsFormOpen(true);
+  };
+
+  const openEdit = async (bom) => {
+    try {
+      const d = await getBOMById(bom.id);
+      if (d.success) {
+        setEditingBom(d.bom);
+        setForm({ finished_item_id: d.bom.finished_item_id, notes: d.bom.notes || '', is_active: d.bom.is_active });
+        setBomLines(d.items.map(item => ({
+          raw_material_id: item.raw_material_id,
+          qty_required: parseFloat(item.qty_required),
+          unit: item.unit
+        })));
+        setIsViewOpen(false);
+        setIsFormOpen(true);
+      }
+    } catch {
+      toast.error('Failed to load BOM for editing.');
+    }
   };
 
   const handleView = async (bom) => {
@@ -66,12 +80,29 @@ const BOMPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     if (!form.finished_item_id) return toast.error('Select a finished item.');
     if (bomLines.some(l => !l.raw_material_id || l.qty_required <= 0)) return toast.error('All lines need a material and qty > 0.');
+
+    setSubmitting(true);
     try {
-      const d = await createBOM({ ...form, items: bomLines });
-      if (d.success) { toast.success('BOM created.'); setIsFormOpen(false); fetchBOMs(); }
-    } catch (err) { toast.error(err.response?.data?.message || 'Create BOM failed.'); }
+      let d;
+      if (editingBom) {
+        d = await updateBOM(editingBom.id, { ...form, items: bomLines });
+        if (d.success) toast.success('BOM updated successfully.');
+      } else {
+        d = await createBOM({ ...form, items: bomLines });
+        if (d.success) toast.success('BOM created successfully.');
+      }
+      if (d?.success) {
+        setIsFormOpen(false);
+        fetchBOMs();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || (editingBom ? 'Update BOM failed.' : 'Create BOM failed.'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const UNITS = ['Pcs', 'Kg', 'Ltr', 'Mtr', 'Box', 'Set', 'Nos', 'Pair', 'Roll', 'Sheet'];
@@ -94,6 +125,7 @@ const BOMPage = () => {
     { key: 'actions', label: 'Actions', render: i => (
       <div className="flex gap-2">
         <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View</button>
+        {hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
         {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(i.id)} className="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded-md hover:bg-green-100">Activate</button>}
         {hasPermission('production', 'delete') && <button onClick={() => handleDelete(i)} className="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md hover:bg-red-100">Delete</button>}
       </div>
@@ -172,8 +204,17 @@ const BOMPage = () => {
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save BOM</button>
+            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50" disabled={submitting}>Cancel</button>
+            <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              {submitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Saving...
+                </>
+              ) : (
+                editingBom ? 'Update BOM' : 'Save BOM'
+              )}
+            </button>
           </div>
         </form>
       </Modal>
@@ -188,9 +229,14 @@ const BOMPage = () => {
                 <p className="font-bold text-slate-900 dark:text-white">{viewBom.finished_item_name} <span className="text-slate-400 font-normal">({viewBom.finished_item_code})</span></p>
                 <p className="text-xs text-slate-500 mt-0.5">Unit: {viewBom.finished_item_unit} · Version: v{viewBom.version}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${viewBom.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{viewBom.is_active ? 'Active' : 'Draft'}</span>
-                {!viewBom.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(viewBom.id)} className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-lg hover:bg-green-500">Activate</button>}
+                {hasPermission('production', 'edit') && (
+                  <button onClick={() => openEdit(viewBom)} className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500">
+                    Edit BOM
+                  </button>
+                )}
+                {!viewBom.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(viewBom.id)} className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-500">Activate</button>}
               </div>
             </div>
             <Table

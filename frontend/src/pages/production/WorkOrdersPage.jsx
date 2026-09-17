@@ -20,18 +20,23 @@ const STATUS_BADGE = {
 
 // Inline per-row issue component so all materials can be issued simultaneously
 const InlineMaterialIssueRow = ({ m, woStatus, onIssue }) => {
-  const [qty, setQty] = useState('');
+  const remaining = parseFloat(m.total_required) - parseFloat(m.total_issued);
+  const maxIssuable = Math.min(remaining, parseFloat(m.current_stock));
+  const [qty, setQty] = useState(maxIssuable > 0 ? String(maxIssuable) : '');
   const [issuing, setIssuing] = useState(false);
   const canIssue = ['Pending', 'In Progress'].includes(woStatus);
-  const remaining = parseFloat(m.total_required) - parseFloat(m.total_issued);
   const isFulfilled = remaining <= 0;
 
   const handleIssue = async () => {
-    if (!qty || parseFloat(qty) <= 0) return toast.error('Enter a valid quantity.');
+    const qtyNum = parseFloat(qty);
+    if (!qty || isNaN(qtyNum) || qtyNum <= 0) return toast.error('Enter a valid quantity.');
     setIssuing(true);
-    await onIssue(m.item_id, qty);
-    setQty('');
-    setIssuing(false);
+    try {
+      await onIssue(m.item_id, qty);
+      setQty('');
+    } finally {
+      setIssuing(false);
+    }
   };
 
   return (
@@ -51,18 +56,21 @@ const InlineMaterialIssueRow = ({ m, woStatus, onIssue }) => {
         <td className="px-3 py-2">
           {isFulfilled ? (
             <span className="text-green-600 font-bold text-center block">✓ Done</span>
+          ) : maxIssuable <= 0 ? (
+            <span className="text-red-500 text-[10px] font-semibold text-center block">No Stock</span>
           ) : (
             <div className="flex items-center gap-1">
               <input
                 type="number"
                 min="0.0001"
+                max={maxIssuable}
                 step="any"
-                placeholder={`Max ${Math.min(remaining, parseFloat(m.current_stock)).toFixed(2)}`}
                 value={qty}
                 onChange={e => setQty(e.target.value)}
                 className="w-24 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-xs text-slate-900 dark:text-white focus:outline-none"
               />
               <button
+                type="button"
                 onClick={handleIssue}
                 disabled={issuing}
                 className="rounded-md bg-orange-600 px-2 py-1 text-xs font-bold text-white hover:bg-orange-500 disabled:opacity-50 whitespace-nowrap"

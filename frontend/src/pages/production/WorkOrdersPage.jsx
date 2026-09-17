@@ -43,6 +43,7 @@ const WorkOrdersPage = () => {
   const [issueForm, setIssueForm] = useState({ item_id: '', qty_issued: '' });
   const [laborCost, setLaborCost] = useState('');
   const [overheadCost, setOverheadCost] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchWOs = useCallback(async () => {
     setLoading(true);
@@ -106,7 +107,10 @@ const WorkOrdersPage = () => {
 
   const handleCreateWO = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     if (!form.bom_id || form.planned_qty <= 0) return toast.error('BOM and planned qty > 0 required.');
+    
+    setSubmitting(true);
     try {
       const d = await createWorkOrder(form);
       if (d.success) {
@@ -115,7 +119,11 @@ const WorkOrdersPage = () => {
         setIsFormOpen(false);
         fetchWOs();
       }
-    } catch (err) { toast.error(err.response?.data?.message || 'Create WO failed.'); }
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Create WO failed.'); 
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const openDetail = async (wo) => {
@@ -284,8 +292,10 @@ const WorkOrdersPage = () => {
           )}
 
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Work Order</button>
+            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50" disabled={submitting}>Cancel</button>
+            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50" disabled={submitting}>
+              {submitting ? 'Creating...' : 'Create Work Order'}
+            </button>
           </div>
         </form>
       </Modal>

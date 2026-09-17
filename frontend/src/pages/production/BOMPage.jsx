@@ -12,6 +12,14 @@ const BOMPage = () => {
   const [boms, setBoms] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [finishedGoods, setFinishedGoods] = useState([]);
+  const [rawMaterials, setRawMaterials] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewBom, setViewBom] = useState(null);
+  const [viewItems, setViewItems] = useState([]);
+  const [form, setForm] = useState({ finished_item_id: '', notes: '', is_active: false });
+  const [bomLines, setBomLines] = useState([{ raw_material_id: '', qty_required: 1, unit: 'Pcs' }]);
   const [submitting, setSubmitting] = useState(false);
   const [editingBom, setEditingBom] = useState(null);
 

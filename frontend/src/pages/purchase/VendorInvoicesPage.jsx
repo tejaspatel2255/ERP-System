@@ -68,7 +68,7 @@ const VendorInvoicesPage = () => {
       try {
         const [vendRes, poRes] = await Promise.all([
           getVendors({ page: 1, limit: 100 }),
-          getPurchaseOrders({ status: 'Ordered', limit: 100 }) // Only Ordered/Approved POs can be billed
+          getPurchaseOrders({ limit: 100 }) // Fetch all POs; filter by approval_status below
         ]);
         if (vendRes.success) setVendors(vendRes.vendors);
         if (poRes.success) {

@@ -219,14 +219,13 @@ const WorkOrdersPage = () => {
     setCompleting(true);
     try {
       const d = await completeWorkOrder(detailWO.id, completeQty);
-      if (d.success) { 
-        toast.success('Work Order completed. Finished goods added to stock.'); 
-        setIsCompleteOpen(false); 
-        setIsDetailOpen(false); 
-        fetchWOs(); 
-      }
+      toast.success('Work Order completed. Finished goods added to stock.');
+      setIsCompleteOpen(false);
+      setIsDetailOpen(false);
+      fetchWOs();
     } catch (err) { 
-      toast.error(err.response?.data?.message || 'Complete failed.'); 
+      const msg = err.response?.data?.message || err.message || 'Complete failed.';
+      toast.error(msg, { duration: 6000 });
     } finally {
       setCompleting(false);
     }

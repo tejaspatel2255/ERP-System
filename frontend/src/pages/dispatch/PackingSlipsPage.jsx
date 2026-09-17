@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package } from 'lucide-react';
 import { getPackingSlips, createPackingSlip } from '../../api/dispatchApi';
-import { getOrders } from '../../api/salesApi';
+import { getOrders, getOrderById } from '../../api/salesApi';
 import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
 import Modal from '../../components/Modal';
@@ -21,6 +21,7 @@ export default function PackingSlipsPage() {
   const [packQuantities, setPackQuantities] = useState({});
   const [batchNumbers, setBatchNumbers] = useState({});
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -42,26 +43,34 @@ export default function PackingSlipsPage() {
     }
   };
 
-  const handleOrderChange = (orderId) => {
+  const handleOrderChange = async (orderId) => {
     setSelectedOrderId(orderId);
+    setPackQuantities({});
+    setBatchNumbers({});
     if (orderId) {
-      const order = orders.find(o => o.id === orderId);
-      if (order && order.line_items) {
-        let parsed = order.line_items;
-        if (typeof parsed === 'string') parsed = JSON.parse(parsed);
-        setSelectedOrderItems(parsed);
-      } else {
+      try {
+        const res = await getOrderById(orderId);
+        if (res.success && res.items) {
+          setSelectedOrderItems(res.items);
+          const initialQtys = {};
+          res.items.forEach(item => {
+            initialQtys[item.item_id] = item.qty || '5';
+          });
+          setPackQuantities(initialQtys);
+        } else {
+          setSelectedOrderItems([]);
+        }
+      } catch (e) {
         setSelectedOrderItems([]);
       }
     } else {
       setSelectedOrderItems([]);
     }
-    setPackQuantities({});
-    setBatchNumbers({});
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     setError('');
     setSuccess('');
     if (!selectedOrderId) {
@@ -82,6 +91,7 @@ export default function PackingSlipsPage() {
       return;
     }
 
+    setSubmitting(true);
     try {
       await createPackingSlip({
         order_id: selectedOrderId,
@@ -96,6 +106,8 @@ export default function PackingSlipsPage() {
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create packing slip.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -246,9 +258,10 @@ export default function PackingSlipsPage() {
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-accent-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-colors shadow-sm"
+              disabled={submitting}
+              className="rounded-xl bg-accent-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-colors shadow-sm disabled:opacity-50"
             >
-              Submit Packing Slip
+              {submitting ? 'Submitting...' : 'Submit Packing Slip'}
             </button>
           </div>
         </form>

@@ -133,7 +133,7 @@ const BOMPage = () => {
     { key: 'actions', label: 'Actions', render: i => (
       <div className="flex gap-2">
         <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View</button>
-        {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
+        {hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
         {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(i.id)} className="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded-md hover:bg-green-100">Activate</button>}
         {hasPermission('production', 'delete') && <button onClick={() => handleDelete(i)} className="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md hover:bg-red-100">Delete</button>}
       </div>
@@ -239,7 +239,7 @@ const BOMPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${viewBom.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{viewBom.is_active ? 'Active' : 'Draft'}</span>
-                {!viewBom.is_active && hasPermission('production', 'edit') && (
+                {hasPermission('production', 'edit') && (
                   <button onClick={() => openEdit(viewBom)} className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500">
                     Edit BOM
                   </button>

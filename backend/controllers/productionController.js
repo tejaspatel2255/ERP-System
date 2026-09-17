@@ -54,12 +54,8 @@ export const updateBOM = async (req, res, next) => {
     const bomRes = await client.query(`SELECT * FROM bom WHERE id = $1`, [id]);
     if (!bomRes.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, message: 'BOM not found.' }); }
     const existing = bomRes.rows[0];
-    if (existing.is_active) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Cannot edit an Active BOM. Only Draft BOMs can be edited. Deactivate or create a new version.' });
-    }
     if (is_active) await client.query(`UPDATE bom SET is_active = FALSE WHERE finished_item_id = $1 AND id != $2`, [existing.finished_item_id, id]);
-    await client.query(`UPDATE bom SET notes = $1, is_active = $2, updated_at = NOW() WHERE id = $3`, [notes, is_active || false, id]);
+    await client.query(`UPDATE bom SET notes = $1, is_active = $2, updated_at = NOW() WHERE id = $3`, [notes, is_active !== undefined ? is_active : existing.is_active, id]);
     if (items?.length) {
       await client.query(`DELETE FROM bom_items WHERE bom_id = $1`, [id]);
       for (const item of items) await client.query(`INSERT INTO bom_items (bom_id, raw_material_id, qty_required, unit) VALUES ($1,$2,$3,$4)`, [id, item.raw_material_id, parseFloat(item.qty_required), item.unit]);

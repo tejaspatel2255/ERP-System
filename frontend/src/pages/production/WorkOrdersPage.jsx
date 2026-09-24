@@ -377,7 +377,7 @@ const WorkOrdersPage = () => {
       </Modal>
 
       {/* WO Detail Modal */}
-      <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title={`WO Telemetry Dossier: ${detailWO?.wo_no}`} size="lg">
+      <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title={`Work Order Details: ${detailWO?.wo_no}`} size="lg">
         {detailWO && (
           <div className="space-y-4 font-sans">
             {/* Header + Actions */}
@@ -470,7 +470,7 @@ const WorkOrdersPage = () => {
             )}
 
             <div className="flex justify-end pt-3 border-t border-border-color">
-              <button onClick={() => setIsDetailOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close Dossier</button>
+              <button onClick={() => setIsDetailOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close</button>
             </div>
           </div>
         )}

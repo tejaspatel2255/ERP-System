@@ -323,7 +323,7 @@ const VendorsPage = () => {
       </Modal>
 
       {/* VIEW VENDOR HISTORY DOSSIER */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Vendor Profile & Ledger Dossier" size="lg">
+      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Vendor Profile & Ledger Details" size="lg">
         {viewingVendor && (
           <div className="space-y-6">
             {/* Summary details card */}

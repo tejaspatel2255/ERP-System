@@ -46,7 +46,7 @@ export default function SettingsPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
       <PageHeader
         title="System Settings"
-        description="Configure organizational details, GSTIN, bank dossier, and operational defaults for document printing."
+        description="Configure organizational details, GSTIN, bank details, and operational defaults for document printing."
         actions={
           canEdit && (
             <button

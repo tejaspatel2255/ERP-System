@@ -191,7 +191,7 @@ const GRNPage = () => {
       </Modal>
 
       {/* View GRN Modal */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Dossier: ${viewingGrn?.grn_no}`} size="lg">
+      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Details: ${viewingGrn?.grn_no}`} size="lg">
         {viewingGrn && (
           <div className="space-y-4 font-sans">
             <div className="grid grid-cols-3 gap-3 p-3 rounded-xs bg-bg-card border border-border-color text-xs">
@@ -210,7 +210,7 @@ const GRNPage = () => {
               emptyMessage=""
             />
             <div className="flex justify-end pt-3 border-t border-border-color">
-              <button onClick={() => setIsViewOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close Dossier</button>
+              <button onClick={() => setIsViewOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close</button>
             </div>
           </div>
         )}

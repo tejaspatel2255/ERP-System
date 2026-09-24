@@ -7,7 +7,7 @@ import TrainingPage from './hr/TrainingPage';
 import PageHeader from '../components/PageHeader';
 
 const tabs = [
-  { key: 'employees', label: 'Employee Dossiers' },
+  { key: 'employees', label: 'Employee Directory' },
   { key: 'attendance', label: 'Attendance Register' },
   { key: 'leave', label: 'Leave Applications' },
   { key: 'self', label: 'Employee Self Service' },

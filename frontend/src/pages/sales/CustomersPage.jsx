@@ -143,7 +143,7 @@ const CustomersPage = () => {
         setViewingHistory(data.history);
       }
     } catch (err) {
-      toast.error('Failed to load customer transaction dossier.');
+      toast.error('Failed to load customer details.');
     } finally {
       setHistoryLoading(false);
     }
@@ -180,7 +180,7 @@ const CustomersPage = () => {
             onClick={() => handleViewCustomer(item)}
             className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase"
           >
-            Dossier
+            View
           </button>
           {hasPermission('sales', 'edit') && (
             <button
@@ -328,8 +328,8 @@ const CustomersPage = () => {
         </form>
       </Modal>
 
-      {/* PROFILE DOSSIER VIEW MODAL */}
-      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Dossier Telemetry" size="lg">
+      {/* PROFILE DETAILS VIEW MODAL */}
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Profile & Ledger Details" size="lg">
         {viewingDetails && (
           <div className="space-y-5 font-sans">
             {/* Summary Telemetry Panel */}
@@ -442,7 +442,7 @@ const CustomersPage = () => {
                 onClick={() => setIsViewModalOpen(false)}
                 className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover"
               >
-                Close Dossier
+                Close
               </button>
             </div>
           </div>

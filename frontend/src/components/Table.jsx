@@ -10,14 +10,14 @@ import { AlertCircle } from 'lucide-react';
  */
 const Table = ({ columns, data = [], loading = false, emptyMessage = 'No telemetry or records available' }) => {
   return (
-    <div className="w-full overflow-x-auto rounded-sm border border-border-color bg-bg-secondary shadow-2xs transition-colors duration-150">
+    <div className="w-full overflow-x-auto rounded-xs border border-border-color bg-bg-secondary shadow-2xs transition-colors duration-150">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="border-b border-border-color bg-bg-card/90">
             {columns.map((col, idx) => (
               <th
                 key={col.key || idx}
-                className={`px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted select-none ${
+                className={`px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider text-text-muted select-none ${
                   col.isNumeric ? 'text-right' : ''
                 }`}
               >
@@ -26,14 +26,14 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No telemet
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border-color/60 bg-bg-secondary font-sans text-xs">
+        <tbody className="divide-y divide-border-color/60 bg-bg-secondary font-sans text-sm">
           {loading ? (
             // Industrial Skeleton Loader Rows
             Array.from({ length: 5 }).map((_, rIdx) => (
               <tr key={rIdx} className="animate-pulse">
                 {columns.map((_, cIdx) => (
-                  <td key={cIdx} className="px-4 py-3">
-                    <div className="h-3.5 bg-bg-hover rounded-xs w-2/3" />
+                  <td key={cIdx} className="px-4 py-3.5">
+                    <div className="h-4 bg-bg-hover rounded-xs w-2/3" />
                   </td>
                 ))}
               </tr>
@@ -61,7 +61,7 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No telemet
                   return (
                     <td
                       key={col.key || cIdx}
-                      className={`px-4 py-2.5 text-xs text-text-primary whitespace-nowrap ${
+                      className={`px-4 py-3 text-sm text-text-primary whitespace-nowrap ${
                         col.isNumeric ? 'text-right font-mono-tabular font-semibold' : ''
                       } ${isMono ? 'font-mono-tabular text-accent-primary font-bold' : ''}`}
                     >

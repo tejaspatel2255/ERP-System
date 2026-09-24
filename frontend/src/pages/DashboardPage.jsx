@@ -71,37 +71,37 @@ export default function DashboardPage() {
   const activityColumns = [
     { key: 'user_name', label: 'Operator', render: (item) => <span className="font-mono text-xs">{item.user_name || 'System'}</span> },
     { key: 'action', label: 'Operation Action', render: (item) => <StatusBadge status={item.action} /> },
-    { key: 'module', label: 'System Domain', render: (item) => <span className="uppercase font-mono text-[10px] text-text-muted">{item.module}</span> },
+    { key: 'module', label: 'System Domain', render: (item) => <span className="uppercase font-mono text-xs text-text-muted">{item.module}</span> },
     { key: 'created_at', label: 'Telemetry Timestamp', render: (item) => <span className="font-mono text-xs text-text-muted">{new Date(item.created_at).toLocaleString()}</span> }
   ];
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto animate-fadeIn">
+    <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto animate-fadeIn font-sans">
       {/* Top Banner Control Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-color pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <Cpu size={18} className="text-accent-primary" />
+            <Cpu size={20} className="text-accent-primary" />
             <span className="text-xs font-mono font-bold text-accent-primary uppercase tracking-widest">ERP NEXUS // OPERATIONAL CONSOLE</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-mono font-bold text-text-primary tracking-tight uppercase mt-1">
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold text-text-primary tracking-tight uppercase mt-1">
             Manufacturing Execution & Operations Command Center
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-text-muted bg-bg-card px-3 py-1.5 rounded-sm border border-border-color shrink-0">
-          <span className="h-2 w-2 rounded-full bg-accent-success animate-pulse" />
+        <div className="flex items-center gap-2 text-xs font-mono text-text-muted bg-bg-card px-3.5 py-2 rounded-xs border border-border-color shrink-0">
+          <span className="h-2.5 w-2.5 rounded-full bg-accent-success animate-pulse" />
           <span>TELEMETRY STATUS: ONLINE</span>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-sm border border-accent-danger/40 bg-accent-danger/10 p-3 text-xs font-mono text-accent-danger">
+        <div className="rounded-xs border border-accent-danger/40 bg-accent-danger/10 p-3.5 text-xs font-mono text-accent-danger">
           [FAULT] {error}
         </div>
       )}
 
       {/* Primary Operational Metric Telemetry Blocks */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {kpiConfig.map((item) => {
           const Icon = item.icon;
           const rawValue = summary ? summary[item.key] : null;
@@ -116,31 +116,31 @@ export default function DashboardPage() {
           return (
             <div
               key={item.key}
-              className="rounded-sm border border-border-color bg-bg-card p-3.5 shadow-2xs transition-colors hover:border-accent-primary/50 flex flex-col justify-between"
+              className="rounded-xs border border-border-color bg-bg-card p-4 shadow-2xs transition-colors hover:border-accent-primary/50 flex flex-col justify-between"
             >
               {loading ? (
-                <div className="h-20 animate-pulse rounded-xs bg-bg-hover" />
+                <div className="h-24 animate-pulse rounded-xs bg-bg-hover" />
               ) : (
                 <>
                   <div className="flex items-center justify-between border-b border-border-color/40 pb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted truncate">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted truncate">
                       {item.label}
                     </span>
-                    <Icon size={14} className="text-text-muted shrink-0" />
+                    <Icon size={16} className="text-text-muted shrink-0" />
                   </div>
                   
                   <div className="mt-3">
-                    <div className="text-xl font-mono font-bold text-text-primary tracking-tight">
+                    <div className="text-2xl font-mono font-bold text-text-primary tracking-tight">
                       {displayValue}
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-border-color/30 flex items-center justify-between text-[10px] font-mono">
+                  <div className="mt-3 pt-2 border-t border-border-color/30 flex items-center justify-between text-xs font-mono">
                     <span className="text-text-muted">Trend</span>
                     <div className={`flex items-center gap-0.5 font-bold ${
                       trendInfo.trendUp ? 'text-accent-success' : 'text-accent-danger'
                     }`}>
-                      {trendInfo.trendUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                      {trendInfo.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                       <span>{trendInfo.trend}</span>
                     </div>
                   </div>
@@ -152,33 +152,33 @@ export default function DashboardPage() {
       </div>
 
       {/* Process Flow Visualization Overview */}
-      <div className="rounded-sm border border-border-color bg-bg-card p-4 shadow-2xs">
-        <div className="mb-3 flex items-center justify-between border-b border-border-color/60 pb-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">
+      <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+        <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
+          <span className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">
             ERP Enterprise Operational Lifecycle Pipeline
           </span>
-          <span className="text-[10px] font-mono text-text-muted">CLOSED LOOP TRACEABILITY</span>
+          <span className="text-xs font-mono text-text-muted">CLOSED LOOP TRACEABILITY</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {lifecycleSteps.map((s) => {
             const SIcon = s.icon;
             return (
               <Link
                 key={s.step}
                 to={s.link}
-                className="group flex items-start gap-3 p-3 rounded-sm border border-border-color/60 bg-bg-secondary hover:border-accent-primary transition-all"
+                className="group flex items-start gap-3 p-3.5 rounded-xs border border-border-color/60 bg-bg-secondary hover:border-accent-primary transition-all"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-xs bg-bg-card border border-border-color text-accent-primary font-mono text-xs font-bold shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xs bg-bg-card border border-border-color text-accent-primary font-mono text-xs font-bold shrink-0">
                   {s.step}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold uppercase text-text-primary group-hover:text-accent-primary transition-colors">
+                    <span className="text-sm font-mono font-bold uppercase text-text-primary group-hover:text-accent-primary transition-colors">
                       {s.title}
                     </span>
-                    <SIcon size={12} className="text-text-muted group-hover:text-accent-primary" />
+                    <SIcon size={14} className="text-text-muted group-hover:text-accent-primary" />
                   </div>
-                  <p className="text-[10px] font-sans text-text-muted truncate mt-0.5">{s.desc}</p>
+                  <p className="text-xs font-sans text-text-muted truncate mt-0.5">{s.desc}</p>
                 </div>
               </Link>
             );
@@ -189,13 +189,13 @@ export default function DashboardPage() {
       {/* Analytics Charts Grid */}
       <div className="grid gap-4 xl:grid-cols-2">
         {/* Sales Trend Chart */}
-        <div className="rounded-sm border border-border-color bg-bg-card p-4 shadow-2xs">
-          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2">
+        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
             <div>
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">Commercial Sales Trajectory</h2>
-              <p className="text-[11px] font-sans text-text-muted">12-Month gross revenue metrics</p>
+              <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Commercial Sales Trajectory</h2>
+              <p className="text-xs font-sans text-text-muted">12-Month gross revenue metrics</p>
             </div>
-            <span className="rounded-xs bg-bg-secondary px-2 py-0.5 text-[10px] font-mono text-text-muted border border-border-color">
+            <span className="rounded-xs bg-bg-secondary px-2.5 py-1 text-xs font-mono text-text-muted border border-border-color">
               HISTORICAL
             </span>
           </div>
@@ -206,8 +206,8 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={charts?.salesByMonth || []}>
                 <CartesianGrid strokeDasharray="2 2" stroke="var(--border-color)" />
-                <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                <YAxis stroke="var(--text-muted)" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
+                <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'monospace' }} />
+                <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'monospace' }} />
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-modal)',
@@ -225,13 +225,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Inventory Category Chart */}
-        <div className="rounded-sm border border-border-color bg-bg-card p-4 shadow-2xs">
-          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2">
+        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
             <div>
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">Stock Category Distribution</h2>
-              <p className="text-[11px] font-sans text-text-muted">Live item classification inventory breakdown</p>
+              <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Stock Category Distribution</h2>
+              <p className="text-xs font-sans text-text-muted">Live item classification inventory breakdown</p>
             </div>
-            <span className="rounded-xs bg-bg-secondary px-2 py-0.5 text-[10px] font-mono text-text-muted border border-border-color">
+            <span className="rounded-xs bg-bg-secondary px-2.5 py-1 text-xs font-mono text-text-muted border border-border-color">
               LIVE TELEMETRY
             </span>
           </div>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           {loading ? (
             <div className="h-72 animate-pulse rounded-xs bg-bg-hover" />
           ) : (
-            <div className="grid gap-4 lg:grid-cols-[1fr_200px] items-center">
+            <div className="grid gap-4 lg:grid-cols-[1fr_220px] items-center">
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
@@ -259,22 +259,22 @@ export default function DashboardPage() {
                       background: 'var(--bg-modal)',
                       border: '1px solid var(--border-color)',
                       borderRadius: 2,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontFamily: 'monospace',
                       color: 'var(--text-primary)'
                     }}
                   />
-                  <Legend iconType="rect" wrapperStyle={{ fontSize: 10, fontFamily: 'monospace' }} />
+                  <Legend iconType="rect" wrapperStyle={{ fontSize: 11, fontFamily: 'monospace' }} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
                 {pieData.map((entry, index) => (
-                  <div key={entry.category} className="flex items-center justify-between gap-2 text-[11px] text-text-secondary bg-bg-secondary p-1.5 rounded-xs border border-border-color/50">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-xs" style={{ background: chartColors[index % chartColors.length] }} />
-                      <span className="font-mono font-bold text-text-primary truncate max-w-[90px]">{entry.category}</span>
+                  <div key={entry.category} className="flex items-center justify-between gap-2 text-xs text-text-secondary bg-bg-secondary p-2 rounded-xs border border-border-color/50">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-xs" style={{ background: chartColors[index % chartColors.length] }} />
+                      <span className="font-mono font-bold text-text-primary truncate max-w-[100px]">{entry.category}</span>
                     </div>
-                    <span className="font-mono font-bold text-accent-primary bg-bg-card px-1 rounded-xs border border-border-color/60">{entry.count}</span>
+                    <span className="font-mono font-bold text-accent-primary bg-bg-card px-1.5 py-0.5 rounded-xs border border-border-color/60">{entry.count}</span>
                   </div>
                 ))}
               </div>
@@ -285,10 +285,10 @@ export default function DashboardPage() {
 
       {/* Operational Activity Timeline and Quick Actions Section */}
       <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2 rounded-sm border border-border-color bg-bg-card p-4 shadow-2xs">
-          <div className="mb-3 flex items-center justify-between border-b border-border-color/60 pb-2">
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">System Activity Audit Log</h2>
-            <Link to="/activity-logs" className="text-[11px] font-mono font-bold text-accent-primary hover:underline">
+        <div className="xl:col-span-2 rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+          <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
+            <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">System Activity Audit Log</h2>
+            <Link to="/activity-logs" className="text-xs font-mono font-bold text-accent-primary hover:underline">
               [FULL LOG READOUT]
             </Link>
           </div>
@@ -296,19 +296,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Commands Console */}
-        <div className="rounded-sm border border-border-color bg-bg-card p-4 shadow-2xs flex flex-col">
-          <h2 className="mb-3 text-xs font-mono font-bold uppercase tracking-wider text-text-primary border-b border-border-color/60 pb-2">
+        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs flex flex-col">
+          <h2 className="mb-3.5 text-sm font-mono font-bold uppercase tracking-wider text-text-primary border-b border-border-color/60 pb-2.5">
             Quick Domain Navigation
           </h2>
-          <div className="grid grid-cols-1 gap-2 flex-1">
+          <div className="grid grid-cols-1 gap-2.5 flex-1">
             {quickLinks.map(([label, to]) => (
               <Link
                 key={to}
                 to={to}
-                className="group flex items-center justify-between rounded-xs border border-border-color bg-bg-secondary px-3 py-2 text-xs font-mono font-bold text-text-secondary transition-all hover:border-accent-primary/60 hover:text-text-primary"
+                className="group flex items-center justify-between rounded-xs border border-border-color bg-bg-secondary px-3.5 py-2.5 text-xs font-mono font-bold text-text-secondary transition-all hover:border-accent-primary/60 hover:text-text-primary"
               >
                 <span>{label}</span>
-                <ArrowUpRight size={14} className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent-primary" />
+                <ArrowUpRight size={15} className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent-primary" />
               </Link>
             ))}
           </div>

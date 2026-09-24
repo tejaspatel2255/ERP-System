@@ -109,7 +109,7 @@ export default function Navbar({ onMenuClick }) {
           >
             <Bell size={17} />
             {totalNotifications > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-xs bg-accent-danger text-[10px] font-mono font-bold text-white shadow-2xs">
+              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] px-1 items-center justify-center rounded-full bg-accent-danger text-[10px] leading-none font-mono font-bold text-white shadow-2xs">
                 {totalNotifications}
               </span>
             )}

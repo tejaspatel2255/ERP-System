@@ -336,7 +336,7 @@ const RolesPage = () => {
                         <td key={action.key} className="px-6 py-4 text-center">
                           <input
                             type="checkbox"
-                            className="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            className="h-4 w-4 rounded border-border-color text-accent-primary focus:ring-accent-primary/20 cursor-pointer"
                             checked={isChecked}
                             onChange={() => handleMatrixToggle(module.key, action.key)}
                           />

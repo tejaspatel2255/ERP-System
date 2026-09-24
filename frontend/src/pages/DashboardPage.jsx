@@ -152,7 +152,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Process Flow Visualization Overview */}
-      <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+      <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
         <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
           <span className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">
             ERP Enterprise Operational Lifecycle Pipeline
@@ -189,7 +189,7 @@ export default function DashboardPage() {
       {/* Analytics Charts Grid */}
       <div className="grid gap-4 xl:grid-cols-2">
         {/* Sales Trend Chart */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
           <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
             <div>
               <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Commercial Sales Trajectory</h2>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Inventory Category Chart */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
           <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
             <div>
               <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Stock Category Distribution</h2>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
 
       {/* Operational Activity Timeline and Quick Actions Section */}
       <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2 rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs">
+        <div className="xl:col-span-2 rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
           <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
             <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">System Activity Audit Log</h2>
             <Link to="/activity-logs" className="text-xs font-mono font-bold text-accent-primary hover:underline">
@@ -296,7 +296,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Commands Console */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-4.5 shadow-2xs flex flex-col">
+        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs flex flex-col">
           <h2 className="mb-3.5 text-sm font-mono font-bold uppercase tracking-wider text-text-primary border-b border-border-color/60 pb-2.5">
             Quick Domain Navigation
           </h2>

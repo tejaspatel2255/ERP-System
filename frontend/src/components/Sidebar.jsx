@@ -34,13 +34,14 @@ import {
   Users2,
   Palette,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 const groups = [
   {
     key: 'admin',
-    title: 'Admin',
+    title: 'System Admin',
     permission: ['auth', 'view'],
     icon: Shield,
     items: [
@@ -51,7 +52,7 @@ const groups = [
   },
   {
     key: 'sales',
-    title: 'Sales',
+    title: 'Sales & Commerce',
     permission: ['sales', 'view'],
     icon: TrendingUp,
     items: [
@@ -64,7 +65,7 @@ const groups = [
   },
   {
     key: 'purchase',
-    title: 'Purchase',
+    title: 'Procurement',
     permission: ['purchase', 'view'],
     icon: Package,
     items: [
@@ -76,7 +77,7 @@ const groups = [
   },
   {
     key: 'store',
-    title: 'Store',
+    title: 'Inventory & Warehouse',
     permission: ['store', 'view'],
     icon: Warehouse,
     items: [
@@ -89,7 +90,7 @@ const groups = [
   },
   {
     key: 'production',
-    title: 'Production',
+    title: 'Manufacturing Ops',
     permission: ['production', 'view'],
     icon: Factory,
     items: [
@@ -100,7 +101,7 @@ const groups = [
   },
   {
     key: 'maintenance',
-    title: 'Maintenance',
+    title: 'Equipment & Plant',
     permission: ['maintenance', 'view'],
     icon: Settings,
     items: [
@@ -121,19 +122,19 @@ const groups = [
   },
   {
     key: 'qc',
-    title: 'Quality Control',
+    title: 'Quality Control Gating',
     permission: ['qc', 'view'],
     icon: Shield,
     items: [
       { label: 'Raw Material QC', to: '/qc/raw-material', permission: ['qc', 'view'], icon: Shield },
       { label: 'In-Process QC', to: '/qc/in-process', permission: ['qc', 'view'], icon: Shield },
       { label: 'Final QC', to: '/qc/final', permission: ['qc', 'view'], icon: Shield },
-      { label: 'NCR', to: '/qc/ncr', permission: ['qc', 'view'], icon: Shield }
+      { label: 'NCR Records', to: '/qc/ncr', permission: ['qc', 'view'], icon: Shield }
     ]
   },
   {
     key: 'dispatch',
-    title: 'Dispatch',
+    title: 'Logistics & Dispatch',
     permission: ['dispatch', 'view'],
     icon: Send,
     items: [
@@ -144,7 +145,7 @@ const groups = [
   },
   {
     key: 'hr',
-    title: 'HR',
+    title: 'Human Resources',
     permission: ['hr', 'view'],
     icon: Users2,
     items: [
@@ -157,7 +158,7 @@ const groups = [
   },
   {
     key: 'design',
-    title: 'Design',
+    title: 'Engineering & CAD',
     permission: ['design', 'view'],
     icon: Palette,
     items: [
@@ -230,19 +231,19 @@ export default function Sidebar({ open, onClose }) {
         onClick={isMobileView ? onClose : undefined}
         title={collapsed && !isMobileView ? item.label : ''}
         className={({ isActive }) =>
-          `group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+          `group relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-sm text-xs font-semibold transition-all duration-150 ${
             isActive
-              ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
-              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+              ? 'bg-bg-card text-text-primary font-bold border-l-2 border-accent-primary shadow-2xs'
+              : 'text-text-secondary hover:bg-bg-hover/80 hover:text-text-primary'
           }`
         }
       >
-        <Icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
+        <Icon size={15} className="shrink-0 text-text-muted transition-colors group-hover:text-text-primary" />
         {(!collapsed || isMobileView) && (
-          <span className="flex-1 truncate transition-opacity duration-200">{item.label}</span>
+          <span className="flex-1 truncate tracking-tight">{item.label}</span>
         )}
         {item.alertBadge && alertCount > 0 && (
-          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+          <span className="rounded-xs bg-accent-danger/20 border border-accent-danger/40 px-1.5 py-0.2 text-[9px] font-mono font-bold text-accent-danger">
             {alertCount}
           </span>
         )}
@@ -250,38 +251,38 @@ export default function Sidebar({ open, onClose }) {
     );
   };
 
-  // 1. Mobile Sidebar Render (Always 240px width drawer slide-in)
+  // 1. Mobile Sidebar Drawer
   const mobileSidebarContent = (
-    <div className="flex h-full w-[240px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
+    <div className="flex h-full w-[250px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
+      <div className="flex h-[54px] items-center justify-between border-b border-border-color px-4">
         <Logo size="sm" showText={true} />
         <button
           onClick={onClose}
-          className="rounded-lg p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
+          className="rounded-sm p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={18} />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-2 py-3 space-y-3">
         <NavLink
           to="/dashboard"
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+            `flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs font-bold transition-all duration-150 ${
               isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary'
+                ? 'bg-bg-card text-text-primary border-l-2 border-accent-primary'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
             }`
           }
         >
-          <LayoutDashboard size={18} />
-          <span>Dashboard</span>
+          <LayoutDashboard size={16} />
+          <span>Operations Command</span>
         </NavLink>
 
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           {visibleGroups.map((group) => (
             <div key={group.key} className="space-y-1">
-              <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted">
+              <span className="px-2.5 text-[9px] font-mono font-bold uppercase tracking-widest text-text-muted block">
                 {group.title}
               </span>
               <div className="space-y-0.5">
@@ -296,74 +297,90 @@ export default function Sidebar({ open, onClose }) {
     </div>
   );
 
-  // 2. Desktop Sidebar Render (Collapsible width 64px to 240px)
+  // 2. Desktop Operations Rail Sidebar
   const desktopSidebarContent = (
     <div
-      className={`relative flex h-full flex-col border-r border-border-color bg-bg-secondary text-text-primary transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-16' : 'w-60'
+      className={`relative flex h-full flex-col border-r border-border-color bg-bg-secondary text-text-primary transition-all duration-200 ease-in-out ${
+        collapsed ? 'w-14' : 'w-60'
       }`}
     >
-      {/* Top Header */}
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-3.5">
+      {/* Console Brand Header */}
+      <div className="flex h-[54px] items-center justify-between border-b border-border-color px-3">
         {!collapsed ? (
           <Logo size="sm" showText={true} />
         ) : (
           <Logo size="sm" showText={false} className="mx-auto" />
         )}
 
-        {/* Desktop Collapse Arrow Button */}
+        {/* Collapse Arrow Toggle */}
         <button
           onClick={toggleSidebar}
-          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center rounded-full border border-border-color bg-bg-modal text-text-secondary shadow-md hover:bg-bg-hover hover:text-text-primary transition-colors"
+          className="absolute -right-3 top-3.5 z-30 flex h-5 w-5 items-center justify-center rounded-sm border border-border-color bg-bg-modal text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors shadow-2xs"
+          title={collapsed ? 'Expand operations rail' : 'Collapse rail'}
         >
-          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
       </div>
 
-      {/* Nav List */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-4">
+      {/* Rail Nav Items */}
+      <div className="flex-1 overflow-y-auto px-2 py-3 space-y-3">
         {/* Dashboard Link */}
         <NavLink
           to="/dashboard"
-          title={collapsed ? 'Dashboard' : ''}
+          title={collapsed ? 'Operations Command Center' : ''}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+            `flex items-center gap-2.5 px-2.5 py-1.5 rounded-sm text-xs font-bold transition-all duration-150 ${
               isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
-                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-            } ${collapsed ? 'justify-center' : ''}`
+                ? 'bg-bg-card text-text-primary border-l-2 border-accent-primary shadow-2xs'
+                : 'text-text-secondary hover:bg-bg-hover/80 hover:text-text-primary'
+            } ${collapsed ? 'justify-center px-0' : ''}`
           }
         >
-          <LayoutDashboard size={18} className="shrink-0" />
-          {!collapsed && <span>Dashboard</span>}
+          <LayoutDashboard size={16} className="shrink-0 text-accent-primary" />
+          {!collapsed && <span className="tracking-tight">Command Center</span>}
         </NavLink>
 
-        <div className="space-y-4">
+        <div className="space-y-3 pt-1 border-t border-border-color/50">
           {visibleGroups.map((group) => {
             const GroupIcon = group.icon;
             const hasActiveChild = group.items.some((item) => location.pathname === item.to);
+            const isExpanded = expandedGroups[group.key] ?? true;
+
             return (
-              <div key={group.key} className="space-y-1">
-                {/* Header title or collapsed icon */}
+              <div key={group.key} className="space-y-0.5">
+                {/* Collapsible Domain Header */}
                 {!collapsed ? (
-                  <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted block">
-                    {group.title}
-                  </span>
+                  <button
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted hover:text-text-primary transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <GroupIcon size={12} className={hasActiveChild ? 'text-accent-primary' : 'text-text-muted'} />
+                      <span className="truncate">{group.title}</span>
+                    </div>
+                    <ChevronDown
+                      size={12}
+                      className={`shrink-0 transition-transform duration-150 ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
                 ) : (
-                  <div className="border-t border-border-color/40 my-2 pt-2 flex justify-center">
+                  <div className="flex justify-center py-1 border-t border-border-color/30">
                     <GroupIcon
-                      size={16}
-                      className={`text-text-muted ${hasActiveChild ? 'text-accent-primary' : ''}`}
+                      size={14}
+                      className={hasActiveChild ? 'text-accent-primary' : 'text-text-muted'}
                       title={group.title}
                     />
                   </div>
                 )}
 
-                <div className="space-y-0.5">
-                  {group.items
-                    .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
-                    .map((item) => renderLink(item, false))}
-                </div>
+                {/* Sub-items */}
+                {(!collapsed ? isExpanded : true) && (
+                  <div className="space-y-0.5">
+                    {group.items
+                      .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
+                      .map((item) => renderLink(item, false))}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -377,22 +394,22 @@ export default function Sidebar({ open, onClose }) {
       {/* Mobile Drawer Overlay Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-2xs lg:hidden transition-opacity duration-200"
           onClick={onClose}
         />
       )}
 
-      {/* Mobile Slide-in Drawer Container */}
+      {/* Mobile Slide-in Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out lg:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {mobileSidebarContent}
       </aside>
 
-      {/* Desktop Persistent Container */}
-      <aside className="hidden lg:block h-screen sticky top-0 shrink-0">
+      {/* Desktop Operations Rail */}
+      <aside className="hidden lg:block h-screen sticky top-0 shrink-0 select-none">
         {desktopSidebarContent}
       </aside>
     </>

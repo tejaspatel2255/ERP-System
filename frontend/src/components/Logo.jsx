@@ -3,36 +3,36 @@ import { Link } from 'react-router-dom';
 
 export default function Logo({ size = 'md', showText = true, className = '' }) {
   const sizeClasses = {
-    sm: 'h-7 w-7',
-    md: 'h-9 w-9',
-    lg: 'h-14 w-14',
-    xl: 'h-16 w-16'
+    sm: 'h-6 w-6 text-xs',
+    md: 'h-8 w-8 text-sm',
+    lg: 'h-12 w-12 text-lg',
+    xl: 'h-14 w-14 text-xl'
   };
 
   const textSizes = {
-    sm: 'text-base',
-    md: 'text-lg',
-    lg: 'text-2xl',
-    xl: 'text-3xl'
+    sm: 'text-sm tracking-tight',
+    md: 'text-base tracking-tight',
+    lg: 'text-xl tracking-tight',
+    xl: 'text-2xl tracking-tight'
   };
 
   return (
-    <Link to="/dashboard" className={`group flex items-center gap-2.5 transition-transform hover:scale-[1.02] ${className}`}>
-      <div className={`relative flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-md shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all duration-300 ${sizeClasses[size]}`}>
-        <img
-          src="/logo.png"
-          alt="ERP Nexus Logo"
-          className="h-full w-full rounded-[10px] object-cover"
-          onError={(e) => {
-            // Fallback if image load fails
-            e.target.style.display = 'none';
-          }}
-        />
+    <Link to="/dashboard" className={`group flex items-center gap-2.5 select-none ${className}`}>
+      {/* Industrial Console Badge Mark */}
+      <div className={`relative flex items-center justify-center rounded-sm bg-bg-card border border-border-color font-mono font-black text-text-primary shadow-2xs group-hover:border-accent-primary transition-colors duration-200 ${sizeClasses[size]}`}>
+        <span className="text-accent-primary group-hover:scale-105 transition-transform duration-150">NX</span>
+        <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-accent-success" />
       </div>
+
       {showText && (
-        <span className={`font-black tracking-wider text-text-primary ${textSizes[size]}`}>
-          ERP <span className="bg-gradient-to-r from-accent-primary via-purple-400 to-accent-secondary bg-clip-text text-transparent">Nexus</span>
-        </span>
+        <div className="flex flex-col">
+          <span className={`font-black uppercase tracking-wider text-text-primary leading-none ${textSizes[size]}`}>
+            ERP <span className="text-accent-primary">NEXUS</span>
+          </span>
+          <span className="text-[9px] font-mono font-bold tracking-widest text-text-muted uppercase mt-0.5">
+            IND-SYS v2.4
+          </span>
+        </div>
       )}
     </Link>
   );

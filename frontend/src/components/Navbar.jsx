@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Bell, Menu, Search, User, Settings, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Bell, Menu, Search, User, Settings, LogOut, ChevronDown, Sun, Moon, Cpu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
 import { useTheme } from '../context/ThemeContext';
@@ -47,7 +47,7 @@ export default function Navbar({ onMenuClick }) {
 
   const getBreadcrumb = () => {
     const segments = location.pathname.split('/').filter(Boolean);
-    if (segments.length === 0) return 'Dashboard';
+    if (segments.length === 0) return 'Operations Command';
     const last = segments[segments.length - 1];
     return last
       .split('-')
@@ -56,7 +56,7 @@ export default function Navbar({ onMenuClick }) {
   };
 
   const getInitials = (name) => {
-    if (!name) return 'U';
+    if (!name) return 'OP';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -68,48 +68,48 @@ export default function Navbar({ onMenuClick }) {
   const totalNotifications = alertCount + qaCount;
 
   return (
-    <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border-color bg-bg-secondary px-4 shadow-sm transition-colors duration-200">
-      {/* Left: Menu click (mobile toggle) + Current Page Name (Breadcrumb) */}
+    <header className="sticky top-0 z-30 flex h-[54px] items-center justify-between border-b border-border-color bg-bg-secondary px-4 transition-colors duration-150 select-none">
+      {/* Left: Mobile Menu Toggle + Industrial Telemetry Breadcrumb */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
+          className="rounded-sm p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary lg:hidden"
         >
-          <Menu size={20} />
+          <Menu size={18} />
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted hidden sm:inline font-medium">Pages</span>
-          <span className="text-xs text-text-muted hidden sm:inline">/</span>
-          <h1 className="text-sm font-bold text-text-primary tracking-wide">{getBreadcrumb()}</h1>
+          <Cpu size={14} className="text-accent-primary hidden sm:block" />
+          <span className="text-[11px] font-mono text-text-muted uppercase tracking-wider hidden sm:inline">CONSOLE /</span>
+          <h1 className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">{getBreadcrumb()}</h1>
         </div>
       </div>
 
-      {/* Right: Actions */}
+      {/* Right: Operational Controls */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Theme Toggle Button */}
+        {/* Theme Switcher Button */}
         <button
           onClick={toggleTheme}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          className="flex items-center justify-center rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-accent-primary transition-all duration-200"
-          aria-label="Toggle visual theme"
+          title={isDark ? 'Switch to Light Palette' : 'Switch to Industrial Dark'}
+          className="flex items-center justify-center rounded-sm p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-all duration-150 border border-transparent hover:border-border-color"
+          aria-label="Toggle visual palette"
         >
-          {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-accent-primary" />}
+          {isDark ? <Sun size={15} className="text-accent-warning" /> : <Moon size={15} className="text-accent-primary" />}
         </button>
 
-        {/* Search Icon Button */}
-        <button className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors">
-          <Search size={18} />
+        {/* Global Search Visual Treatment */}
+        <button className="rounded-sm p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors border border-transparent hover:border-border-color">
+          <Search size={15} />
         </button>
 
-        {/* Bell Icon Button with count badge + Notification Dropdown */}
+        {/* Telemetry Alert Notifications */}
         <div className="relative">
           <button
             onClick={() => setNotifOpen(prev => !prev)}
-            className="relative rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+            className="relative rounded-sm p-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors border border-transparent hover:border-border-color"
           >
-            <Bell size={18} />
+            <Bell size={15} />
             {totalNotifications > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-danger text-[9px] font-black text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-xs bg-accent-danger text-[9px] font-mono font-bold text-white shadow-2xs">
                 {totalNotifications}
               </span>
             )}
@@ -118,24 +118,24 @@ export default function Navbar({ onMenuClick }) {
           {notifOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 mt-2 w-72 z-50 origin-top-right rounded-xl border border-border-color bg-bg-card shadow-brand">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border-color">
-                  <span className="text-sm font-bold text-text-primary">Notifications</span>
+              <div className="absolute right-0 mt-1.5 w-72 z-50 origin-top-right rounded-sm border border-border-color bg-bg-modal shadow-modal">
+                <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-border-color bg-bg-card">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">System Telemetry Alerts</span>
                   {totalNotifications > 0 && (
-                    <span className="rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-black text-white">{totalNotifications}</span>
+                    <span className="rounded-xs bg-accent-danger/20 border border-accent-danger/40 px-1.5 py-0.2 text-[9px] font-mono font-bold text-accent-danger">{totalNotifications}</span>
                   )}
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto divide-y divide-border-color/50">
                   {alertCount > 0 && (
                     <Link
                       to="/store/stock-position"
                       onClick={() => setNotifOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors border-b border-border-color"
+                      className="flex items-start gap-2.5 px-3.5 py-2.5 hover:bg-bg-hover transition-colors"
                     >
-                      <span className="mt-0.5 h-2 w-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent-danger animate-pulse shrink-0" />
                       <div>
-                        <p className="text-xs font-semibold text-text-primary">{alertCount} Low / Critical Stock Item{alertCount > 1 ? 's' : ''}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Click to view stock position</p>
+                        <p className="text-xs font-semibold text-text-primary">{alertCount} Low / Critical Stock Items</p>
+                        <p className="text-[10px] font-mono text-text-muted mt-0.5">Click to view stock position ledger</p>
                       </div>
                     </Link>
                   )}
@@ -143,80 +143,76 @@ export default function Navbar({ onMenuClick }) {
                     <Link
                       to="/qa/reports"
                       onClick={() => setNotifOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors border-b border-border-color"
+                      className="flex items-start gap-2.5 px-3.5 py-2.5 hover:bg-bg-hover transition-colors"
                     >
-                      <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-500 flex-shrink-0" />
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent-warning shrink-0" />
                       <div>
-                        <p className="text-xs font-semibold text-text-primary">{qaCount} QA Report{qaCount > 1 ? 's' : ''} Pending Approval</p>
-                        <p className="text-xs text-text-muted mt-0.5">Click to review QA reports</p>
+                        <p className="text-xs font-semibold text-text-primary">{qaCount} QA Reports Pending Gate Approval</p>
+                        <p className="text-[10px] font-mono text-text-muted mt-0.5">Click to review quality checks</p>
                       </div>
                     </Link>
                   )}
                   {totalNotifications === 0 && (
-                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
-                      <Bell size={24} className="mb-2 opacity-30" />
-                      <p className="text-xs">No new notifications</p>
+                    <div className="flex flex-col items-center justify-center py-6 text-text-muted">
+                      <Bell size={18} className="mb-1.5 opacity-40" />
+                      <p className="text-xs font-mono">No active telemetry warnings</p>
                     </div>
                   )}
                 </div>
-                <div className="px-4 py-2 border-t border-border-color">
-                  <p className="text-[10px] text-text-muted text-center">Alerts refresh on page load</p>
+                <div className="px-3 py-1.5 border-t border-border-color bg-bg-card">
+                  <p className="text-[9px] font-mono text-text-muted text-center uppercase tracking-wider">Telemetry polling active</p>
                 </div>
               </div>
             </>
           )}
         </div>
 
-        {/* Vertical divider */}
-        <div className="h-6 w-[1px] bg-border-color" />
+        {/* Divider */}
+        <div className="h-4 w-[1px] bg-border-color" />
 
-
-        {/* User initials circle + dropdown toggle */}
+        {/* User Identity Menu */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-xl p-1 text-sm font-semibold hover:bg-bg-hover transition-colors"
+            className="flex items-center gap-2 rounded-sm p-1 text-xs font-semibold hover:bg-bg-hover transition-colors border border-transparent hover:border-border-color"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary text-xs font-black text-white shadow-sm">
+            <div className="flex h-6 w-6 items-center justify-center rounded-xs bg-accent-primary text-[10px] font-mono font-bold text-white shadow-2xs">
               {getInitials(user?.name)}
             </div>
-            <span className="hidden md:inline text-text-primary">{user?.name || 'User'}</span>
-            <ChevronDown size={14} className="text-text-secondary hidden md:block" />
+            <span className="hidden md:inline font-mono text-text-primary">{user?.name || 'Operator'}</span>
+            <ChevronDown size={12} className="text-text-muted hidden md:block" />
           </button>
 
           {dropdownOpen && (
             <>
-              {/* Overlay to click off */}
               <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-              
-              {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-48 z-50 origin-top-right rounded-xl border border-border-color bg-bg-card p-1 shadow-brand transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-1.5 w-44 z-50 origin-top-right rounded-sm border border-border-color bg-bg-modal p-1 shadow-modal">
                 <Link
                   to="/hr/self-service"
-                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover transition-colors"
+                  className="flex items-center gap-2 rounded-xs px-3 py-2 text-xs font-medium text-text-primary hover:bg-bg-hover transition-colors"
                   onClick={() => setDropdownOpen(false)}
                 >
-                  <User size={16} className="text-text-secondary" />
-                  <span>My Profile</span>
+                  <User size={14} className="text-text-muted" />
+                  <span>Operator Profile</span>
                 </Link>
                 <Link
                   to="/settings"
-                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover transition-colors"
+                  className="flex items-center gap-2 rounded-xs px-3 py-2 text-xs font-medium text-text-primary hover:bg-bg-hover transition-colors"
                   onClick={() => setDropdownOpen(false)}
                 >
-                  <Settings size={16} className="text-text-secondary" />
-                  <span>Settings</span>
+                  <Settings size={14} className="text-text-muted" />
+                  <span>System Settings</span>
                 </Link>
                 <div className="my-1 border-t border-border-color" />
                 <button
-                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-left text-sm text-accent-danger hover:bg-bg-hover transition-colors"
+                  className="flex w-full items-center gap-2 rounded-xs px-3 py-2 text-left text-xs font-bold text-accent-danger hover:bg-accent-danger/10 transition-colors"
                   onClick={() => {
                     setDropdownOpen(false);
                     handleLogout();
                   }}
                 >
-                  <LogOut size={16} />
-                  <span>Logout</span>
+                  <LogOut size={14} />
+                  <span>Terminate Session</span>
                 </button>
               </div>
             </>

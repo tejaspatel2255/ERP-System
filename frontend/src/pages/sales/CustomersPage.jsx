@@ -4,6 +4,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import SearchBar from '../../components/SearchBar';
+import PageHeader from '../../components/PageHeader';
 import { useRole } from '../../context/RoleContext';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, getCustomerById } from '../../api/salesApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -150,20 +151,22 @@ const CustomersPage = () => {
 
   // Columns Configuration
   const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email', render: (item) => item.email || 'N/A' },
-    { key: 'phone', label: 'Phone', render: (item) => item.phone || 'N/A' },
-    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || 'N/A' },
+    { key: 'name', label: 'Company / Client Name', render: (item) => <span className="font-mono font-bold text-text-primary">{item.name}</span> },
+    { key: 'email', label: 'Email', render: (item) => <span className="font-mono text-xs text-text-secondary">{item.email || 'N/A'}</span> },
+    { key: 'phone', label: 'Phone', render: (item) => <span className="font-mono text-xs text-text-secondary">{item.phone || 'N/A'}</span> },
+    { key: 'gstin', label: 'GSTIN', render: (item) => <span className="font-mono text-xs text-accent-primary font-bold">{item.gstin || 'N/A'}</span> },
     {
       key: 'credit_limit',
       label: 'Credit Limit',
+      isNumeric: true,
       render: (item) => formatINR(item.credit_limit)
     },
     {
       key: 'balance',
-      label: 'Outstanding Balance',
+      label: 'Trade Outstanding',
+      isNumeric: true,
       render: (item) => (
-        <span className={`font-semibold ${parseFloat(item.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+        <span className={`font-mono font-bold ${parseFloat(item.balance) > 0 ? 'text-accent-danger' : 'text-text-primary'}`}>
           {formatINR(item.balance)}
         </span>
       )
@@ -172,17 +175,17 @@ const CustomersPage = () => {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleViewCustomer(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+            className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase"
           >
-            Profile View
+            Dossier
           </button>
           {hasPermission('sales', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
+              className="text-accent-primary hover:text-accent-secondary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase"
             >
               Edit
             </button>
@@ -190,7 +193,7 @@ const CustomersPage = () => {
           {hasPermission('sales', 'delete') && (
             <button
               onClick={() => handleDelete(item)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md"
+              className="text-accent-danger hover:text-accent-danger/80 font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-accent-danger/10 px-2 py-1 rounded-xs transition-colors uppercase"
             >
               Delete
             </button>
@@ -201,33 +204,32 @@ const CustomersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="container mx-auto px-4 py-6 max-w-7xl animate-fadeIn">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Customers CRM</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage client profiles, credit parameters, and view total trade balance ledger.</p>
-        </div>
-
-        {hasPermission('sales', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Add Customer
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Commercial Customer CRM"
+        description="Manage enterprise client accounts, trade credit boundaries, and cross-module financial ledgers."
+        actions={
+          hasPermission('sales', 'create') && (
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center justify-center rounded-xs bg-accent-primary px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-accent-secondary transition-all"
+            >
+              + Add Customer Account
+            </button>
+          )
+        }
+      />
 
       {/* Filter and search bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4 mb-5">
         <div className="flex-1">
-          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Search customers by name, email, or phone..." />
+          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Filter clients by commercial name, email, or telephone..." />
         </div>
       </div>
 
       {/* Main Table */}
-      <Table columns={columns} data={customers} loading={loading} emptyMessage="No customers matched your search query." />
+      <Table columns={columns} data={customers} loading={loading} emptyMessage="No customer client accounts matched search query." />
 
       {/* Pagination */}
       <div className="mt-4">
@@ -235,210 +237,212 @@ const CustomersPage = () => {
       </div>
 
       {/* CREATE & EDIT FORM MODAL */}
-      <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={editingCustomer ? 'Edit Customer Info' : 'Create Customer Record'}>
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+      <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={editingCustomer ? 'Edit Customer Account' : 'Create Customer Account Record'}>
+        <form onSubmit={handleFormSubmit} className="space-y-4 font-sans">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Company / Customer Name *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Company / Customer Name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.name}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">GSTIN (Optional)</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">GSTIN (Optional)</label>
               <input
                 type="text"
                 name="gstin"
                 placeholder="15-digit Alpha-numeric"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.gstin}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Email Address</label>
               <input
                 type="email"
                 name="email"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Contact Phone</label>
               <input
                 type="text"
                 name="phone"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.phone}
                 onChange={handleInputChange}
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Billing / Shipping Address</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Billing / Shipping Address</label>
               <textarea
                 name="address"
                 rows={2}
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.address}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Credit Limit (INR)</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Credit Limit (INR)</label>
               <input
                 type="number"
                 step="0.01"
                 name="credit_limit"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
                 value={formData.credit_limit}
                 onChange={handleInputChange}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="rounded-xs bg-accent-primary px-4 py-1.5 text-xs font-mono font-bold uppercase text-white shadow-2xs hover:bg-accent-secondary"
             >
-              Save Customer
+              Save Customer Account
             </button>
           </div>
         </form>
       </Modal>
 
       {/* PROFILE DOSSIER VIEW MODAL */}
-      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Profile Dossier" size="lg">
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Dossier Telemetry" size="lg">
         {viewingDetails && (
-          <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+          <div className="space-y-5 font-sans">
+            {/* Summary Telemetry Panel */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xs bg-bg-card border border-border-color">
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Company Name</h4>
-                <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">{viewingDetails.name}</p>
-                <p className="text-xs text-slate-500">{viewingDetails.email || 'No email'}</p>
-                <p className="text-xs text-slate-500">{viewingDetails.phone || 'No phone'}</p>
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Company Identity</h4>
+                <p className="mt-0.5 text-sm font-bold text-text-primary font-mono">{viewingDetails.name}</p>
+                <p className="text-xs text-text-secondary">{viewingDetails.email || 'No email'}</p>
+                <p className="text-xs text-text-secondary font-mono">{viewingDetails.phone || 'No phone'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">GSTIN & Address</h4>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingDetails.gstin || 'Unspecified'}</p>
-                <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingDetails.address || 'No address details'}</p>
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Tax & Address</h4>
+                <p className="mt-0.5 text-xs font-mono font-bold text-accent-primary">GSTIN: {viewingDetails.gstin || 'Unspecified'}</p>
+                <p className="text-xs text-text-secondary max-w-[200px] truncate">{viewingDetails.address || 'No address registered'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit & Balance Status</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Limit: <span className="font-bold">{formatINR(viewingDetails.credit_limit)}</span></p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Credit Boundary</h4>
+                <p className="mt-0.5 text-xs text-text-secondary">Limit: <span className="font-mono font-bold text-text-primary">{formatINR(viewingDetails.credit_limit)}</span></p>
+                <p className="text-xs text-text-secondary">
                   Outstanding:{' '}
-                  <span className={`font-bold ${parseFloat(viewingDetails.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
+                  <span className={`font-mono font-bold ${parseFloat(viewingDetails.balance) > 0 ? 'text-accent-danger' : 'text-accent-success'}`}>
                     {formatINR(viewingDetails.balance)}
                   </span>
                 </p>
               </div>
             </div>
 
-            {/* Tabs for Transaction History */}
+            {/* Sub-ledgers */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white uppercase tracking-wider">Transaction Records</h3>
+              <h3 className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider border-b border-border-color pb-1">
+                Transaction History Sub-Ledgers
+              </h3>
               
               {historyLoading ? (
-                <div className="py-12 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                <div className="py-10 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-primary" />
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Quotations Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Quotations</h4>
+                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Commercial Quotations</h4>
                     <Table
                       columns={[
-                        { key: 'quotation_no', label: 'Quotation No' },
+                        { key: 'quotation_no', label: 'Quotation Ref' },
                         { key: 'date', label: 'Date', render: (item) => formatDate(item.date) },
                         { key: 'valid_until', label: 'Valid Until', render: (item) => formatDate(item.valid_until) },
                         { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) }
+                        { key: 'total_amount', label: 'Total Value', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.quotations}
-                      emptyMessage="No quotations recorded for this client."
+                      emptyMessage="No commercial quotations logged for this client."
                     />
                   </div>
 
                   {/* Orders Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Sales Orders</h4>
+                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Sales Orders</h4>
                     <Table
                       columns={[
-                        { key: 'order_no', label: 'Order No' },
+                        { key: 'order_no', label: 'Order Ref' },
                         { key: 'order_date', label: 'Order Date', render: (item) => formatDate(item.order_date) },
                         { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) }
+                        { key: 'total_amount', label: 'Order Value', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.orders}
-                      emptyMessage="No sales orders recorded for this client."
+                      emptyMessage="No sales orders logged for this client."
                     />
                   </div>
 
                   {/* Invoices Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Invoices</h4>
+                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Billing Invoices</h4>
                     <Table
                       columns={[
-                        { key: 'invoice_no', label: 'Invoice No' },
+                        { key: 'invoice_no', label: 'Invoice Ref' },
                         { key: 'invoice_date', label: 'Billing Date', render: (item) => formatDate(item.invoice_date) },
                         { key: 'due_date', label: 'Due Date', render: (item) => formatDate(item.due_date) },
                         { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total', render: (item) => formatINR(item.total_amount) },
-                        { key: 'paid_amount', label: 'Paid', render: (item) => formatINR(item.paid_amount) }
+                        { key: 'total_amount', label: 'Billed Value', isNumeric: true, render: (item) => formatINR(item.total_amount) },
+                        { key: 'paid_amount', label: 'Collected Value', isNumeric: true, render: (item) => formatINR(item.paid_amount) }
                       ]}
                       data={viewingHistory.invoices}
-                      emptyMessage="No billing invoices recorded for this client."
+                      emptyMessage="No billing invoices logged for this client."
                     />
                   </div>
 
                   {/* Payments Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Received Payments</h4>
+                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Collected Receipts</h4>
                     <Table
                       columns={[
-                        { key: 'payment_date', label: 'Payment Date', render: (item) => formatDate(item.payment_date) },
+                        { key: 'payment_date', label: 'Receipt Date', render: (item) => formatDate(item.payment_date) },
                         { key: 'invoice_no', label: 'Invoice Ref' },
-                        { key: 'payment_mode', label: 'Mode' },
-                        { key: 'reference_no', label: 'Reference No', render: (item) => item.reference_no || 'N/A' },
-                        { key: 'amount', label: 'Amount Collected', render: (item) => formatINR(item.amount) }
+                        { key: 'payment_mode', label: 'Instrument Mode' },
+                        { key: 'reference_no', label: 'Transaction Ref', render: (item) => item.reference_no || 'N/A' },
+                        { key: 'amount', label: 'Amount Collected', isNumeric: true, render: (item) => formatINR(item.amount) }
                       ]}
                       data={viewingHistory.payments}
-                      emptyMessage="No payments received from this client."
+                      emptyMessage="No payment receipts collected from this client."
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-3 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewModalOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover"
               >
-                Close Profile
+                Close Dossier
               </button>
             </div>
           </div>

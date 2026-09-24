@@ -12,21 +12,21 @@
 
 **ERP Nexus** is a production-grade, modular Enterprise Resource Planning (ERP) system that manages the complete operational lifecycle of a manufacturing enterprise — from customer quotations and sales orders, through production work orders and quality control, to inventory management and final dispatch.
 
-The system is modeled after a real industrial use case: **Apex Industrial Solutions Ltd.**, a motor manufacturing unit that assembles and dispatches 3-phase industrial AC motors to clients across India.
+The frontend features a distinctive **"Industrial Intelligence Interface"** design language, combining modern manufacturing execution systems (MES), technical blueprint aesthetics, and real-time telemetry control rooms.
 
 ---
 
 ## 🎯 Key Features Implemented
 
-- ✅ **JWT Authentication** with `httpOnly` refresh cookies and role-based access control (RBAC)
-- ✅ **13 Operational Modules** covering the full manufacturing business cycle
-- ✅ **Dual-Theme UI** (Dark Mode / Light Mode) with instant OS preference detection
-- ✅ **QC Gate Enforcement** — Work Orders and GRN require QC Pass before stock increments
-- ✅ **Automatic Stock Deduction** on Packing Slip creation (STEP-27 Dispatch ↔ Inventory sync)
-- ✅ **Sales ↔ Production ↔ Inventory** fully connected via FK-constrained transactions
-- ✅ **Indian Rupee (₹ INR)** formatting throughout using `Intl.NumberFormat`
-- ✅ **PostgreSQL Transactional Integrity** (`BEGIN/COMMIT/ROLLBACK`) on all critical operations
-- ✅ **Activity Audit Logs** for every create/update/delete action across all modules
+- ✅ **Industrial Intelligence Interface** — Tactical design language with precision data-grids, operations rail navigation, and dual-theme (Industrial Dark / Light) support.
+- ✅ **JWT Authentication** with `httpOnly` refresh cookies and role-based access control (RBAC).
+- ✅ **13 Operational Modules** covering the full manufacturing business cycle.
+- ✅ **QC Gate Enforcement** — Work Orders and GRN require QC Pass before stock increments.
+- ✅ **Automatic Stock Deduction** on Packing Slip creation (Dispatch ↔ Inventory sync).
+- ✅ **Sales ↔ Production ↔ Inventory** fully connected via FK-constrained transactions.
+- ✅ **Indian Rupee (₹ INR)** formatting throughout using `Intl.NumberFormat`.
+- ✅ **PostgreSQL Transactional Integrity** (`BEGIN/COMMIT/ROLLBACK`) on all critical operations.
+- ✅ **Activity Audit Logs** for every create/update/delete action across all modules.
 
 ---
 
@@ -34,7 +34,7 @@ The system is modeled after a real industrial use case: **Apex Industrial Soluti
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React 18, Vite, Dual-Theme CSS System (Dark/Light), Recharts, Lucide Icons |
+| **Frontend** | React 18, Vite, Industrial Intelligence CSS System (Dual-Theme), Recharts, Lucide Icons |
 | **Backend** | Node.js, Express.js (ESM), Helmet (CSP), express-rate-limit, Cookie-Parser |
 | **Database** | PostgreSQL 15 via [Supabase](https://supabase.com) (hosted) |
 | **Authentication** | JWT (access token in-memory + `httpOnly` refresh cookie), bcryptjs |
@@ -52,13 +52,13 @@ The system is modeled after a real industrial use case: **Apex Industrial Soluti
 | 3 | **Purchase** | Vendor Master, Purchase Orders, Approval Workflow, Vendor Invoices |
 | 4 | **Store / Inventory** | Item Master, GRN (Stock In), Stock Transactions Ledger, Stock Position |
 | 5 | **Production** | Bill of Materials (BOM), Work Orders, Material Consumption, Costing |
-| 6 | **Maintenance** | Asset Register, Preventive Maintenance Schedules, Asset Issue Tickets |
+| 6 | **Maintenance** | Asset Register, Preventive Maintenance Schedules, Asset Issue Kanban |
 | 7 | **Quality Assurance (QA)** | QA Checklists, Test Reports, File Uploads, Approval Workflow |
 | 8 | **Quality Control (QC)** | Raw Material QC (GRN), In-Process QC, Final Product QC, NCR Management |
 | 9 | **Dispatch** | Packing Slips (auto stock deduct), Delivery Challans, POD Upload |
 | 10 | **HR & Self-Service** | Employee Directory, Attendance Matrix, Leave Applications & Quotas |
 | 11 | **Design** | CAD/PDF file versioning, Design Kanban, Review & Approval Workflows |
-| 12 | **Dashboard** | Real-time KPI Cards, Month-over-Month trend analytics, Activity Feed |
+| 12 | **Dashboard** | Operations Command Center, Month-over-Month trend analytics, Activity Feed |
 | 13 | **Settings** | System-wide configuration, company details, dual-theme preferences |
 
 ---
@@ -180,31 +180,12 @@ ERP-System/
     ├── public/
     └── src/
         ├── api/            # Axios instance with auto-refresh interceptor + all API files
-        ├── components/     # Modal (Portal), Table, Pagination, SearchBar, StatusBadge
+        ├── components/     # Modal (Portal), Table, PageHeader, EmptyState, StatusBadge, Logo
         ├── context/        # AuthContext, RoleContext, ThemeContext
         ├── pages/          # All 13 module pages + Print Views
         ├── utils/          # formatINR (₹ INR), formatDate, csvExport
         └── main.jsx        # App entry point with router & providers
 ```
-
----
-
-## 🗄️ Database Migrations
-
-All migrations are stored in `backend/db/migrations/` and are idempotent (safe to re-run):
-
-| Migration | Description |
-|---|---|
-| `001_init.sql` | Core schema — all primary tables |
-| `002_rbac.sql` | Role & permissions tables |
-| `003_stock.sql` | Stock transactions ledger |
-| `004_hr.sql` | Employees, attendance, leave |
-| `005_dispatch.sql` | Packing slips & delivery challans |
-| `006_design.sql` | Design files & Kanban |
-| `007_audit.sql` | Activity logs & department FK |
-| `008_qc_gate.sql` | QC status columns on GRN & Work Orders |
-| `009_wo_so_fk.sql` | Work Orders → Sales Orders FK constraint |
-| `010_wo_asset_fk.sql` | Work Orders → Assets FK with ON DELETE SET NULL |
 
 ---
 

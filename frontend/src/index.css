@@ -3,101 +3,101 @@
 @tailwind utilities;
 
 :root {
-  /* Surface & Elevation Levels (Light Mode) */
-  --bg-primary: #f4f6f9;        /* Canvas background */
-  --bg-secondary: #ffffff;      /* Surface / Panel / Sidebar */
-  --bg-card: #f8fafc;           /* Container / Table header layer */
-  --bg-modal: #ffffff;          /* Elevated modal / Popover surface */
-  --bg-hover: #e2e8f0;          /* Interactive hover */
+  /* Industrial Intelligence Interface Tokens — LIGHT MODE */
+  --bg-primary: #F2F0EA;        /* Warm tactical raw canvas */
+  --bg-secondary: #FAF9F5;      /* Primary structural surface */
+  --bg-card: #FAF9F5;           /* Elevated content card */
+  --bg-modal: #FFFFFF;          /* Floating modal workspace */
+  --bg-hover: #E4E8E5;          /* Micro-interaction highlight */
   
-  /* Brand Accent Palette (Light Mode - WCAG AAA compliant) */
-  --accent-primary: #1d4ed8;    /* Steel Blue Primary */
-  --accent-secondary: #2563eb;  /* Secondary Accent */
+  /* Brand & Industrial Accent Palette */
+  --accent-primary: #2C3E37;    /* Slate graphite primary accent */
+  --accent-secondary: #3D5A50;  /* Muted industrial teal-gray */
   
-  /* Text Hierarchy (Light Mode) */
-  --text-primary: #0f172a;      /* High contrast body text */
-  --text-secondary: #475569;    /* Supporting labels & secondary text */
-  --text-muted: #64748b;        /* Low contrast captions & icons */
+  /* Text Hierarchy */
+  --text-primary: #18211F;      /* High contrast charcoal black */
+  --text-secondary: #586561;    /* Technical supporting labels */
+  --text-muted: #84928E;        /* Muted captions & structural lines */
   
-  /* Borders & Shadows (Light Mode) */
-  --border-color: #cbd5e1;      /* Crisp structural divider */
-  --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
-  --shadow-modal: 0 20px 35px -10px rgba(15, 23, 42, 0.18);
+  /* Borders & Tactical Framing */
+  --border-color: #D3D9D5;      /* Precision engineering grid line */
+  --shadow: 0 1px 3px 0 rgba(24, 33, 31, 0.05), 0 1px 2px -1px rgba(24, 33, 31, 0.05);
+  --shadow-modal: 0 20px 40px -15px rgba(24, 33, 31, 0.2);
 
-  /* Semantic Colors (Light Mode) */
-  --accent-success: #059669;
-  --accent-warning: #d97706;
-  --accent-danger: #dc2626;
-  --accent-info: #2563eb;
+  /* Semantic Operations Palette */
+  --accent-success: #1E6B52;    /* Muted Jade / Healthy Operational */
+  --accent-warning: #B87A14;    /* Industrial Amber / Attention Required */
+  --accent-danger: #B9382A;     /* Steel Red / Critical Fault */
+  --accent-info: #2B5A84;       /* Cobalt Steel / Data & Process */
 
-  --success-text: #065f46;
-  --success-bg: #ecfdf5;
-  --success-border: #a7f3d0;
-  --success-rail: #059669;
+  --success-text: #164E3D;
+  --success-bg: #EAF4F0;
+  --success-border: #BCD9CE;
+  --success-rail: #1E6B52;
 
-  --warning-text: #92400e;
-  --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
-  --warning-rail: #d97706;
+  --warning-text: #784E07;
+  --warning-bg: #FAF3E6;
+  --warning-border: #E8D2A7;
+  --warning-rail: #B87A14;
 
-  --danger-text: #991b1b;
-  --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-  --danger-rail: #dc2626;
+  --danger-text: #822318;
+  --danger-bg: #FAECEB;
+  --danger-border: #E8B6B1;
+  --danger-rail: #B9382A;
 
-  --info-text: #1e40af;
-  --info-bg: #eff6ff;
-  --info-border: #bfdbfe;
-  --info-rail: #2563eb;
+  --info-text: #1A3C5B;
+  --info-bg: #EAEF5F8;
+  --info-border: #BACCDA;
+  --info-rail: #2B5A84;
 }
 
 .dark {
-  /* Surface & Elevation Levels (Dark Mode) */
-  --bg-primary: #0c0e14;        /* Deep obsidian industrial canvas */
-  --bg-secondary: #141722;      /* Surface / Panel / Sidebar */
-  --bg-card: #1b1f2e;           /* Container / Table header layer */
-  --bg-modal: #23283b;          /* Elevated modal / Popover surface */
-  --bg-hover: #2a3045;          /* Interactive hover */
+  /* Industrial Intelligence Interface Tokens — DARK MODE */
+  --bg-primary: #0B1110;        /* Deep obsidian control center canvas */
+  --bg-secondary: #111917;      /* Primary structural surface */
+  --bg-card: #151F1C;           /* Elevated content card */
+  --bg-modal: #1B2724;          /* Floating modal workspace */
+  --bg-hover: #22302C;          /* Tactical hover highlight */
   
-  /* Brand Accent Palette (Dark Mode) */
-  --accent-primary: #38bdf8;    /* Electric Sky Steel Blue */
-  --accent-secondary: #60a5fa;  /* Secondary Accent */
+  /* Brand & Industrial Accent Palette */
+  --accent-primary: #4F8071;    /* Engineered Jade / Graphite accent */
+  --accent-secondary: #609887;  /* Secondary control accent */
   
-  /* Text Hierarchy (Dark Mode) */
-  --text-primary: #f8fafc;      /* High contrast white body text */
-  --text-secondary: #94a3b8;    /* Supporting labels & secondary text */
-  --text-muted: #64748b;        /* Muted captions & icons */
+  /* Text Hierarchy */
+  --text-primary: #E9F0EC;      /* Crisp high-contrast readout text */
+  --text-secondary: #8E9F99;    /* Secondary telemetry readout */
+  --text-muted: #596B65;        /* Low contrast grid markings & dividers */
   
-  /* Borders & Shadows (Dark Mode) */
-  --border-color: #262b3d;      /* Structural dark border */
-  --shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6);
-  --shadow-modal: 0 24px 48px -6px rgba(0, 0, 0, 0.8);
+  /* Borders & Tactical Framing */
+  --border-color: #202D29;      /* Structural steel grid line */
+  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
 
-  /* Semantic Colors (Dark Mode) */
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-  --accent-danger: #ef4444;
-  --accent-info: #3b82f6;
+  /* Semantic Operations Palette */
+  --accent-success: #34A883;
+  --accent-warning: #E5A024;
+  --accent-danger: #E55342;
+  --accent-info: #488CC7;
 
-  --success-text: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.12);
-  --success-border: rgba(52, 211, 153, 0.3);
-  --success-rail: #10b981;
+  --success-text: #5CE0B7;
+  --success-bg: rgba(52, 168, 131, 0.12);
+  --success-border: rgba(52, 168, 131, 0.28);
+  --success-rail: #34A883;
 
-  --warning-text: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.12);
-  --warning-border: rgba(251, 191, 36, 0.3);
-  --warning-rail: #f59e0b;
+  --warning-text: #FCD075;
+  --warning-bg: rgba(229, 160, 36, 0.12);
+  --warning-border: rgba(229, 160, 36, 0.28);
+  --warning-rail: #E5A024;
 
-  --danger-text: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.12);
-  --danger-border: rgba(248, 113, 113, 0.3);
-  --danger-rail: #ef4444;
+  --danger-text: #FF8F82;
+  --danger-bg: rgba(229, 83, 66, 0.12);
+  --danger-border: rgba(229, 83, 66, 0.28);
+  --danger-rail: #E55342;
 
-  --info-text: #60a5fa;
-  --info-bg: rgba(96, 165, 250, 0.12);
-  --info-border: rgba(96, 165, 250, 0.3);
-  --info-rail: #3b82f6;
+  --info-text: #82B9E9;
+  --info-bg: rgba(72, 140, 199, 0.12);
+  --info-border: rgba(72, 140, 199, 0.28);
+  --info-rail: #488CC7;
 }
 
 * {
@@ -106,8 +106,8 @@
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 *::-webkit-scrollbar-track {
@@ -116,41 +116,43 @@
 
 *::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 9999px;
-  border: 2px solid var(--bg-primary);
+  border-radius: 2px;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  letter-spacing: -0.01em;
 }
 
-/* Monospace alignment for numbers, document codes, prices */
+/* Monospace alignment for telemetry data, numbers, document codes, prices */
 .font-mono-tabular {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
+/* Industrial Input Focus & Control Feedback */
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(44, 62, 55, 0.25) !important;
   outline: none !important;
 }
 
 .dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(79, 128, 113, 0.3) !important;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -159,9 +161,10 @@ textarea:focus {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Industrial Print View Formatting */
 @media print {
   .no-print {
     display: none !important;
@@ -171,4 +174,3 @@ textarea:focus {
     color: #000000 !important;
   }
 }
-

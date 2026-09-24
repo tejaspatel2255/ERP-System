@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
 import { useRole } from '../../context/RoleContext';
 import { getGRNs, createGRN, getGRNById } from '../../api/storeApi';
 import { getPurchaseOrders } from '../../api/purchaseApi';
@@ -102,72 +103,76 @@ const GRNPage = () => {
   };
 
   const columns = [
-    { key: 'grn_no', label: 'GRN No' },
+    { key: 'grn_no', label: 'GRN Ref' },
     { key: 'po_no', label: 'PO Reference' },
-    { key: 'vendor_name', label: 'Supplier' },
-    { key: 'received_date', label: 'Received Date', render: i => formatDate(i.received_date) },
-    { key: 'item_count', label: 'Items', render: i => `${i.item_count} item(s)` },
-    { key: 'received_by_name', label: 'Received By', render: i => i.received_by_name || 'N/A' },
-    { key: 'actions', label: 'Actions', render: i => <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View GRN</button> }
+    { key: 'vendor_name', label: 'Supplier', render: i => <span className="font-mono font-bold text-text-primary">{i.vendor_name}</span> },
+    { key: 'received_date', label: 'Received Date', render: i => <span className="font-mono text-xs">{formatDate(i.received_date)}</span> },
+    { key: 'item_count', label: 'Deliveries', render: i => <span className="font-mono text-xs">{i.item_count} item(s)</span> },
+    { key: 'received_by_name', label: 'Received By', render: i => <span className="font-mono text-xs text-text-secondary">{i.received_by_name || 'N/A'}</span> },
+    { key: 'actions', label: 'Actions', render: i => <button onClick={() => handleView(i)} className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase">View GRN</button> }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Goods Receipt Notes (GRN)</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Record supplier deliveries against approved POs and update warehouse stock.</p>
-        </div>
-        {hasPermission('store', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Create GRN</button>}
-      </div>
+    <div className="container mx-auto px-4 py-6 max-w-7xl animate-fadeIn font-sans">
+      <PageHeader
+        title="Goods Receipt Notes (GRN)"
+        description="Record inward supplier deliveries against approved PO contracts and route to Quality Control Gating."
+        actions={
+          hasPermission('store', 'create') && (
+            <button onClick={openCreate} className="rounded-xs bg-accent-primary px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white hover:bg-accent-secondary transition-all shadow-2xs">
+              + Create Inward GRN
+            </button>
+          )
+        }
+      />
 
-      <Table columns={columns} data={grns} loading={loading} emptyMessage="No GRNs recorded." />
+      <Table columns={columns} data={grns} loading={loading} emptyMessage="No inward GRN deliveries recorded." />
 
       {/* Create GRN Modal */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Create Goods Receipt Note" size="lg">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Create Goods Receipt Note (GRN)" size="lg">
+        <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+          <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Purchase Order *</label>
-              <select required onChange={e => handlePOSelect(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
-                <option value="">— Select Approved PO —</option>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Select Purchase Order *</label>
+              <select required onChange={e => handlePOSelect(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary">
+                <option value="">— Select Approved PO Contract —</option>
                 {approvedPOs.map(po => <option key={po.id} value={po.id}>{po.po_no} · {po.vendor_name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Received Date</label>
-              <input type="date" value={receivedDate} onChange={e => setReceivedDate(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Received Date</label>
+              <input type="date" value={receivedDate} onChange={e => setReceivedDate(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Quality remarks, carrier details..." className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Inward Notes</label>
+              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Carrier details, delivery note..." className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary" />
             </div>
           </div>
 
           {poItems.length > 0 && (
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="border border-border-color rounded-xs overflow-hidden">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-bg-card border-b border-border-color font-mono text-[10px] uppercase text-text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 uppercase">Item</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Ordered</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Received *</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Rejected</th>
+                    <th className="px-3 py-2 font-bold">Item Description</th>
+                    <th className="px-2 py-2 font-bold text-center">Ordered</th>
+                    <th className="px-2 py-2 font-bold text-center">Received *</th>
+                    <th className="px-2 py-2 font-bold text-center">Rejected</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color/50 bg-bg-secondary">
                   {poItems.map(it => (
                     <tr key={it.item_id}>
-                      <td className="px-4 py-2">
-                        <div className="font-semibold text-slate-900 dark:text-white">{it.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{it.item_code} · {it.unit || '—'}</div>
-                      </td>
-                      <td className="px-3 py-2 text-center font-medium">{parseFloat(it.qty)}</td>
                       <td className="px-3 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={receivedQtys[it.item_id] ?? ''} onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-sm text-center focus:outline-none focus:border-blue-500" />
+                        <div className="font-mono font-bold text-text-primary">{it.item_name}</div>
+                        <div className="text-[10px] font-mono text-text-muted">{it.item_code} · {it.unit || '—'}</div>
                       </td>
-                      <td className="px-3 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={rejectedQtys[it.item_id] ?? '0'} onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-sm text-center focus:outline-none focus:border-red-400" />
+                      <td className="px-2 py-2 text-center font-mono font-bold">{parseFloat(it.qty)}</td>
+                      <td className="px-2 py-2">
+                        <input type="number" min="0" step="any" placeholder="0" value={receivedQtys[it.item_id] ?? ''} onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-1 px-2 text-xs font-mono text-center focus:outline-none focus:border-accent-primary" />
+                      </td>
+                      <td className="px-2 py-2">
+                        <input type="number" min="0" step="any" placeholder="0" value={rejectedQtys[it.item_id] ?? '0'} onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-1 px-2 text-xs font-mono text-center focus:outline-none focus:border-accent-danger text-accent-danger" />
                       </td>
                     </tr>
                   ))}
@@ -176,36 +181,36 @@ const GRNPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={submitting} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50">
-              {submitting ? 'Confirming...' : 'Confirm Receipt & Update Stock'}
+          <div className="flex justify-end gap-2 pt-3 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Cancel</button>
+            <button type="submit" disabled={submitting} className="rounded-xs bg-accent-success px-4 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-accent-success/90 disabled:opacity-50 shadow-2xs">
+              {submitting ? 'Confirming...' : 'Confirm Receipt & Route to QC Gate'}
             </button>
           </div>
         </form>
       </Modal>
 
       {/* View GRN Modal */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Detail: ${viewingGrn?.grn_no}`} size="lg">
+      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Dossier: ${viewingGrn?.grn_no}`} size="lg">
         {viewingGrn && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs">
-              <div><p className="text-slate-400 font-semibold uppercase">Supplier</p><p className="font-bold text-slate-900 dark:text-white mt-1">{viewingGrn.vendor_name}</p></div>
-              <div><p className="text-slate-400 font-semibold uppercase">PO Reference</p><p className="font-bold text-slate-900 dark:text-white mt-1">{viewingGrn.po_no}</p></div>
-              <div><p className="text-slate-400 font-semibold uppercase">Received Date</p><p className="font-bold text-slate-900 dark:text-white mt-1">{formatDate(viewingGrn.received_date)}</p></div>
+          <div className="space-y-4 font-sans">
+            <div className="grid grid-cols-3 gap-3 p-3 rounded-xs bg-bg-card border border-border-color text-xs">
+              <div><p className="text-text-muted font-mono text-[10px] uppercase">Supplier</p><p className="font-mono font-bold text-text-primary mt-0.5">{viewingGrn.vendor_name}</p></div>
+              <div><p className="text-text-muted font-mono text-[10px] uppercase">PO Contract Ref</p><p className="font-mono font-bold text-accent-primary mt-0.5">{viewingGrn.po_no}</p></div>
+              <div><p className="text-text-muted font-mono text-[10px] uppercase">Received Date</p><p className="font-mono font-bold text-text-primary mt-0.5">{formatDate(viewingGrn.received_date)}</p></div>
             </div>
             <Table
               columns={[
-                { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
-                { key: 'ordered_qty', label: 'Ordered', render: i => parseFloat(i.ordered_qty) },
-                { key: 'received_qty', label: 'Received', render: i => <span className="text-green-600 font-bold">{parseFloat(i.received_qty)}</span> },
-                { key: 'rejected_qty', label: 'Rejected', render: i => <span className="text-red-600 font-bold">{parseFloat(i.rejected_qty)}</span> }
+                { key: 'item_name', label: 'Item Description', render: i => <div><div className="font-mono font-bold text-text-primary">{i.item_name}</div><div className="text-[10px] font-mono text-text-muted">{i.item_code}</div></div> },
+                { key: 'ordered_qty', label: 'Ordered', isNumeric: true, render: i => parseFloat(i.ordered_qty) },
+                { key: 'received_qty', label: 'Received', isNumeric: true, render: i => <span className="text-accent-success font-mono font-bold">{parseFloat(i.received_qty)}</span> },
+                { key: 'rejected_qty', label: 'Rejected', isNumeric: true, render: i => <span className="text-accent-danger font-mono font-bold">{parseFloat(i.rejected_qty)}</span> }
               ]}
               data={viewingItems}
               emptyMessage=""
             />
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button onClick={() => setIsViewOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Close</button>
+            <div className="flex justify-end pt-3 border-t border-border-color">
+              <button onClick={() => setIsViewOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close Dossier</button>
             </div>
           </div>
         )}

@@ -352,7 +352,7 @@ export default function Sidebar({ open, onClose }) {
                 {!collapsed ? (
                   <button
                     onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-text-muted hover:text-text-primary transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider text-text-muted hover:text-text-primary transition-colors"
                   >
                     <div className="flex items-center gap-1.5 truncate">
                       <GroupIcon size={14} className={hasActiveChild ? 'text-accent-primary' : 'text-text-muted'} />

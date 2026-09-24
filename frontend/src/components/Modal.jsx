@@ -58,7 +58,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-color bg-bg-card shrink-0 select-none">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 bg-accent-primary rounded-xs" />
-              <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary truncate">
+              <h3 className="text-base font-mono font-bold uppercase tracking-wider text-text-primary truncate">
                 {title}
               </h3>
             </div>

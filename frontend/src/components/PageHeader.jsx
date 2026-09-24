@@ -14,7 +14,7 @@ export default function PageHeader({ title, description, actions, children }) {
           </h1>
         </div>
         {description && (
-          <p className="mt-1.5 text-xs sm:text-sm text-text-secondary font-sans tracking-normal leading-relaxed">
+          <p className="mt-1.5 text-sm text-text-secondary font-sans tracking-normal leading-relaxed">
             {description}
           </p>
         )}

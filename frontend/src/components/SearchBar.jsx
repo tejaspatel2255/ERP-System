@@ -30,7 +30,7 @@ const SearchBar = ({ value = '', onChange, placeholder = 'Search telemetry recor
       </div>
       <input
         type="text"
-        className="block w-full rounded-xs border border-border-color bg-bg-card py-2 pl-9 pr-3 text-xs font-mono text-text-primary placeholder:text-text-muted transition-colors duration-150 shadow-2xs focus:border-accent-primary"
+        className="block w-full rounded-xs border border-border-color bg-bg-card py-2 pl-9 pr-3 text-sm font-mono text-text-primary placeholder:text-text-muted transition-colors duration-150 shadow-2xs focus:border-accent-primary"
         placeholder={placeholder}
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}

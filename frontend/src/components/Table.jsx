@@ -17,7 +17,7 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No telemet
             {columns.map((col, idx) => (
               <th
                 key={col.key || idx}
-                className={`px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider text-text-muted select-none ${
+                className={`px-4 py-3 text-[13px] font-mono font-bold uppercase tracking-wider text-text-muted select-none ${
                   col.isNumeric ? 'text-right' : ''
                 }`}
               >

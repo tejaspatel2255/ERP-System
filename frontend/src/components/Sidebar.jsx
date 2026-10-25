@@ -169,6 +169,20 @@ const groups = [
   }
 ];
 
+const ZONE_MAP = {
+  admin: 'Z00',
+  sales: 'Z01',
+  purchase: 'Z02',
+  store: 'Z03',
+  production: 'Z04',
+  maintenance: 'Z05',
+  qa: 'Z06',
+  qc: 'Z07',
+  dispatch: 'Z08',
+  hr: 'Z09',
+  design: 'Z10'
+};
+
 export default function Sidebar({ open, onClose }) {
   const { hasPermission, isAdmin } = useRole();
   const location = useLocation();
@@ -231,21 +245,41 @@ export default function Sidebar({ open, onClose }) {
         onClick={isMobileView ? onClose : undefined}
         title={collapsed && !isMobileView ? item.label : ''}
         className={({ isActive }) =>
-          `group relative flex items-center gap-2.5 px-3 py-2 rounded-xs text-sm font-semibold transition-all duration-150 ${
+          `group relative flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-all duration-150 ${
             isActive
-              ? 'bg-bg-card text-text-primary font-bold border-l-2 border-accent-primary shadow-2xs'
-              : 'text-text-secondary hover:bg-bg-hover/80 hover:text-text-primary'
-          }`
+              ? 'bg-bg-card text-text-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
+              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary border-l-[3px] border-transparent hover:border-accent-primary/40'
+          } ${collapsed && !isMobileView ? 'justify-center px-0' : ''}`
         }
       >
-        <Icon size={16} className="shrink-0 text-text-muted transition-colors group-hover:text-text-primary" />
-        {(!collapsed || isMobileView) && (
-          <span className="flex-1 truncate tracking-tight">{item.label}</span>
-        )}
-        {item.alertBadge && alertCount > 0 && (
-          <span className="rounded-xs bg-accent-danger/20 border border-accent-danger/40 px-1.5 py-0.2 text-[10px] font-mono font-bold text-accent-danger">
-            {alertCount}
-          </span>
+        {({ isActive }) => (
+          <>
+            <Icon
+              size={16}
+              className={`shrink-0 transition-colors ${
+                isActive ? 'text-accent-primary' : 'text-text-muted group-hover:text-text-primary'
+              }`}
+            />
+            {(!collapsed || isMobileView) && (
+              <span className="flex-1 truncate tracking-tight">{item.label}</span>
+            )}
+            {item.alertBadge && alertCount > 0 && (!collapsed || isMobileView) && (
+              <span
+                className="inline-flex items-center gap-1 font-mono font-bold text-[10px] px-1.5 py-0.2 border"
+                style={{
+                  backgroundColor: 'var(--danger-bg)',
+                  color: 'var(--danger-text)',
+                  borderColor: 'var(--danger-border)'
+                }}
+              >
+                <span className="lamp lamp-pulse" style={{ '--lamp': 'var(--accent-danger)', width: '6px', height: '6px' }} />
+                <span>{alertCount}</span>
+              </span>
+            )}
+            {isActive && (!collapsed || isMobileView) && (
+              <span className="lamp shrink-0" style={{ '--lamp': 'var(--accent-success)', width: '6px', height: '6px' }} />
+            )}
+          </>
         )}
       </NavLink>
     );
@@ -253,14 +287,14 @@ export default function Sidebar({ open, onClose }) {
 
   // 1. Mobile Sidebar Drawer
   const mobileSidebarContent = (
-    <div className="flex h-full w-[260px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
+    <div className="flex h-full w-[270px] flex-col border-r border-border-strong bg-bg-secondary text-text-primary">
+      <div className="flex h-[60px] items-center justify-between border-b border-border-strong px-4">
         <Logo size="sm" showText={true} />
         <button
           onClick={onClose}
-          className="rounded-sm p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
+          className="btn btn-ghost btn-icon btn-sm lg:hidden"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={18} />
         </button>
       </div>
       <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-3">
@@ -268,30 +302,44 @@ export default function Sidebar({ open, onClose }) {
           to="/dashboard"
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 px-3 py-2 rounded-xs text-sm font-bold transition-all duration-150 ${
+            `group relative flex items-center gap-2.5 px-3 py-2 text-sm font-display uppercase tracking-wider font-bold transition-all duration-150 ${
               isActive
-                ? 'bg-bg-card text-text-primary border-l-2 border-accent-primary'
-                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                ? 'bg-bg-card text-text-primary border-l-[3px] border-accent-primary shadow-2xs'
+                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary border-l-[3px] border-transparent'
             }`
           }
         >
-          <LayoutDashboard size={18} />
-          <span>Operations Command</span>
+          {({ isActive }) => (
+            <>
+              <LayoutDashboard size={18} className={`shrink-0 ${isActive ? 'text-accent-primary' : 'text-text-muted'}`} />
+              <span className="flex-1 truncate tracking-tight">Operations Command</span>
+              {isActive && (
+                <span className="lamp shrink-0" style={{ '--lamp': 'var(--accent-success)', width: '6px', height: '6px' }} />
+              )}
+            </>
+          )}
         </NavLink>
 
         <div className="space-y-3 pt-2">
-          {visibleGroups.map((group) => (
-            <div key={group.key} className="space-y-1">
-              <span className="px-3 text-[10px] font-mono font-bold uppercase tracking-widest text-text-muted block">
-                {group.title}
-              </span>
-              <div className="space-y-0.5">
-                {group.items
-                  .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
-                  .map((item) => renderLink(item, true))}
+          {visibleGroups.map((group) => {
+            const zoneCode = ZONE_MAP[group.key] || 'Z00';
+            return (
+              <div key={group.key} className="space-y-1">
+                <div className="dim-line my-1.5 opacity-40" />
+                <div className="px-3 flex items-center gap-1.5 py-0.5">
+                  <span className="sheet-tag text-[10px] text-accent-primary font-bold">{zoneCode}</span>
+                  <span className="font-display uppercase tracking-wider text-xs text-text-muted font-bold block">
+                    {group.title}
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  {group.items
+                    .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
+                    .map((item) => renderLink(item, true))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -300,12 +348,12 @@ export default function Sidebar({ open, onClose }) {
   // 2. Desktop Operations Rail Sidebar
   const desktopSidebarContent = (
     <div
-      className={`relative flex h-full flex-col border-r border-border-color bg-bg-secondary text-text-primary transition-all duration-200 ease-in-out ${
+      className={`relative flex h-full flex-col border-r border-border-strong bg-bg-secondary text-text-primary transition-all duration-200 ease-in-out ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       {/* Console Brand Header */}
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-3.5">
+      <div className="flex h-[60px] items-center justify-between border-b border-border-strong px-3.5">
         {!collapsed ? (
           <Logo size="sm" showText={true} />
         ) : (
@@ -315,7 +363,7 @@ export default function Sidebar({ open, onClose }) {
         {/* Collapse Arrow Toggle */}
         <button
           onClick={toggleSidebar}
-          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center rounded-xs border border-border-color bg-bg-modal text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors shadow-2xs"
+          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center border border-border-strong bg-bg-modal text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors shadow-2xs"
           title={collapsed ? 'Expand operations rail' : 'Collapse rail'}
         >
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -323,53 +371,62 @@ export default function Sidebar({ open, onClose }) {
       </div>
 
       {/* Rail Nav Items */}
-      <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-2">
         {/* Dashboard Link */}
         <NavLink
           to="/dashboard"
           title={collapsed ? 'Operations Command Center' : ''}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 px-3 py-2 rounded-xs text-sm font-bold transition-all duration-150 ${
+            `group relative flex items-center gap-2.5 px-3 py-2 text-sm font-display uppercase tracking-wider font-bold transition-all duration-150 ${
               isActive
-                ? 'bg-bg-card text-text-primary border-l-2 border-accent-primary shadow-2xs'
-                : 'text-text-secondary hover:bg-bg-hover/80 hover:text-text-primary'
+                ? 'bg-bg-card text-text-primary border-l-[3px] border-accent-primary shadow-2xs'
+                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary border-l-[3px] border-transparent hover:border-accent-primary/40'
             } ${collapsed ? 'justify-center px-0' : ''}`
           }
         >
-          <LayoutDashboard size={18} className="shrink-0 text-accent-primary" />
-          {!collapsed && <span className="tracking-tight">Command Center</span>}
+          {({ isActive }) => (
+            <>
+              <LayoutDashboard size={18} className={`shrink-0 ${isActive ? 'text-accent-primary' : 'text-text-muted group-hover:text-text-primary'}`} />
+              {!collapsed && <span className="flex-1 truncate tracking-tight">Command Center</span>}
+              {isActive && !collapsed && (
+                <span className="lamp shrink-0" style={{ '--lamp': 'var(--accent-success)', width: '6px', height: '6px' }} />
+              )}
+            </>
+          )}
         </NavLink>
 
-        <div className="space-y-3 pt-1 border-t border-border-color/50">
+        <div className="space-y-2 pt-1 border-t border-border-color/50">
           {visibleGroups.map((group) => {
             const GroupIcon = group.icon;
             const hasActiveChild = group.items.some((item) => location.pathname === item.to);
             const isExpanded = expandedGroups[group.key] ?? true;
+            const zoneCode = ZONE_MAP[group.key] || 'Z00';
 
             return (
               <div key={group.key} className="space-y-0.5">
+                <div className="dim-line my-1.5 opacity-40" />
                 {/* Collapsible Domain Header */}
                 {!collapsed ? (
                   <button
                     onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider text-text-muted hover:text-text-primary transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-1 text-left hover:text-text-primary transition-colors group"
                   >
-                    <div className="flex items-center gap-1.5 truncate">
-                      <GroupIcon size={14} className={hasActiveChild ? 'text-accent-primary' : 'text-text-muted'} />
-                      <span className="truncate">{group.title}</span>
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="sheet-tag text-[10px] text-accent-primary font-bold">{zoneCode}</span>
+                      <span className="font-display uppercase tracking-wider text-sm text-text-muted group-hover:text-text-primary truncate">
+                        {group.title}
+                      </span>
                     </div>
                     <ChevronDown
                       size={14}
-                      className={`shrink-0 transition-transform duration-150 ${isExpanded ? 'rotate-180' : ''}`}
+                      className={`shrink-0 text-text-muted transition-transform duration-150 ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </button>
                 ) : (
-                  <div className="flex justify-center py-1 border-t border-border-color/30">
-                    <GroupIcon
-                      size={16}
-                      className={hasActiveChild ? 'text-accent-primary' : 'text-text-muted'}
-                      title={group.title}
-                    />
+                  <div className="flex justify-center py-1" title={`${zoneCode} — ${group.title}`}>
+                    <span className="sheet-tag text-[10px] font-bold text-accent-primary">
+                      {zoneCode}
+                    </span>
                   </div>
                 )}
 
@@ -394,7 +451,7 @@ export default function Sidebar({ open, onClose }) {
       {/* Mobile Drawer Overlay Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-2xs lg:hidden transition-opacity duration-200"
+          className="fixed inset-0 z-40 bg-[#07111F]/70 backdrop-blur-[2px] lg:hidden transition-opacity duration-200"
           onClick={onClose}
         />
       )}

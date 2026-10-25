@@ -10,10 +10,10 @@ export default function Logo({ size = 'md', showText = true, className = '' }) {
   };
 
   const textSizes = {
-    sm: 'text-base font-bold tracking-tight',
-    md: 'text-lg font-bold tracking-tight',
-    lg: 'text-2xl font-bold tracking-tight',
-    xl: 'text-3xl font-bold tracking-tight'
+    sm: 'text-base',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-3xl'
   };
 
   return (
@@ -29,10 +29,11 @@ export default function Logo({ size = 'md', showText = true, className = '' }) {
 
       {showText && (
         <div className="flex flex-col">
-          <span className={`uppercase text-text-primary leading-none ${textSizes[size]}`}>
-            ERP <span className="text-accent-primary font-black">NEXUS</span>
+          <span className={`font-display uppercase tracking-wider leading-none ${textSizes[size]}`}>
+            <span className="text-text-primary">ERP </span>
+            <span className="text-accent-primary font-bold">NEXUS</span>
           </span>
-          <span className="text-[10px] font-mono font-bold tracking-widest text-text-muted uppercase mt-0.5">
+          <span className="text-[10px] font-mono tracking-widest text-text-muted uppercase mt-0.5">
             IND-SYS v2.4
           </span>
         </div>

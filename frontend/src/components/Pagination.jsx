@@ -27,20 +27,20 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
   const pages = getPageNumbers();
 
   return (
-    <nav className="flex items-center justify-between border-t border-border-color px-2 py-3 transition-colors duration-150 select-none">
+    <nav className="flex items-center justify-between border-t border-border-color px-2 py-3 select-none">
       {/* Mobile View Simple Navigation */}
       <div className="flex flex-1 justify-between sm:hidden">
         <button
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="relative inline-flex items-center rounded-xs border border-border-color bg-bg-secondary px-3 py-1.5 text-xs font-mono font-bold uppercase text-text-primary hover:bg-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="btn btn-sm"
         >
           Previous
         </button>
         <button
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="relative ml-3 inline-flex items-center rounded-xs border border-border-color bg-bg-secondary px-3 py-1.5 text-xs font-mono font-bold uppercase text-text-primary hover:bg-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="btn btn-sm ml-3"
         >
           Next
         </button>
@@ -49,53 +49,47 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       {/* Desktop View Numeric Controls */}
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-mono text-text-muted uppercase">
-            Showing telemetry page <span className="font-bold text-text-primary">{page}</span> /{' '}
+          <p className="text-xs font-mono text-text-muted uppercase tracking-wider">
+            PAGE <span className="font-bold text-text-primary">{page}</span> /{' '}
             <span className="font-bold text-text-primary">{totalPages}</span>
           </p>
         </div>
-        <div>
-          <span className="isolate inline-flex -space-x-px rounded-xs shadow-2xs bg-bg-secondary border border-border-color overflow-hidden">
-            {/* Prev Button */}
-            <button
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-              className="relative inline-flex items-center px-2.5 py-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <span className="sr-only">Previous Page</span>
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-              </svg>
-            </button>
+        <div className="flex items-center gap-1">
+          {/* Prev Button */}
+          <button
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+            className="btn btn-ghost btn-sm btn-icon"
+            aria-label="Previous Page"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+            </svg>
+          </button>
 
-            {/* Page Numbers */}
-            {pages.map((p) => (
-              <button
-                key={p}
-                onClick={() => onPageChange(p)}
-                aria-current={p === page ? 'page' : undefined}
-                className={`relative inline-flex items-center px-3 py-1.5 text-xs font-mono font-bold transition-colors ${
-                  p === page
-                    ? 'bg-accent-primary text-white'
-                    : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-
-            {/* Next Button */}
+          {/* Page Numbers */}
+          {pages.map((p) => (
             <button
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-              className="relative inline-flex items-center px-2.5 py-1.5 text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              key={p}
+              onClick={() => onPageChange(p)}
+              aria-current={p === page ? 'page' : undefined}
+              className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-ghost'}`}
             >
-              <span className="sr-only">Next Page</span>
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-              </svg>
+              {p}
             </button>
-          </span>
+          ))}
+
+          {/* Next Button */}
+          <button
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+            className="btn btn-ghost btn-sm btn-icon"
+            aria-label="Next Page"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+            </svg>
+          </button>
         </div>
       </div>
     </nav>

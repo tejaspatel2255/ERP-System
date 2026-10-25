@@ -44,23 +44,21 @@ const mapStatusTheme = (status = '') => {
 
 export default function StatusBadge({ status, className = '' }) {
   const theme = mapStatusTheme(status);
+  const val = String(status || '').toLowerCase();
+  const isDanger = ['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical', 'out of stock', 'expired'].includes(val);
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase font-mono-tabular transition-colors shadow-2xs ${className}`}
+      className={`andon-tag ${className}`}
       style={{
-        backgroundColor: theme.bg,
-        color: theme.color,
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderColor: theme.border,
-        borderLeftWidth: '3px',
-        borderLeftColor: theme.rail
+        '--tag-bg': theme.bg,
+        '--tag-text': theme.color,
+        '--tag-border': theme.border
       }}
     >
       <span
-        className="h-1.5 w-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: theme.rail }}
+        className={`lamp ${isDanger ? 'lamp-pulse' : ''}`}
+        style={{ '--lamp': theme.rail }}
       />
       <span>{status || 'UNKNOWN'}</span>
     </span>

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
- * Industrial Focused Workspace Modal Component
+ * Industrial Focused Drawing-Sheet Modal Component
  * @param {boolean} isOpen - Trigger show/hide
  * @param {Function} onClose - Close handler
  * @param {string} title - Header title
@@ -42,7 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Tactical Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-[2px] transition-opacity duration-150"
+        className="fixed inset-0 bg-[#07111F]/70 backdrop-blur-[2px] transition-opacity duration-150"
         onClick={onClose}
       />
 
@@ -50,21 +50,24 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       <div className="fixed inset-0 z-10 flex items-center justify-center p-3 sm:p-5 pointer-events-none">
         {/* Modal Dialog Workspace */}
         <div 
-          className={`pointer-events-auto relative w-full max-w-[calc(100vw-1.5rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-sm border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-150 animate-fadeIn overflow-hidden`}
+          className={`pointer-events-auto relative w-full max-w-[calc(100vw-1.5rem)] ${sizeClasses} max-h-[90vh] flex flex-col sheet bg-bg-modal border-border-strong shadow-modal text-left align-middle transition-all duration-150 animate-fadeIn overflow-hidden`}
           role="dialog"
           aria-modal="true"
         >
+          {/* Top Hazard Strip */}
+          <div className="hazard-strip shrink-0" />
+
           {/* Workspace Pinned Header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-color bg-bg-card shrink-0 select-none">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 bg-accent-primary rounded-xs" />
-              <h3 className="text-base font-mono font-bold uppercase tracking-wider text-text-primary truncate">
+            <div className="min-w-0 pr-2">
+              <span className="sheet-tag block">WORK INSTRUCTION</span>
+              <h3 className="text-xl font-display uppercase tracking-wide text-text-primary truncate">
                 {title}
               </h3>
             </div>
             <button
               type="button"
-              className="rounded-xs p-1 text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors shrink-0"
+              className="btn btn-ghost btn-icon btn-sm shrink-0"
               onClick={onClose}
             >
               <span className="sr-only">Close modal</span>
@@ -73,7 +76,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           </div>
 
           {/* Scrollable Content Body */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-4 bg-bg-modal text-text-primary">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 bg-bg-modal text-text-primary">
             {children}
           </div>
         </div>

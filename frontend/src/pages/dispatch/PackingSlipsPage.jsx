@@ -115,7 +115,7 @@ export default function PackingSlipsPage() {
     {
       key: 'packing_slip_no',
       label: 'PS No',
-      render: (item) => <span className="font-mono text-accent-primary font-medium">{item.packing_slip_no || 'Pending'}</span>
+      render: (item) => <span className="font-mono text-accent-primary font-bold">{item.packing_slip_no || 'Pending'}</span>
     },
     {
       key: 'sales_order_no',
@@ -125,59 +125,61 @@ export default function PackingSlipsPage() {
     {
       key: 'customer_name',
       label: 'Customer',
-      render: (item) => <span className="font-semibold text-text-primary">{item.customer_name}</span>
+      render: (item) => <span className="font-medium text-text-primary">{item.customer_name}</span>
     },
     {
       key: 'packed_by_name',
       label: 'Packed By',
-      render: (item) => <span className="text-text-muted">{item.packed_by_name || 'System'}</span>
+      render: (item) => <span className="text-xs text-text-muted">{item.packed_by_name || 'System'}</span>
     },
     {
       key: 'created_at',
       label: 'Packed Date',
-      render: (item) => <span className="text-text-secondary">{new Date(item.created_at).toLocaleDateString()}</span>
+      render: (item) => <span className="font-mono text-xs text-text-secondary">{new Date(item.created_at).toLocaleDateString()}</span>
     },
     {
       key: 'items_count',
       label: 'Items Count',
-      render: (item) => <span className="font-mono font-semibold text-text-primary text-center block">{item.items_count}</span>
+      render: (item) => <span className="font-mono font-bold text-text-primary text-center block">{item.items_count}</span>
     },
     {
       key: 'notes',
       label: 'Notes',
-      render: (item) => <span className="text-text-muted italic">{item.notes || '—'}</span>
+      render: (item) => <span className="text-xs text-text-muted italic">{item.notes || '—'}</span>
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Packing Slips"
-        description="Manage shipments and partial packing dispatch tasks."
+        description="Manage shipments, batch packaging, and partial dispatch fulfillment."
         actions={
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn btn-primary text-xs uppercase tracking-wider font-mono"
           >
-            Create Packing Slip
+            + Create Packing Slip
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 text-accent-danger text-xs font-mono">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 text-accent-success text-xs font-mono">{success}</div>}
 
-      {packingSlips.length === 0 && !loading ? (
-        <EmptyState
-          icon={Package}
-          title="No packing slips found"
-          description="You haven't created any packing slips yet. Start by packing an approved sales order."
-          actionLabel="Create Packing Slip"
-          onAction={() => setShowModal(true)}
-        />
-      ) : (
-        <Table columns={columns} data={packingSlips} loading={loading} emptyMessage="No packing slips found." />
-      )}
+      <div className="sheet">
+        {packingSlips.length === 0 && !loading ? (
+          <EmptyState
+            icon={Package}
+            title="No packing slips found"
+            description="You haven't created any packing slips yet. Start by packing an approved sales order."
+            actionLabel="Create Packing Slip"
+            onAction={() => setShowModal(true)}
+          />
+        ) : (
+          <Table columns={columns} data={packingSlips} loading={loading} emptyMessage="No packing slips found." />
+        )}
+      </div>
 
       <Modal
         isOpen={showModal}
@@ -185,13 +187,13 @@ export default function PackingSlipsPage() {
         title="Create New Packing Slip"
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-2">Select Sales Order *</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Select Sales Order *</label>
             <select
               value={selectedOrderId}
               onChange={(e) => handleOrderChange(e.target.value)}
-              className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-accent-primary"
+              className="field w-full"
               required
             >
               <option value="">-- Choose Sales Order --</option>
@@ -202,34 +204,34 @@ export default function PackingSlipsPage() {
           </div>
 
           {selectedOrderItems.length > 0 && (
-            <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted border-b border-border-color pb-2">Order Line Items</h4>
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted border-b border-border-color pb-1">Order Line Items</h4>
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                 {selectedOrderItems.map((item) => (
-                  <div key={item.item_id} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center bg-bg-secondary/60 p-4 border border-border-color rounded-2xl">
+                  <div key={item.item_id} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center bg-bg-surface p-3 border border-border-color rounded-xs">
                     <div className="sm:col-span-2">
-                      <p className="font-semibold text-sm text-text-primary">{item.item_name}</p>
-                      <p className="text-xs text-text-muted font-mono mt-1">Code: {item.item_code} | Ordered: {item.qty} {item.unit}</p>
+                      <p className="font-semibold text-xs text-text-primary">{item.item_name}</p>
+                      <p className="text-[10px] text-text-muted font-mono mt-0.5">Code: {item.item_code} | Ordered: {item.qty} {item.unit}</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-text-muted mb-1">Pack Qty</label>
+                      <label className="block text-[10px] font-mono font-bold text-text-muted uppercase mb-1">Pack Qty</label>
                       <input
                         type="number"
                         step="any"
                         placeholder="0.0"
                         value={packQuantities[item.item_id] || ''}
                         onChange={(e) => setPackQuantities({ ...packQuantities, [item.item_id]: e.target.value })}
-                        className="block w-full rounded-xl border border-border-color bg-bg-card py-1.5 px-3 text-sm font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                        className="field w-full text-xs font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-text-muted mb-1">Batch Number</label>
+                      <label className="block text-[10px] font-mono font-bold text-text-muted uppercase mb-1">Batch Number</label>
                       <input
                         type="text"
                         placeholder="BATCH-001"
                         value={batchNumbers[item.item_id] || ''}
                         onChange={(e) => setBatchNumbers({ ...batchNumbers, [item.item_id]: e.target.value })}
-                        className="block w-full rounded-xl border border-border-color bg-bg-card py-1.5 px-3 text-sm font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                        className="field w-full text-xs font-mono"
                       />
                     </div>
                   </div>
@@ -239,27 +241,27 @@ export default function PackingSlipsPage() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-2">Packing Notes / Special Instructions</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Packing Notes / Special Instructions</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-accent-primary min-h-[100px]"
-              placeholder="E.g., Fragile, stack with care"
+              className="field w-full min-h-[80px]"
+              placeholder="E.g., Fragile, stack with care, temperature sensitive..."
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="rounded-xl border border-border-color bg-bg-secondary py-2 px-4 text-sm font-semibold text-text-secondary hover:bg-bg-hover transition-colors"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-accent-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-colors shadow-sm disabled:opacity-50"
+              className="btn btn-primary text-xs"
             >
               {submitting ? 'Submitting...' : 'Submit Packing Slip'}
             </button>

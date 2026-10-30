@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getAssets, createAsset, updateAsset, getAssetById } from '../../api/maintenanceApi';
 import { formatDate } from '../../utils/formatDate';
@@ -82,71 +84,164 @@ const AssetsPage = () => {
   };
 
   const columns = [
-    { key: 'asset_code', label: 'Asset Code' },
-    { key: 'name', label: 'Asset Name' },
-    { key: 'location', label: 'Location', render: i => i.location || '—' },
-    { key: 'purchase_date', label: 'Purchase Date', render: i => i.purchase_date ? formatDate(i.purchase_date) : '—' },
-    { key: 'purchase_value', label: 'Value (INR)', render: i => i.purchase_value ? formatINR(i.purchase_value) : '—' },
-    { key: 'status', label: 'Status', render: i => {
-      const cls = i.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' : i.status === 'Maintenance' ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-slate-100 text-slate-600 border-slate-200';
-      return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{i.status}</span>;
-    }},
-    { key: 'actions', label: 'Actions', render: i => (
-      <div className="flex gap-2">
-        <button onClick={() => handleOpenDetail(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View History</button>
-        {hasPermission('maintenance', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
-      </div>
-    )}
+    {
+      key: 'asset_code',
+      label: 'Asset Code',
+      render: i => (
+        <span className="font-mono text-xs font-semibold tracking-wider text-text-primary">
+          {i.asset_code}
+        </span>
+      )
+    },
+    {
+      key: 'name',
+      label: 'Asset Name',
+      render: i => <span className="font-medium text-text-primary">{i.name}</span>
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      render: i => <span className="font-mono text-xs text-text-secondary">{i.location || '—'}</span>
+    },
+    {
+      key: 'purchase_date',
+      label: 'Purchase Date',
+      render: i => <span className="font-mono text-xs text-text-secondary">{i.purchase_date ? formatDate(i.purchase_date) : '—'}</span>
+    },
+    {
+      key: 'purchase_value',
+      label: 'Value (INR)',
+      render: i => <span className="font-mono text-xs font-bold text-text-primary">{i.purchase_value ? formatINR(i.purchase_value) : '—'}</span>
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: i => <StatusBadge status={i.status} />
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: i => (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => handleOpenDetail(i)}
+            className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider"
+          >
+            History
+          </button>
+          {hasPermission('maintenance', 'edit') && (
+            <button
+              onClick={() => openEdit(i)}
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+      )
+    }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Asset Management</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track industrial assets, tooling, and machinery across locations.</p>
-        </div>
-        {hasPermission('maintenance', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Add Asset</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
+      <PageHeader
+        title="Asset Management"
+        description="Track industrial assets, tooling, and machinery across locations."
+        actions={
+          hasPermission('maintenance', 'create') && (
+            <button
+              onClick={openCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              + Add Asset
+            </button>
+          )
+        }
+      />
 
-      <Table columns={columns} data={assets} loading={loading} emptyMessage="No assets registered." />
+      <div className="sheet">
+        <Table columns={columns} data={assets} loading={loading} emptyMessage="No assets registered." />
+      </div>
 
       {/* Form Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editing ? 'Edit Asset' : 'Add New Asset'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-sans">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Asset Code *</label>
-              <input required value={form.asset_code} onChange={e => setForm(p => ({ ...p, asset_code: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="e.g. CNC-01" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Asset Code *</label>
+              <input
+                required
+                value={form.asset_code}
+                onChange={e => setForm(p => ({ ...p, asset_code: e.target.value }))}
+                className="field font-mono"
+                placeholder="e.g. CNC-01"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Asset Name *</label>
-              <input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="CNC Milling Machine" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Asset Name *</label>
+              <input
+                required
+                value={form.name}
+                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                className="field font-sans"
+                placeholder="CNC Milling Machine"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Location</label>
-              <input value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="Shopfloor A" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Location</label>
+              <input
+                value={form.location}
+                onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
+                className="field font-sans"
+                placeholder="Shopfloor A"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
-              <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Status</label>
+              <select
+                value={form.status}
+                onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
+                className="field font-sans"
+              >
                 <option value="Active">Active</option>
                 <option value="Maintenance">Under Maintenance</option>
                 <option value="Retired">Retired</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Purchase Date</label>
-              <input type="date" value={form.purchase_date} onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Purchase Date</label>
+              <input
+                type="date"
+                value={form.purchase_date}
+                onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Value (INR)</label>
-              <input type="number" step="0.01" value={form.purchase_value} onChange={e => setForm(p => ({ ...p, purchase_value: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Value (INR)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={form.purchase_value}
+                onChange={e => setForm(p => ({ ...p, purchase_value: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Asset</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              Save Asset
+            </button>
           </div>
         </form>
       </Modal>
@@ -154,43 +249,57 @@ const AssetsPage = () => {
       {/* History Modal */}
       <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title={`Asset History: ${selectedAsset?.name}`} size="lg">
         {selectedAsset && (
-          <div className="space-y-6">
+          <div className="space-y-6 font-sans">
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Maintenance Schedules</h4>
-              <Table
-                columns={[
-                  { key: 'frequency', label: 'Frequency' },
-                  { key: 'next_due_date', label: 'Next Due Date', render: i => formatDate(i.next_due_date) },
-                  { key: 'assigned_to_name', label: 'Assigned To', render: i => i.assigned_to_name || 'Unassigned' }
-                ]}
-                data={detailSchedules}
-                emptyMessage="No schedules."
-              />
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary mb-2">Maintenance Schedules</h4>
+              <div className="sheet">
+                <Table
+                  columns={[
+                    { key: 'frequency', label: 'Frequency' },
+                    { key: 'next_due_date', label: 'Next Due Date', render: i => <span className="font-mono text-xs">{formatDate(i.next_due_date)}</span> },
+                    { key: 'assigned_to_name', label: 'Assigned To', render: i => i.assigned_to_name || 'Unassigned' }
+                  ]}
+                  data={detailSchedules}
+                  emptyMessage="No schedules."
+                />
+              </div>
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Completed Runs Log</h4>
-              <Table
-                columns={[
-                  { key: 'performed_at', label: 'Date Performed', render: i => formatDate(i.performed_at) },
-                  { key: 'performed_by_name', label: 'Performed By', render: i => i.performed_by_name || 'System' },
-                  { key: 'notes', label: 'Notes' }
-                ]}
-                data={detailLogs}
-                emptyMessage="No runs completed."
-              />
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary mb-2">Completed Runs Log</h4>
+              <div className="sheet">
+                <Table
+                  columns={[
+                    { key: 'performed_at', label: 'Date Performed', render: i => <span className="font-mono text-xs">{formatDate(i.performed_at)}</span> },
+                    { key: 'performed_by_name', label: 'Performed By', render: i => i.performed_by_name || 'System' },
+                    { key: 'notes', label: 'Notes' }
+                  ]}
+                  data={detailLogs}
+                  emptyMessage="No runs completed."
+                />
+              </div>
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Issue Logs</h4>
-              <Table
-                columns={[
-                  { key: 'description', label: 'Description' },
-                  { key: 'priority', label: 'Priority' },
-                  { key: 'status', label: 'Status' },
-                  { key: 'reported_at', label: 'Reported At', render: i => formatDate(i.reported_at) }
-                ]}
-                data={detailIssues}
-                emptyMessage="No issues logged."
-              />
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary mb-2">Issue Logs</h4>
+              <div className="sheet">
+                <Table
+                  columns={[
+                    { key: 'description', label: 'Description' },
+                    { key: 'priority', label: 'Priority', render: i => <StatusBadge status={i.priority} /> },
+                    { key: 'status', label: 'Status', render: i => <StatusBadge status={i.status} /> },
+                    { key: 'reported_at', label: 'Reported At', render: i => <span className="font-mono text-xs text-text-muted">{formatDate(i.reported_at)}</span> }
+                  ]}
+                  data={detailIssues}
+                  emptyMessage="No issues logged."
+                />
+              </div>
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

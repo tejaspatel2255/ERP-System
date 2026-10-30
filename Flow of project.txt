@@ -1,0 +1,16 @@
+🔵 Flow 1 — First (Buy Raw Material)
+You need raw material BEFORE you can produce anything
+
+Add Vendor → Create PO → GRN → Raw QC → Stock IN
+🟢 Flow 2 — Second (Produce & Sell)
+Only possible AFTER raw material is in stock from Flow 1
+
+Customer → Quotation → Sales Order → Work Order → Issue Material → Complete → Final QC → Invoice → Packing → Delivery
+🟡 Flow 3 — Anytime (Maintenance)
+Independent module — can be shown at any point
+
+Add Asset → Raise Issue → Resolve → Close
+📊 Flow 4 — Last (Show Results)
+Show AFTER all above steps to prove everything is working
+
+Dashboard → Stock Ledger → Alerts → Activity Logs

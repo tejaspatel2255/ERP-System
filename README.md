@@ -1,6 +1,6 @@
 # 🏭 ERP Nexus — Full-Stack Enterprise Resource Planning System
 
-> **Minor Project | Computer Engineering | Academic Year 2025–26**  
+> **Enterprise Discrete Manufacturing ERP**  
 > Built by **Tejas Patel** | Deployed on **Vercel** (Frontend) + **Render/Railway** (Backend) + **Supabase** (Database)
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-erp--system--frontend--black.vercel.app-blue?style=for-the-badge)](https://erp-system-frontend-black.vercel.app)
@@ -10,23 +10,31 @@
 
 ## 📌 Project Overview
 
-**ERP Nexus** is a production-grade, modular Enterprise Resource Planning (ERP) system that manages the complete operational lifecycle of a manufacturing enterprise — from customer quotations and sales orders, through production work orders and quality control, to inventory management and final dispatch.
+**ERP Nexus** is a production-grade, modular Enterprise Resource Planning (ERP) system purpose-built for discrete manufacturing enterprises. It manages the complete operational lifecycle — from customer quotations and sales orders, through BOM engineering, production work orders, and rigorous multi-stage quality control (Raw Material QC, In-Process QC, Final QC), to warehouse inventory, delivery challans, and final tax invoicing.
 
-The frontend features a distinctive **"Industrial Intelligence Interface"** design language, combining modern manufacturing execution systems (MES), technical blueprint aesthetics, and real-time telemetry control rooms.
+### Design System: "Drawing Sheet + Andon"
+The frontend features a distinctive industrial manufacturing design system:
+- **Blueprint Paper Grid & Drawing Sheets (`.sheet`)**: Engineering drafting paper aesthetic with registration corner marks, technical title blocks (SHEET / REV / DATE), and dimension lines.
+- **Andon Board Status System (`.lamp`, `.andon-tag`)**: Physical stack-light indicators (green / amber / red) showing equipment, inspection, and process state at a glance.
+- **Hazard Tape Accent Stripes (`.hazard-strip`)**: High-visibility safety markings for critical alerts, NCR quarantine records, and error boundaries.
+- **Mechanical Push-Buttons (`.btn`, `.btn-primary`)**: Tactile, industrial push-button controls with drop-press feedback.
+- **Dual Visual Palettes**:
+  - **Vellum (Light Mode)**: Cream drafting paper canvas (`#E8E3D3`), ink-navy lines (`#14213D`), and safety orange accents (`#CF4A0C`).
+  - **Cyanotype (Dark Mode)**: Night-shift blueprint navy canvas (`#07111F`), crisp technical readouts (`#E3EEFB`), and glowing orange accents (`#FF7A2F`).
 
 ---
 
 ## 🎯 Key Features Implemented
 
-- ✅ **Industrial Intelligence Interface** — Tactical design language with precision data-grids, operations rail navigation, and dual-theme (Industrial Dark / Light) support.
-- ✅ **JWT Authentication** with `httpOnly` refresh cookies and role-based access control (RBAC).
-- ✅ **13 Operational Modules** covering the full manufacturing business cycle.
-- ✅ **QC Gate Enforcement** — Work Orders and GRN require QC Pass before stock increments.
-- ✅ **Automatic Stock Deduction** on Packing Slip creation (Dispatch ↔ Inventory sync).
-- ✅ **Sales ↔ Production ↔ Inventory** fully connected via FK-constrained transactions.
-- ✅ **Indian Rupee (₹ INR)** formatting throughout using `Intl.NumberFormat`.
-- ✅ **PostgreSQL Transactional Integrity** (`BEGIN/COMMIT/ROLLBACK`) on all critical operations.
-- ✅ **Activity Audit Logs** for every create/update/delete action across all modules.
+- ✅ **Drawing Sheet & Andon Interface** — Specialized manufacturing UI with BOM-style numbered tables, technical title blocks, and Andon lamps.
+- ✅ **Operations Command Center** — Live MTD revenue gauge plates, MoM trend arrows, closed-loop lifecycle assembly line, and Recharts operational distributions.
+- ✅ **JWT Authentication & Gate Clearance** — Access token with `httpOnly` refresh cookie, role-based access control (RBAC), and operator approval workflow.
+- ✅ **13 Operational Modules** covering the entire closed-loop manufacturing cycle.
+- ✅ **Strict QC Gate Enforcement** — Work Orders and Inward GRN require QC clearance before finished/raw inventory increments.
+- ✅ **Automatic Stock Deduction** on Packing Slip creation (synchronized Dispatch ↔ Inventory ledger).
+- ✅ **Transactional Integrity** — PostgreSQL transactions (`BEGIN / COMMIT / ROLLBACK`) on all multi-table business updates.
+- ✅ **Indian Rupee (₹ INR)** formatting throughout using standardized financial formatters.
+- ✅ **Comprehensive Activity Audit Logs** capturing operator telemetry across all system actions.
 
 ---
 
@@ -34,36 +42,36 @@ The frontend features a distinctive **"Industrial Intelligence Interface"** desi
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React 18, Vite, Industrial Intelligence CSS System (Dual-Theme), Recharts, Lucide Icons |
-| **Backend** | Node.js, Express.js (ESM), Helmet (CSP), express-rate-limit, Cookie-Parser |
-| **Database** | PostgreSQL 15 via [Supabase](https://supabase.com) (hosted) |
-| **Authentication** | JWT (access token in-memory + `httpOnly` refresh cookie), bcryptjs |
-| **File Storage** | Supabase Storage (QA Reports, POD attachments, Design files) |
+| **Frontend** | React 18, Vite, Tailwind CSS + Custom Industrial Components, Recharts, Lucide Icons, React Router 6 |
+| **Backend** | Node.js, Express.js (ESM), Helmet (CSP), express-rate-limit, Cookie-Parser, CORS |
+| **Database** | PostgreSQL 15 via [Supabase](https://supabase.com) |
+| **Authentication** | JWT (in-memory access token + `httpOnly` refresh cookie), bcryptjs |
+| **File Storage** | Supabase Storage (QA Test Reports, Dispatch PODs, CAD/Design files) |
 | **Deployment** | Vercel (Frontend) + Railway/Render (Backend) |
 
 ---
 
 ## 🗂️ 13 Core Modules
 
-| # | Module | Key Capabilities |
-|---|---|---|
-| 1 | **Auth & Roles** | JWT login, RBAC permissions, user approval workflow, audit logs |
-| 2 | **Sales** | Customers CRM, Quotations, Sales Orders, Tax Invoices, Payment Collection |
-| 3 | **Purchase** | Vendor Master, Purchase Orders, Approval Workflow, Vendor Invoices |
-| 4 | **Store / Inventory** | Item Master, GRN (Stock In), Stock Transactions Ledger, Stock Position |
-| 5 | **Production** | Bill of Materials (BOM), Work Orders, Material Consumption, Costing |
-| 6 | **Maintenance** | Asset Register, Preventive Maintenance Schedules, Asset Issue Kanban |
-| 7 | **Quality Assurance (QA)** | QA Checklists, Test Reports, File Uploads, Approval Workflow |
-| 8 | **Quality Control (QC)** | Raw Material QC (GRN), In-Process QC, Final Product QC, NCR Management |
-| 9 | **Dispatch** | Packing Slips (auto stock deduct), Delivery Challans, POD Upload |
-| 10 | **HR & Self-Service** | Employee Directory, Attendance Matrix, Leave Applications & Quotas |
-| 11 | **Design** | CAD/PDF file versioning, Design Kanban, Review & Approval Workflows |
-| 12 | **Dashboard** | Operations Command Center, Month-over-Month trend analytics, Activity Feed |
-| 13 | **Settings** | System-wide configuration, company details, dual-theme preferences |
+| # | Zone | Module | Key Capabilities |
+|---|:---:|---|---|
+| 1 | `Z00` | **Auth & Roles** | Operator authentication, RBAC permission matrix, user approval gating, audit logs |
+| 2 | `Z01` | **Sales** | Commercial Customers CRM, Quotations, Sales Orders, Tax Invoices, Payment Tracking |
+| 3 | `Z02` | **Procurement** | Vendor Directory, Purchase Orders (PO), Multi-level Approval Workflow, Vendor Invoices |
+| 4 | `Z03` | **Inventory & Store** | Item Master, Inward Goods Receipt Notes (GRN), Stock Issue, Ledger, Stock Reorder Alerts |
+| 5 | `Z04` | **Manufacturing Ops** | Bill of Materials (BOM), Assembly Work Orders, Material Consumption, Batch Costing |
+| 6 | `Z05` | **Equipment & Plant** | Machine Asset Register, Preventive Maintenance Schedules, Asset Issue Kanban Board |
+| 7 | `Z06` | **Quality Assurance** | Standardized QA Checklists, Test Reports, Document Attachments, Approval Sign-off |
+| 8 | `Z07` | **Quality Control** | Raw Material QC (GRN), In-Process QC, Final Product QC, Non-Conformance Reports (NCR) |
+| 9 | `Z08` | **Logistics & Dispatch**| Packing Slips (auto stock decrement), Delivery Challans, POD Proof of Delivery Upload |
+| 10 | `Z09` | **Human Resources** | Employee Directory, Attendance Matrix Register, Leave Applications, Quotas & Training |
+| 11 | `Z10` | **Engineering & CAD** | Technical CAD/PDF Drawing Registers, Design Task Kanban, Review Workflows |
+| 12 | `Z00` | **Command Center** | Operations Command Dashboard, MoM Analytics, Recharts Trajectories, Audit Feed |
+| 13 | `Z00` | **Settings** | Organizational Configuration, GSTIN & Bank Details, Theme Palettes (Vellum / Cyanotype) |
 
 ---
 
-## 🔄 Core Business Flow (Demo Walkthrough)
+## 🔄 Core Business Flow (Closed-Loop Manufacturing)
 
 ```
 Customer Order  →  Sales Quotation  →  Sales Order
@@ -83,12 +91,12 @@ Tax Invoice  →  Payment Collection
 
 | Feature | Implementation |
 |---|---|
-| **Secrets / Keys** | `.env` excluded from git via `.gitignore`; never committed |
-| **XSS Protection** | Tokens in `httpOnly` + `Secure` + `SameSite=Strict` cookies |
-| **Brute Force** | Auth endpoints rate-limited: 10 attempts / 15 min per IP |
-| **SQL Injection** | 100% parameterized queries (`$1, $2, ...`) across all DB ops |
-| **File Upload Safety** | MIME type + extension dual validation on all uploads |
-| **HTTP Security Headers** | `helmet()` middleware with strict Content-Security-Policy |
+| **Secrets / Keys** | `.env` excluded from version control via `.gitignore`; never committed |
+| **XSS Protection** | JWT tokens delivered in `httpOnly` + `Secure` + `SameSite=Strict` cookies |
+| **Brute Force Protection**| Authentication endpoints rate-limited: 10 attempts / 15 minutes per IP |
+| **SQL Injection** | 100% parameterized queries (`$1, $2, ...`) across all PostgreSQL operations |
+| **File Upload Safety** | MIME type inspection and extension whitelist validation on all uploads |
+| **HTTP Security Headers** | `helmet()` middleware with strict Content-Security-Policy headers |
 
 ---
 
@@ -99,105 +107,44 @@ Tax Invoice  →  Payment Collection
 - **npm** ≥ 9.x
 - **PostgreSQL** database (local or [Supabase](https://supabase.com) project)
 
----
-
-### 1. Clone the Repository
-
+### 1. Clone & Install
 ```bash
 git clone https://github.com/tejaspatel2255/ERP-System.git
 cd ERP-System
+
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
 ```
 
-### 2. Backend Setup
-
-```bash
-cd backend
-npm install
-```
-
-Create `backend/.env` (use `backend/.env.example` as reference):
-
+### 2. Configure Environment Variables
+- Create `backend/.env` (refer to `backend/.env.example`):
 ```env
 PORT=5000
-NODE_ENV=development
+DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
+JWT_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_refresh_secret
 CLIENT_URL=http://localhost:5173
-
-# PostgreSQL / Supabase Connection
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
-
-# JWT Secrets (use long random 64-char strings)
-JWT_SECRET=your_jwt_secret_here
-JWT_REFRESH_SECRET=your_jwt_refresh_secret_here
-
-# Supabase Storage (optional — for file upload features)
-SUPABASE_URL=https://[YOUR_REF].supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+- Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
-Run migrations (first time only):
+### 3. Run Development Servers
 ```bash
-node scripts/run_migration.js
+# Terminal 1: Backend API
+cd backend && npm run dev
+
+# Terminal 2: Frontend Client
+cd frontend && npm run dev
 ```
 
-Start backend dev server:
-```bash
-npm run dev
-```
-
-Backend runs at: `http://localhost:5000`
-
----
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at: `http://localhost:5173`
-
----
-
-## 📁 Project Structure
-
-```
-ERP-System/
-├── backend/
-│   ├── controllers/        # Business logic — 13 modules + dashboard analytics
-│   ├── db/
-│   │   ├── schema.sql      # Full PostgreSQL schema with all tables & FK constraints
-│   │   └── migrations/     # Incremental DB migrations (001 → 010)
-│   ├── middleware/         # auth.js, rbac.js, upload.js, errorHandler.js
-│   ├── models/             # db.js (PostgreSQL connection pool)
-│   ├── routes/             # Express routers for all modules
-│   ├── scripts/            # Seed admin, migration runner, schema checks
-│   ├── utils/              # generateDocNumber.js, helpers
-│   └── server.js           # Entry point with CORS, helmet, rate-limit, cookie-parser
-│
-└── frontend/
-    ├── public/
-    └── src/
-        ├── api/            # Axios instance with auto-refresh interceptor + all API files
-        ├── components/     # Modal (Portal), Table, PageHeader, EmptyState, StatusBadge, Logo
-        ├── context/        # AuthContext, RoleContext, ThemeContext
-        ├── pages/          # All 13 module pages + Print Views
-        ├── utils/          # formatINR (₹ INR), formatDate, csvExport
-        └── main.jsx        # App entry point with router & providers
-```
+Visit `http://localhost:5173` to access the application.
 
 ---
 
 ## 📄 License
-
-MIT License — open for production use, academic reference, and customization.
-
----
-
-## 👨‍💻 Author
-
-**Tejas Patel**  
-Computer Engineering Student  
-Gujarat, India  
-GitHub: [@tejaspatel2255](https://github.com/tejaspatel2255)
+MIT License. Created by Tejas Patel.

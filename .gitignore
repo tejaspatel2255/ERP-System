@@ -93,16 +93,11 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # ─────────────────────────────────────────────────────────────────
-# TEMPORARY FILES
+# TEMPORARY & SCRATCH FILES
 # ─────────────────────────────────────────────────────────────────
 *.tmp
 *.temp
 *.bak
 *.orig
 *.cache
-
-# ─────────────────────────────────────────────────────────────────
-# PACKAGE MANAGER LOCK FILES (keep only one)
-# ─────────────────────────────────────────────────────────────────
-# yarn.lock  # Uncomment to ignore if using npm only
-# pnpm-lock.yaml  # Uncomment to ignore if using npm only
+Flow of project.txt

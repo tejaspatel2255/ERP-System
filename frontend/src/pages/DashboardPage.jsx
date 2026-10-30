@@ -36,7 +36,8 @@ const quickLinks = [
   ['Engineering Files', '/design/files']
 ];
 
-const chartColors = ['#4F8071', '#3B6458', '#34A883', '#E5A024', '#E55342', '#488CC7', '#9169B0', '#2B5A84'];
+// Recharts palette per Part B Recipe step 13
+const chartColors = ['#FF7A2F', '#5AB0FF', '#3DDC84', '#FFC233', '#FF5A4F', '#8FB4E8', '#C58BFF', '#2DD4BF'];
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState(null);
@@ -77,31 +78,60 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto animate-fadeIn font-sans">
-      {/* Top Banner Control Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-color pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Cpu size={20} className="text-accent-primary" />
-            <span className="text-xs font-mono font-bold text-accent-primary uppercase tracking-widest">ERP NEXUS // OPERATIONAL CONSOLE</span>
+      {/* Top Banner Control Header (PageHeader-style drawing title block) */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Cpu size={16} className="text-accent-primary" />
+              <span className="sheet-tag text-accent-primary font-bold">
+                ERP NEXUS // OPERATIONAL CONSOLE
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-wide text-text-primary uppercase">
+              Manufacturing Execution & Operations Command Center
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-mono font-bold text-text-primary tracking-tight uppercase mt-1">
-            Manufacturing Execution & Operations Command Center
-          </h1>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {/* Title block drawing cells */}
+            <div className="hidden md:flex items-center gap-1.5">
+              <div className="tb-cell">
+                ZONE <b>Z00</b>
+              </div>
+              <div className="tb-cell">
+                STATUS <b>LIVE</b>
+              </div>
+              <div className="tb-cell">
+                TIME <b>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</b>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-mono text-text-secondary bg-bg-card px-3.5 py-1.5 border border-border-strong">
+              <span className="lamp" style={{ '--lamp': 'var(--accent-success)', width: '7px', height: '7px' }} />
+              <span className="font-bold tracking-wider">TELEMETRY: ONLINE</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-text-muted bg-bg-card px-3.5 py-2 rounded-xs border border-border-color shrink-0">
-          <span className="h-2.5 w-2.5 rounded-full bg-accent-success animate-pulse" />
-          <span>TELEMETRY STATUS: ONLINE</span>
+
+        {/* Bottom drawing datum line */}
+        <div className="relative border-b border-border-color">
+          <div className="h-[2px] bg-accent-primary draw-line w-full" />
         </div>
       </div>
 
       {error && (
-        <div className="rounded-xs border border-accent-danger/40 bg-accent-danger/10 p-3.5 text-xs font-mono text-accent-danger">
-          [FAULT] {error}
+        <div className="sheet border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 relative">
+          <div className="hazard-strip -mx-4 -mt-4 mb-3" />
+          <div className="font-mono text-xs font-bold text-[var(--danger-text)] flex items-center gap-2">
+            <span className="lamp lamp-pulse" style={{ '--lamp': 'var(--accent-danger)', width: '7px', height: '7px' }} />
+            <span>[FAULT WARNING] {error}</span>
+          </div>
         </div>
       )}
 
-      {/* Primary Operational Metric Telemetry Blocks */}
-      <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {/* Primary Operational Metric Telemetry Blocks (Gauge Plates with stagger) */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger">
         {kpiConfig.map((item) => {
           const Icon = item.icon;
           const rawValue = summary ? summary[item.key] : null;
@@ -116,32 +146,37 @@ export default function DashboardPage() {
           return (
             <div
               key={item.key}
-              className="rounded-xs border border-border-color bg-bg-card p-4 shadow-2xs transition-colors hover:border-accent-primary/50 flex flex-col justify-between"
+              className="sheet p-4 flex flex-col justify-between transition-colors hover:border-border-strong"
             >
               {loading ? (
-                <div className="h-24 animate-pulse rounded-xs bg-bg-hover" />
+                <div className="h-28 animate-pulse bg-bg-hover" />
               ) : (
                 <>
-                  <div className="flex items-center justify-between border-b border-border-color/40 pb-2">
-                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted truncate">
+                  <div className="flex items-start justify-between border-b border-border-color/60 pb-2">
+                    <span className="sheet-tag text-text-muted truncate">
                       {item.label}
                     </span>
-                    <Icon size={16} className="text-text-muted shrink-0" />
+                    <div className="w-7 h-7 border border-border-color bg-bg-secondary flex items-center justify-center shrink-0">
+                      <Icon size={14} className="text-text-muted" />
+                    </div>
                   </div>
                   
-                  <div className="mt-3">
-                    <div className="text-2xl font-mono font-bold text-text-primary tracking-tight">
+                  <div className="my-3">
+                    <div className="text-4xl sm:text-5xl font-display font-bold text-text-primary tracking-tight leading-none">
                       {displayValue}
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-border-color/30 flex items-center justify-between text-xs font-mono">
-                    <span className="text-text-muted">Trend</span>
-                    <div className={`flex items-center gap-0.5 font-bold ${
-                      trendInfo.trendUp ? 'text-accent-success' : 'text-accent-danger'
-                    }`}>
-                      {trendInfo.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                      <span>{trendInfo.trend}</span>
+                  <div>
+                    <div className="dim-line mb-2" />
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-text-muted uppercase text-[10px]">Trend</span>
+                      <div className={`flex items-center gap-0.5 font-bold ${
+                        trendInfo.trendUp ? 'text-[var(--accent-success)]' : 'text-[var(--accent-danger)]'
+                      }`}>
+                        {trendInfo.trendUp ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                        <span>{trendInfo.trend}</span>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -151,93 +186,103 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Process Flow Visualization Overview */}
-      <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
-        <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
-          <span className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">
-            ERP Enterprise Operational Lifecycle Pipeline
-          </span>
-          <span className="text-xs font-mono text-text-muted">CLOSED LOOP TRACEABILITY</span>
+      {/* Process Flow Visualization Overview (Assembly Line) */}
+      <div className="sheet p-5">
+        <div className="mb-4 flex items-center justify-between border-b border-border-color pb-2.5">
+          <div>
+            <span className="sheet-tag text-accent-primary font-bold block mb-0.5">// FLOW SCHEMATIC</span>
+            <span className="text-lg font-display font-bold uppercase tracking-wider text-text-primary">
+              ERP Enterprise Operational Lifecycle Pipeline
+            </span>
+          </div>
+          <span className="tb-cell hidden sm:block">CLOSED LOOP <b>TRACEABILITY</b></span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-          {lifecycleSteps.map((s) => {
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 relative">
+          {lifecycleSteps.map((s, idx, arr) => {
             const SIcon = s.icon;
             return (
-              <Link
-                key={s.step}
-                to={s.link}
-                className="group flex items-start gap-3 p-3.5 rounded-xs border border-border-color/60 bg-bg-secondary hover:border-accent-primary transition-all"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xs bg-bg-card border border-border-color text-accent-primary font-mono text-xs font-bold shrink-0">
-                  {s.step}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-mono font-bold uppercase text-text-primary group-hover:text-accent-primary transition-colors">
-                      {s.title}
-                    </span>
-                    <SIcon size={14} className="text-text-muted group-hover:text-accent-primary" />
+              <React.Fragment key={s.step}>
+                <Link
+                  to={s.link}
+                  className="group flex items-start gap-3 p-3.5 sheet bg-bg-secondary border-border-color hover:border-accent-primary transition-all relative"
+                >
+                  {/* Octagonal station icon holder */}
+                  <div
+                    className="w-9 h-9 bg-bg-card border border-border-strong flex items-center justify-center font-mono font-bold text-xs text-accent-primary shrink-0 group-hover:scale-105 transition-transform"
+                    style={{
+                      clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                    }}
+                  >
+                    {s.step}
                   </div>
-                  <p className="text-xs font-sans text-text-muted truncate mt-0.5">{s.desc}</p>
-                </div>
-              </Link>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-display font-bold uppercase tracking-wider text-text-primary group-hover:text-accent-primary transition-colors">
+                        {s.title}
+                      </span>
+                      <SIcon size={14} className="text-text-muted group-hover:text-accent-primary transition-colors" />
+                    </div>
+                    <p className="text-xs font-sans text-text-muted truncate mt-0.5">{s.desc}</p>
+                  </div>
+                </Link>
+              </React.Fragment>
             );
           })}
         </div>
       </div>
 
       {/* Analytics Charts Grid */}
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         {/* Sales Trend Chart */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
-          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
+        <div className="sheet p-5">
+          <div className="mb-4 flex items-center justify-between border-b border-border-color pb-2.5">
             <div>
-              <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Commercial Sales Trajectory</h2>
+              <span className="sheet-tag text-text-muted block mb-0.5">ANALYTICS // REVENUE</span>
+              <h2 className="text-lg font-display font-bold uppercase tracking-wider text-text-primary">Commercial Sales Trajectory</h2>
               <p className="text-xs font-sans text-text-muted">12-Month gross revenue metrics</p>
             </div>
-            <span className="rounded-xs bg-bg-secondary px-2.5 py-1 text-xs font-mono text-text-muted border border-border-color">
-              HISTORICAL
-            </span>
+            <span className="tb-cell">INTERVAL <b>12M HISTORICAL</b></span>
           </div>
 
           {loading ? (
-            <div className="h-72 animate-pulse rounded-xs bg-bg-hover" />
+            <div className="h-72 animate-pulse bg-bg-hover" />
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={charts?.salesByMonth || []}>
-                <CartesianGrid strokeDasharray="2 2" stroke="var(--border-color)" />
-                <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'monospace' }} />
-                <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'monospace' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                <XAxis dataKey="month" stroke="var(--text-secondary)" tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
+                <YAxis stroke="var(--text-secondary)" tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-modal)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 2,
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: 0,
                     fontSize: 12,
-                    fontFamily: 'monospace',
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--text-primary)'
                   }}
                 />
-                <Bar dataKey="total" fill="var(--accent-primary)" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="total" fill="var(--accent-primary)" radius={0} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
 
         {/* Inventory Category Chart */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
-          <div className="mb-4 flex items-center justify-between border-b border-border-color/60 pb-2.5">
+        <div className="sheet p-5">
+          <div className="mb-4 flex items-center justify-between border-b border-border-color pb-2.5">
             <div>
-              <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">Stock Category Distribution</h2>
+              <span className="sheet-tag text-text-muted block mb-0.5">TELEMETRY // STOCK</span>
+              <h2 className="text-lg font-display font-bold uppercase tracking-wider text-text-primary">Stock Category Distribution</h2>
               <p className="text-xs font-sans text-text-muted">Live item classification inventory breakdown</p>
             </div>
-            <span className="rounded-xs bg-bg-secondary px-2.5 py-1 text-xs font-mono text-text-muted border border-border-color">
-              LIVE TELEMETRY
-            </span>
+            <span className="tb-cell">RADAR <b>LIVE TELEMETRY</b></span>
           </div>
 
           {loading ? (
-            <div className="h-72 animate-pulse rounded-xs bg-bg-hover" />
+            <div className="h-72 animate-pulse bg-bg-hover" />
           ) : (
             <div className="grid gap-4 lg:grid-cols-[1fr_220px] items-center">
               <ResponsiveContainer width="100%" height={240}>
@@ -257,24 +302,24 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{
                       background: 'var(--bg-modal)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 2,
+                      border: '1px solid var(--border-strong)',
+                      borderRadius: 0,
                       fontSize: 12,
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--font-mono)',
                       color: 'var(--text-primary)'
                     }}
                   />
-                  <Legend iconType="rect" wrapperStyle={{ fontSize: 11, fontFamily: 'monospace' }} />
+                  <Legend iconType="rect" wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
                 {pieData.map((entry, index) => (
-                  <div key={entry.category} className="flex items-center justify-between gap-2 text-xs text-text-secondary bg-bg-secondary p-2 rounded-xs border border-border-color/50">
+                  <div key={entry.category} className="flex items-center justify-between gap-2 text-xs text-text-secondary bg-bg-secondary p-2 border border-border-color/60">
                     <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-xs" style={{ background: chartColors[index % chartColors.length] }} />
+                      <span className="h-2.5 w-2.5 shrink-0" style={{ background: chartColors[index % chartColors.length] }} />
                       <span className="font-mono font-bold text-text-primary truncate max-w-[100px]">{entry.category}</span>
                     </div>
-                    <span className="font-mono font-bold text-accent-primary bg-bg-card px-1.5 py-0.5 rounded-xs border border-border-color/60">{entry.count}</span>
+                    <span className="font-mono font-bold text-accent-primary bg-bg-card px-1.5 py-0.5 border border-border-color">{entry.count}</span>
                   </div>
                 ))}
               </div>
@@ -284,31 +329,40 @@ export default function DashboardPage() {
       </div>
 
       {/* Operational Activity Timeline and Quick Actions Section */}
-      <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2 rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs">
-          <div className="mb-3.5 flex items-center justify-between border-b border-border-color/60 pb-2.5">
-            <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">System Activity Audit Log</h2>
-            <Link to="/activity-logs" className="text-xs font-mono font-bold text-accent-primary hover:underline">
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="xl:col-span-2 sheet p-5">
+          <div className="mb-3.5 flex items-center justify-between border-b border-border-color pb-2.5">
+            <div>
+              <span className="sheet-tag text-text-muted block mb-0.5">AUDIT REGISTER // TELEMETRY</span>
+              <h2 className="text-lg font-display font-bold uppercase tracking-wider text-text-primary">System Activity Audit Log</h2>
+            </div>
+            <Link to="/activity-logs" className="btn btn-ghost btn-sm font-mono text-xs">
               [FULL LOG READOUT]
             </Link>
           </div>
           <Table columns={activityColumns} data={activity} loading={loading} emptyMessage="No recent activity logged." />
         </div>
 
-        {/* Quick Commands Console */}
-        <div className="rounded-xs border border-border-color bg-bg-card p-5 shadow-2xs flex flex-col">
-          <h2 className="mb-3.5 text-sm font-mono font-bold uppercase tracking-wider text-text-primary border-b border-border-color/60 pb-2.5">
-            Quick Domain Navigation
-          </h2>
+        {/* Quick Commands Console (grid of .btn tiles with mono index) */}
+        <div className="sheet p-5 flex flex-col">
+          <div className="mb-3.5 border-b border-border-color pb-2.5">
+            <span className="sheet-tag text-text-muted block mb-0.5">ROUTER // DISPATCH</span>
+            <h2 className="text-lg font-display font-bold uppercase tracking-wider text-text-primary">
+              Quick Domain Navigation
+            </h2>
+          </div>
           <div className="grid grid-cols-1 gap-2.5 flex-1">
-            {quickLinks.map(([label, to]) => (
+            {quickLinks.map(([label, to], idx) => (
               <Link
                 key={to}
                 to={to}
-                className="group flex items-center justify-between rounded-xs border border-border-color bg-bg-secondary px-3.5 py-2.5 text-xs font-mono font-bold text-text-secondary transition-all hover:border-accent-primary/60 hover:text-text-primary"
+                className="btn btn-ghost justify-between font-mono text-xs tracking-normal px-3 py-2 text-left"
               >
-                <span>{label}</span>
-                <ArrowUpRight size={15} className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent-primary" />
+                <div className="flex items-center gap-2">
+                  <span className="sheet-tag text-accent-primary font-bold">[{String(idx + 1).padStart(2, '0')}]</span>
+                  <span className="text-text-primary">{label}</span>
+                </div>
+                <ArrowUpRight size={14} className="text-text-muted shrink-0" />
               </Link>
             ))}
           </div>

@@ -69,7 +69,7 @@ const ActivityLogPage = () => {
   useEffect(() => {
     const fetchUsersMetadata = async () => {
       try {
-        const data = await getUsers({ page: 1, limit: 200 }); // load all users for selector
+        const data = await getUsers({ page: 1, limit: 200 });
         if (data.success) {
           setUsers(data.users);
         }
@@ -87,7 +87,7 @@ const ActivityLogPage = () => {
     fetchLogs();
   }, [fetchLogs]);
 
-  // Handle Client-Side CSV Export (zero dependencies required)
+  // Handle Client-Side CSV Export
   const handleExportCSV = () => {
     if (logs.length === 0) {
       return toast.error('No logs available to export.');
@@ -112,8 +112,8 @@ const ActivityLogPage = () => {
       label: 'User',
       render: (item) => (
         <div>
-          <div className="font-semibold text-slate-900 dark:text-white">{item.user_name || 'System'}</div>
-          <div className="text-xs text-slate-400 dark:text-slate-500">{item.user_email || 'System Operation'}</div>
+          <div className="font-semibold text-text-primary">{item.user_name || 'System'}</div>
+          <div className="text-[11px] font-mono text-text-muted">{item.user_email || 'System Operation'}</div>
         </div>
       )
     },
@@ -121,36 +121,36 @@ const ActivityLogPage = () => {
       key: 'action',
       label: 'Action',
       render: (item) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${
+        <span className={`inline-flex items-center rounded-xs px-2 py-0.5 text-[11px] font-mono font-bold ${
           item.action.startsWith('CREATE')
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
+            ? 'bg-accent-success/15 text-accent-success border border-accent-success/30'
             : item.action.startsWith('DELETE') || item.action.startsWith('DEACTIVATE')
-            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800'
-            : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800'
+            ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30'
+            : 'bg-accent-primary/15 text-accent-primary border border-accent-primary/30'
         }`}>
           {item.action}
         </span>
       )
     },
-    { key: 'module', label: 'Module' },
-    { key: 'record_id', label: 'Record ID', render: (item) => item.record_id || 'N/A' },
-    { key: 'ip_address', label: 'IP Address', render: (item) => item.ip_address || 'N/A' },
+    { key: 'module', label: 'Module', render: (i) => <span className="font-mono text-xs uppercase">{i.module}</span> },
+    { key: 'record_id', label: 'Record ID', render: (item) => <span className="font-mono text-xs text-text-muted">{item.record_id || 'N/A'}</span> },
+    { key: 'ip_address', label: 'IP Address', render: (item) => <span className="font-mono text-xs text-text-muted">{item.ip_address || 'N/A'}</span> },
     {
       key: 'created_at',
       label: 'Timestamp',
-      render: (item) => new Date(item.created_at).toLocaleString()
+      render: (item) => <span className="font-mono text-xs text-text-muted">{new Date(item.created_at).toLocaleString()}</span>
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="System Audit Logs"
         description="Real-time tracking of configurations, creations, edits, and administrative actions."
         actions={
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center rounded-xl border border-border-color bg-bg-secondary px-4 py-2.5 text-sm font-semibold text-text-primary shadow-sm hover:bg-bg-hover transition-colors"
+            className="btn btn-secondary text-xs font-mono"
           >
             Export to CSV
           </button>
@@ -158,16 +158,16 @@ const ActivityLogPage = () => {
       />
 
       {/* Audit Logs Filter Toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 sheet">
         {/* Module Filter */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted mb-1">
             Module Filter
           </label>
           <select
             value={selectedModule}
             onChange={(e) => { setSelectedModule(e.target.value); setPage(1); }}
-            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+            className="field w-full text-xs font-mono"
           >
             <option value="">All Modules</option>
             {MODULES.map((m) => (
@@ -178,13 +178,13 @@ const ActivityLogPage = () => {
 
         {/* User Filter */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted mb-1">
             Operator User
           </label>
           <select
             value={selectedUser}
             onChange={(e) => { setSelectedUser(e.target.value); setPage(1); }}
-            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+            className="field w-full text-xs"
           >
             <option value="">All Users</option>
             {users.map((u) => (
@@ -195,36 +195,38 @@ const ActivityLogPage = () => {
 
         {/* Start Date */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted mb-1">
             Start Date
           </label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+            className="field w-full text-xs font-mono"
           />
         </div>
 
         {/* End Date */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted mb-1">
             End Date
           </label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+            className="field w-full text-xs font-mono"
           />
         </div>
       </div>
 
       {/* Main Logs Table */}
-      <Table columns={columns} data={logs} loading={loading} emptyMessage="No system audit logs found matching filters." />
+      <div className="sheet">
+        <Table columns={columns} data={logs} loading={loading} emptyMessage="No system audit logs found matching filters." />
+      </div>
 
       {/* Pagination */}
-      <div className="mt-4">
+      <div>
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
     </div>

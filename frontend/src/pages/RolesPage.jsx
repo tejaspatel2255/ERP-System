@@ -48,7 +48,6 @@ const RolesPage = () => {
   const [deptLoading, setDeptLoading] = useState(false);
   
   // Matrix permissions mapping state
-  // Format: { 'sales:view': true, 'sales:create': false, ... }
   const [matrixState, setMatrixState] = useState({});
 
   // Fetch Roles List
@@ -127,17 +126,12 @@ const RolesPage = () => {
   // Open Permission Matrix Modal
   const handleEditPermissions = (role) => {
     setSelectedRole(role);
-    
-    // Construct local mapping of role's existing permissions
     const mapping = {};
-    
-    // Pre-fill existing permissions from role data
     if (role.permissions && Array.isArray(role.permissions)) {
       role.permissions.forEach(p => {
         mapping[`${p.module_name}:${p.action}`] = true;
       });
     }
-
     setMatrixState(mapping);
     setIsPermModalOpen(true);
   };
@@ -155,7 +149,6 @@ const RolesPage = () => {
   const handleSavePermissions = async () => {
     if (!selectedRole) return;
 
-    // Convert matrix state map back to backend array format [{ module_name, action }]
     const selectedPermissions = [];
     Object.keys(matrixState).forEach(key => {
       if (matrixState[key]) {
@@ -178,8 +171,16 @@ const RolesPage = () => {
 
   // Columns for Roles overview table
   const columns = [
-    { key: 'name', label: 'Role Name' },
-    { key: 'user_count', label: 'Assigned Users Count' },
+    {
+      key: 'name',
+      label: 'Role Name',
+      render: (item) => <span className="font-semibold text-text-primary">{item.name}</span>
+    },
+    {
+      key: 'user_count',
+      label: 'Assigned Users Count',
+      render: (item) => <span className="font-mono font-bold text-accent-primary">{item.user_count}</span>
+    },
     {
       key: 'actions',
       label: 'Actions',
@@ -188,7 +189,7 @@ const RolesPage = () => {
           {hasPermission('auth', 'edit') && (
             <button
               onClick={() => handleEditPermissions(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md transition-colors"
+              className="btn btn-secondary text-xs py-1 px-2.5 font-mono"
             >
               Configure Permissions
             </button>
@@ -199,7 +200,7 @@ const RolesPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Roles & Permissions"
         description="Define system roles and configure granularity of access permissions across modules."
@@ -207,48 +208,50 @@ const RolesPage = () => {
           hasPermission('auth', 'create') && (
             <button
               onClick={() => setIsRoleModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+              className="btn btn-primary text-xs uppercase tracking-wider font-mono"
             >
-              Create New Role
+              + Create New Role
             </button>
           )
         }
       />
 
       {/* Roles List Table */}
-      <Table columns={columns} data={roles} loading={loading} emptyMessage="No roles defined in the system." />
+      <div className="sheet">
+        <Table columns={columns} data={roles} loading={loading} emptyMessage="No roles defined in the system." />
+      </div>
 
       {/* DEPARTMENTS MANAGEMENT SECTION */}
       {hasPermission('auth', 'create') && (
-        <div className="mt-10 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <div className="sheet p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border-color pb-3">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization Departments</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">View existing system departments and create new ones.</p>
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary">Organization Departments</h3>
+              <p className="text-xs text-text-muted mt-0.5">View existing system departments and create new ones.</p>
             </div>
             <form onSubmit={handleCreateDeptSubmit} className="flex items-center gap-2 w-full sm:w-auto">
               <input
                 type="text"
                 placeholder="New Department Name"
-                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 w-full sm:w-64"
+                className="field text-xs py-1.5 px-3 w-full sm:w-64"
                 value={newDeptName}
                 onChange={(e) => setNewDeptName(e.target.value)}
               />
               <button
                 type="submit"
                 disabled={deptLoading}
-                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap"
+                className="btn btn-primary text-xs whitespace-nowrap"
               >
                 {deptLoading ? 'Adding...' : 'Add Department'}
               </button>
             </form>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap gap-2 pt-1 font-mono text-xs">
             {departments.map((dept) => (
               <span
                 key={dept.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                className="inline-flex items-center px-2.5 py-1 rounded-xs font-semibold bg-bg-surface text-text-secondary border border-border-color"
               >
                 {dept.name}
               </span>
@@ -261,30 +264,30 @@ const RolesPage = () => {
       <Modal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} title="Create New Role">
         <form onSubmit={handleCreateRoleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Role Name
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">
+              Role Name *
             </label>
             <input
               type="text"
               required
               placeholder="e.g. Sales Executive, QC Analyst"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field w-full"
               value={newRoleName}
               onChange={(e) => setNewRoleName(e.target.value)}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsRoleModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary text-xs"
             >
               Create Role
             </button>
@@ -299,44 +302,44 @@ const RolesPage = () => {
         title={`Configure Permissions Matrix: ${selectedRole?.name}`}
         size="lg"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Select the checkmarks at intersections to grant permissions to the role. Click save details to apply changes.
+        <div className="space-y-4 font-sans">
+          <p className="text-xs text-text-muted">
+            Select checkmarks at intersections to grant permissions to the role. Click save details to apply changes.
           </p>
 
-          <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm">
-            <table className="w-full text-left border-collapse min-w-[600px]">
+          <div className="overflow-x-auto border border-border-color rounded-xs bg-bg-surface">
+            <table className="w-full text-left border-collapse min-w-[500px] text-xs">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <tr className="border-b border-border-color bg-bg-surface font-mono font-bold uppercase tracking-wider text-text-muted">
+                  <th className="px-4 py-3">
                     Module / Feature
                   </th>
                   {ACTIONS.map(action => (
                     <th 
                       key={action.key} 
-                      className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                      className="px-4 py-3 text-center"
                     >
                       {action.label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border-color">
                 {MODULES.map(module => (
                   <tr 
                     key={module.key}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-bg-hover transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 font-semibold text-text-primary">
                       {module.label}
                     </td>
                     {ACTIONS.map(action => {
                       const isChecked = !!matrixState[`${module.key}:${action.key}`];
                       return (
-                        <td key={action.key} className="px-6 py-4 text-center">
+                        <td key={action.key} className="px-4 py-3 text-center">
                           <input
                             type="checkbox"
-                            className="h-4 w-4 rounded border-border-color text-accent-primary focus:ring-accent-primary/20 cursor-pointer"
+                            className="rounded-xs border-border-color text-accent-primary focus:ring-accent-primary cursor-pointer"
                             checked={isChecked}
                             onChange={() => handleMatrixToggle(module.key, action.key)}
                           />
@@ -349,17 +352,17 @@ const RolesPage = () => {
             </table>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsPermModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn btn-secondary text-xs"
             >
               Discard Changes
             </button>
             <button
               onClick={handleSavePermissions}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary text-xs"
             >
               Save Permission Matrix
             </button>

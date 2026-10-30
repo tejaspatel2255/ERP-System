@@ -43,7 +43,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="System Settings"
         description="Configure organizational details, GSTIN, bank details, and operational defaults for document printing."
@@ -52,7 +52,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-all disabled:opacity-50"
+              className="btn btn-primary text-xs uppercase tracking-wider font-mono disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
@@ -60,21 +60,21 @@ export default function SettingsPage() {
         }
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {fields.map((field) => (
           <label 
             key={field.key} 
-            className="block rounded-2xl border border-border-color bg-bg-card p-5 shadow-brand transition-all hover:border-accent-primary/50"
+            className="block sheet p-4 space-y-2"
           >
-            <span className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
+            <span className="block text-xs font-mono font-bold uppercase tracking-wider text-text-muted">
               {field.label}
             </span>
             <textarea
-              rows={field.key === 'invoice_terms' || field.key === 'company_address' ? 4 : 1}
+              rows={field.key === 'invoice_terms' || field.key === 'company_address' ? 3 : 1}
               disabled={!canEdit}
               value={form[field.key] || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
-              className="w-full rounded-xl border border-border-color bg-bg-secondary px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none transition-colors disabled:opacity-60"
+              className="field w-full text-xs font-mono disabled:opacity-60"
             />
           </label>
         ))}

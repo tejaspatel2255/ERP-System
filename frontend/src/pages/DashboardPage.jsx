@@ -11,9 +11,7 @@ const kpiConfig = [
   { key: 'total_sales_this_month', trendKey: 'sales_trend', label: 'Commercial Sales (MTD)', icon: DollarSign, isCurrency: true },
   { key: 'open_purchase_orders', trendKey: 'po_trend', label: 'Active PO Contracts', icon: ClipboardList },
   { key: 'low_stock_items', trendKey: 'stock_trend', label: 'Stock Reorder Thresholds', icon: PackageSearch },
-  { key: 'open_work_orders', trendKey: 'wo_trend', label: 'Shop Floor Runs', icon: Factory },
-  { key: 'pending_qa_approvals', trendKey: 'qa_trend', label: 'QC Gate Reviews', icon: Activity },
-  { key: 'open_maintenance_issues', trendKey: 'maintenance_trend', label: 'Plant Maintenance Tickets', icon: Boxes }
+  { key: 'open_work_orders', trendKey: 'wo_trend', label: 'Shop Floor Runs', icon: Factory }
 ];
 
 const lifecycleSteps = [
@@ -135,7 +133,7 @@ export default function DashboardPage() {
       )}
 
       {/* Primary Operational Metric Telemetry Blocks (Gauge Plates with stagger) */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 stagger">
         {kpiConfig.map((item) => {
           const Icon = item.icon;
           const rawValue = summary ? summary[item.key] : null;

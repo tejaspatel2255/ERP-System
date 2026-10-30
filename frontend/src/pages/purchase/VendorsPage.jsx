@@ -4,6 +4,8 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import SearchBar from '../../components/SearchBar';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getVendors, createVendor, updateVendor, deleteVendor, getVendorById } from '../../api/purchaseApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -149,32 +151,84 @@ const VendorsPage = () => {
 
   // Column definitions
   const columns = [
-    { key: 'name', label: 'Vendor Name' },
-    { key: 'email', label: 'Email', render: (item) => item.email || 'N/A' },
-    { key: 'phone', label: 'Phone', render: (item) => item.phone || 'N/A' },
-    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || 'N/A' },
-    { key: 'payment_terms', label: 'Terms', render: (item) => item.payment_terms || 'Net 30' },
-    { key: 'total_pos', label: 'Total POs', render: (item) => item.total_pos || 0 },
+    {
+      key: 'name',
+      label: 'Vendor Name',
+      render: (item) => (
+        <span className="font-semibold text-text-primary">
+          {item.name}
+        </span>
+      )
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (item) => (
+        <span className="font-mono text-xs text-text-secondary">
+          {item.email || '—'}
+        </span>
+      )
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      render: (item) => (
+        <span className="font-mono text-xs text-text-secondary">
+          {item.phone || '—'}
+        </span>
+      )
+    },
+    {
+      key: 'gstin',
+      label: 'GSTIN',
+      render: (item) => (
+        <span className="font-mono text-xs uppercase tracking-wider text-text-secondary">
+          {item.gstin || '—'}
+        </span>
+      )
+    },
+    {
+      key: 'payment_terms',
+      label: 'Terms',
+      render: (item) => (
+        <span className="font-mono text-xs text-text-muted">
+          {item.payment_terms || 'Net 30'}
+        </span>
+      )
+    },
+    {
+      key: 'total_pos',
+      label: 'Total POs',
+      render: (item) => (
+        <span className="font-mono text-xs font-semibold text-text-primary">
+          {item.total_pos || 0}
+        </span>
+      )
+    },
     {
       key: 'total_spend',
       label: 'Total Spend',
-      render: (item) => formatINR(item.total_spend)
+      render: (item) => (
+        <span className="font-mono text-xs font-semibold text-text-primary">
+          {formatINR(item.total_spend)}
+        </span>
+      )
     },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleViewVendor(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+            className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider"
           >
             History
           </button>
           {hasPermission('purchase', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
             >
               Edit
             </button>
@@ -182,7 +236,7 @@ const VendorsPage = () => {
           {hasPermission('purchase', 'delete') && (
             <button
               onClick={() => handleDelete(item)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-danger"
             >
               Delete
             </button>
@@ -193,105 +247,110 @@ const VendorsPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Vendor Directory</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage supplier profiles, payment terms, and monitor total spend volume.</p>
-        </div>
-
-        {hasPermission('purchase', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Create Vendor
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Vendor Directory"
+        description="Manage supplier profiles, payment terms, and monitor total spend volume."
+        actions={
+          hasPermission('purchase', 'create') && (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              + Create Vendor
+            </button>
+          )
+        }
+      />
 
       {/* Filter and search bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Search vendors by name, email, or GSTIN..." />
+          <SearchBar
+            value={search}
+            onChange={(val) => { setSearch(val); setPage(1); }}
+            placeholder="Search vendors by name, email, or GSTIN..."
+          />
         </div>
       </div>
 
       {/* Main Table */}
-      <Table columns={columns} data={vendors} loading={loading} emptyMessage="No vendors found." />
+      <div className="sheet">
+        <Table columns={columns} data={vendors} loading={loading} emptyMessage="No vendors found." />
+      </div>
 
       {/* Pagination */}
-      <div className="mt-4">
+      <div className="flex justify-end">
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
       {/* CREATE & EDIT FORM MODAL */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingVendor ? 'Modify Vendor Profile' : 'Create Vendor Profile'}>
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4 font-sans">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Supplier / Vendor Name *</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Supplier / Vendor Name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.name}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">GSTIN (Optional)</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">GSTIN (Optional)</label>
               <input
                 type="text"
                 name="gstin"
                 placeholder="15-digit code"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field font-mono"
                 value={formData.gstin}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Email Address</label>
               <input
                 type="email"
                 name="email"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field font-mono"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Contact Phone</label>
               <input
                 type="text"
                 name="phone"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field font-mono"
                 value={formData.phone}
                 onChange={handleInputChange}
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Address Details</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Address Details</label>
               <textarea
                 name="address"
                 rows={2}
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field font-sans"
                 value={formData.address}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Terms</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Payment Terms</label>
               <select
                 name="payment_terms"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field font-sans"
                 value={formData.payment_terms}
                 onChange={handleInputChange}
               >
@@ -304,17 +363,17 @@ const VendorsPage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Save Vendor
             </button>
@@ -325,26 +384,26 @@ const VendorsPage = () => {
       {/* VIEW VENDOR HISTORY DOSSIER */}
       <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Vendor Profile & Ledger Details" size="lg">
         {viewingVendor && (
-          <div className="space-y-6">
+          <div className="space-y-6 font-sans">
             {/* Summary details card */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 sheet bg-bg-secondary">
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vendor Info</h4>
-                <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">{viewingVendor.name}</p>
-                <p className="text-xs text-slate-500">{viewingVendor.email || 'No email'}</p>
-                <p className="text-xs text-slate-500">{viewingVendor.phone || 'No phone'}</p>
+                <h4 className="font-mono text-[10px] font-bold text-text-muted uppercase tracking-wider">Vendor Info</h4>
+                <p className="mt-1 text-base font-bold text-text-primary">{viewingVendor.name}</p>
+                <p className="text-xs font-mono text-text-secondary">{viewingVendor.email || 'No email'}</p>
+                <p className="text-xs font-mono text-text-secondary">{viewingVendor.phone || 'No phone'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">GSTIN & Address</h4>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingVendor.gstin || 'Unregistered'}</p>
-                <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingVendor.address || 'No Address'}</p>
+                <h4 className="font-mono text-[10px] font-bold text-text-muted uppercase tracking-wider">GSTIN & Address</h4>
+                <p className="mt-1 text-sm font-mono font-medium text-text-primary">GST: {viewingVendor.gstin || 'Unregistered'}</p>
+                <p className="text-xs text-text-muted max-w-[200px] truncate">{viewingVendor.address || 'No Address'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit Terms & Balances</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Terms: <span className="font-bold">{viewingVendor.payment_terms || 'Net 30'}</span></p>
-                <p className="text-sm text-slate-650">
+                <h4 className="font-mono text-[10px] font-bold text-text-muted uppercase tracking-wider">Credit Terms & Balances</h4>
+                <p className="mt-1 text-xs font-mono text-text-secondary">Terms: <span className="font-bold text-text-primary">{viewingVendor.payment_terms || 'Net 30'}</span></p>
+                <p className="text-xs font-mono text-text-secondary mt-1">
                   Outstanding Due:{' '}
-                  <span className={`font-bold ${viewingHistory.outstanding > 0 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
+                  <span className={`font-bold ${viewingHistory.outstanding > 0 ? 'text-accent-danger' : 'text-accent-success'}`}>
                     {formatINR(viewingHistory.outstanding)}
                   </span>
                 </p>
@@ -353,75 +412,93 @@ const VendorsPage = () => {
 
             {/* History ledgers */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white uppercase tracking-wider">Transaction Records</h3>
+              <h3 className="font-display text-sm font-bold text-text-primary uppercase tracking-wider">Transaction Records</h3>
               
               {historyLoading ? (
                 <div className="py-12 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-primary" />
                 </div>
               ) : (
                 <div className="space-y-6">
                   {/* Purchase Orders sub-table */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Purchase Orders Issued</h4>
-                    <Table
-                      columns={[
-                        { key: 'po_no', label: 'PO No' },
-                        { key: 'po_date', label: 'Order Date', render: (item) => formatDate(item.po_date) },
-                        {
-                          key: 'approval_status',
-                          label: 'Approval',
-                          render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              item.approval_status === 'Approved' ? 'bg-green-155 text-green-800' :
-                              item.approval_status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-orange-100 text-orange-850'
-                            }`}>
-                              {item.approval_status}
-                            </span>
-                          )
-                        },
-                        { key: 'status', label: 'Delivery Status' },
-                        { key: 'total_amount', label: 'PO Total', render: (item) => formatINR(item.total_amount) }
-                      ]}
-                      data={viewingHistory.pos}
-                      emptyMessage="No purchase orders created for this supplier."
-                    />
+                    <h4 className="font-mono text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2">Purchase Orders Issued</h4>
+                    <div className="sheet">
+                      <Table
+                        columns={[
+                          {
+                            key: 'po_no',
+                            label: 'PO No',
+                            render: (item) => <span className="font-mono text-xs font-semibold">{item.po_no}</span>
+                          },
+                          {
+                            key: 'po_date',
+                            label: 'Order Date',
+                            render: (item) => <span className="font-mono text-xs">{formatDate(item.po_date)}</span>
+                          },
+                          {
+                            key: 'approval_status',
+                            label: 'Approval',
+                            render: (item) => <StatusBadge status={item.approval_status} />
+                          },
+                          {
+                            key: 'status',
+                            label: 'Delivery Status',
+                            render: (item) => <StatusBadge status={item.status} />
+                          },
+                          {
+                            key: 'total_amount',
+                            label: 'PO Total',
+                            render: (item) => <span className="font-mono text-xs font-bold">{formatINR(item.total_amount)}</span>
+                          }
+                        ]}
+                        data={viewingHistory.pos}
+                        emptyMessage="No purchase orders created for this supplier."
+                      />
+                    </div>
                   </div>
 
                   {/* Vendor Invoices sub-table */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Supplier Invoices (Bills)</h4>
-                    <Table
-                      columns={[
-                        { key: 'invoice_no', label: 'Invoice Bill No' },
-                        { key: 'invoice_date', label: 'Bill Date', render: (item) => formatDate(item.invoice_date) },
-                        { key: 'amount', label: 'Billed Amount', render: (item) => formatINR(item.amount) },
-                        {
-                          key: 'status',
-                          label: 'Payment',
-                          render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              item.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-850'
-                            }`}>
-                              {item.status}
-                            </span>
-                          )
-                        }
-                      ]}
-                      data={viewingHistory.invoices}
-                      emptyMessage="No bills/vendor invoices recorded for this supplier."
-                    />
+                    <h4 className="font-mono text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2">Supplier Invoices (Bills)</h4>
+                    <div className="sheet">
+                      <Table
+                        columns={[
+                          {
+                            key: 'invoice_no',
+                            label: 'Invoice Bill No',
+                            render: (item) => <span className="font-mono text-xs font-semibold">{item.invoice_no}</span>
+                          },
+                          {
+                            key: 'invoice_date',
+                            label: 'Bill Date',
+                            render: (item) => <span className="font-mono text-xs">{formatDate(item.invoice_date)}</span>
+                          },
+                          {
+                            key: 'amount',
+                            label: 'Billed Amount',
+                            render: (item) => <span className="font-mono text-xs font-bold">{formatINR(item.amount)}</span>
+                          },
+                          {
+                            key: 'status',
+                            label: 'Payment',
+                            render: (item) => <StatusBadge status={item.status} />
+                          }
+                        ]}
+                        data={viewingHistory.invoices}
+                        emptyMessage="No bills/vendor invoices recorded for this supplier."
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-350 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
               >
                 Close Ledger
               </button>

@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import axiosInstance from '../../api/axiosInstance';
 import { 
@@ -298,40 +300,76 @@ const PurchaseOrdersPage = () => {
 
   // Columns Configuration
   const columns = [
-    { key: 'po_no', label: 'PO No' },
-    { key: 'vendor_name', label: 'Supplier / Vendor' },
-    { key: 'po_date', label: 'Order Date', render: (item) => formatDate(item.po_date) },
-    { key: 'expected_date', label: 'Expected Date', render: (item) => formatDate(item.expected_date) },
-    { key: 'grnStatus', label: 'GRN Delivery Status' },
     {
-      key: 'approval_status',
-      label: 'Approval Status',
+      key: 'po_no',
+      label: 'PO No',
       render: (item) => (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-          item.approval_status === 'Approved' ? 'bg-green-100 text-green-800 border border-green-200' :
-          item.approval_status === 'Rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
-          'bg-orange-100 text-orange-800 border border-orange-200'
-        }`}>
-          {item.approval_status === 'Approved' ? 'Approved' : item.approval_status === 'Rejected' ? 'Rejected' : 'Pending Approval'}
+        <span className="font-mono text-xs font-semibold tracking-wider text-text-primary">
+          {item.po_no}
         </span>
       )
     },
-    { key: 'total_amount', label: 'Total Value', render: (item) => formatINR(item.total_amount) },
+    {
+      key: 'vendor_name',
+      label: 'Supplier / Vendor',
+      render: (item) => (
+        <span className="font-medium text-text-primary">
+          {item.vendor_name}
+        </span>
+      )
+    },
+    {
+      key: 'po_date',
+      label: 'Order Date',
+      render: (item) => (
+        <span className="font-mono text-xs text-text-secondary">
+          {formatDate(item.po_date)}
+        </span>
+      )
+    },
+    {
+      key: 'expected_date',
+      label: 'Expected Date',
+      render: (item) => (
+        <span className="font-mono text-xs text-text-secondary">
+          {formatDate(item.expected_date)}
+        </span>
+      )
+    },
+    {
+      key: 'grnStatus',
+      label: 'GRN Status',
+      render: (item) => <StatusBadge status={item.grnStatus} />
+    },
+    {
+      key: 'approval_status',
+      label: 'Approval Status',
+      render: (item) => <StatusBadge status={item.approval_status} />
+    },
+    {
+      key: 'total_amount',
+      label: 'Total Value',
+      render: (item) => (
+        <span className="font-mono text-xs font-semibold text-text-primary">
+          {formatINR(item.total_amount)}
+        </span>
+      )
+    },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleViewPO(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+            className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider"
           >
             Review PO
           </button>
           {item.status === 'Draft' && hasPermission('purchase', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
             >
               Edit
             </button>
@@ -342,31 +380,30 @@ const PurchaseOrdersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Purchase Orders Ledger</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Raise supplier requests, submit for approval validation, and manage expected intakes.</p>
-        </div>
-
-        {hasPermission('purchase', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Create PO Draft
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Purchase Orders Ledger"
+        description="Raise supplier requests, submit for approval validation, and manage expected intakes."
+        actions={
+          hasPermission('purchase', 'create') && (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              + Create PO Draft
+            </button>
+          )
+        }
+      />
 
       {/* Filter toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="sheet p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-bg-secondary">
         <div>
           <select
             value={selectedVendor}
             onChange={(e) => { setSelectedVendor(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field text-xs font-sans"
           >
             <option value="">All Suppliers</option>
             {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -377,7 +414,7 @@ const PurchaseOrdersPage = () => {
           <select
             value={selectedStatus}
             onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field text-xs font-mono uppercase"
           >
             <option value="">All Statuses</option>
             <option value="Draft">Draft</option>
@@ -393,7 +430,8 @@ const PurchaseOrdersPage = () => {
             type="date"
             value={startDate}
             onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field text-xs font-mono"
+            placeholder="Start Date"
           />
         </div>
 
@@ -402,29 +440,32 @@ const PurchaseOrdersPage = () => {
             type="date"
             value={endDate}
             onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field text-xs font-mono"
+            placeholder="End Date"
           />
         </div>
       </div>
 
       {/* Main Table */}
-      <Table columns={columns} data={pos} loading={loading} emptyMessage="No purchase orders matched the search query." />
+      <div className="sheet">
+        <Table columns={columns} data={pos} loading={loading} emptyMessage="No purchase orders matched the search query." />
+      </div>
 
       {/* Pagination */}
-      <div className="mt-4">
+      <div className="flex justify-end">
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
       {/* CREATE & EDIT FORM MODAL */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingPO ? 'Edit Purchase Order' : 'Create Purchase Order Draft'} size="xl">
-        <form onSubmit={handleFormSubmit} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6 font-sans">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Supplier *</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Select Supplier *</label>
               <select
                 name="vendor_id"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field font-sans"
                 value={formHeader.vendor_id}
                 onChange={handleHeaderChange}
               >
@@ -434,12 +475,12 @@ const PurchaseOrdersPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Expected Delivery Date *</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Expected Delivery Date *</label>
               <input
                 type="date"
                 name="expected_date"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field font-mono"
                 value={formHeader.expected_date}
                 onChange={handleHeaderChange}
               />
@@ -449,37 +490,37 @@ const PurchaseOrdersPage = () => {
           {/* PO items row details */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Line Items</h4>
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary">Line Items (BOM)</h4>
               <button
                 type="button"
                 onClick={handleAddRow}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800"
+                className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
               >
                 + Add Item
               </button>
             </div>
 
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
-              <table className="w-full text-left border-collapse">
+            <div className="sheet overflow-hidden">
+              <table className="w-full text-left border-collapse font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-1/2">Item Code / Description</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-center w-20">Quantity</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-36">Unit Price (INR)</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-right w-36">Line Total</th>
-                    <th className="px-4 py-3 text-center w-10"></th>
+                  <tr className="border-b border-border-color bg-bg-secondary text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                    <th className="px-3 py-2.5 w-1/2">Item Code / Description</th>
+                    <th className="px-3 py-2.5 text-center w-24">Quantity</th>
+                    <th className="px-3 py-2.5 w-36">Unit Price (INR)</th>
+                    <th className="px-3 py-2.5 text-right w-36">Line Total</th>
+                    <th className="px-2 py-2.5 text-center w-10"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color">
                   {formItems.map((row, idx) => {
                     const rowTotal = (parseFloat(row.qty) || 0) * (parseFloat(row.unit_price) || 0);
 
                     return (
-                      <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                        <td className="px-2 py-2">
+                      <tr key={idx} className="hover:bg-bg-hover">
+                        <td className="p-2">
                           <select
                             required
-                            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none"
+                            className="field py-1 px-2 text-xs font-sans"
                             value={row.item_id}
                             onChange={(e) => handleItemRowChange(idx, 'item_id', e.target.value)}
                           >
@@ -487,40 +528,39 @@ const PurchaseOrdersPage = () => {
                             {itemsList.map(it => <option key={it.id} value={it.id}>{it.name} ({it.item_code})</option>)}
                           </select>
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="p-2">
                           <input
                             type="number"
                             min="0.0001"
                             step="any"
                             required
-                            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-center text-slate-900 dark:text-white focus:outline-none"
+                            className="field py-1 px-2 text-xs text-center font-mono"
                             value={row.qty}
                             onChange={(e) => handleItemRowChange(idx, 'qty', e.target.value)}
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="p-2">
                           <input
                             type="number"
                             min="0"
                             step="0.01"
                             required
-                            className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none"
+                            className="field py-1 px-2 text-xs font-mono"
                             value={row.unit_price}
                             onChange={(e) => handleItemRowChange(idx, 'unit_price', e.target.value)}
                           />
                         </td>
-                        <td className="px-4 py-2 text-sm font-semibold text-right text-slate-950 dark:text-white">
+                        <td className="px-3 py-2 text-xs font-mono font-bold text-right text-text-primary">
                           {formatINR(rowTotal)}
                         </td>
-                        <td className="px-2 py-2 text-center">
+                        <td className="p-2 text-center">
                           <button
                             type="button"
                             onClick={() => handleRemoveRow(idx)}
-                            className="text-red-500 hover:text-red-700 p-1"
+                            className="btn btn-ghost px-1.5 py-1 text-xs text-accent-danger hover:bg-accent-danger/10"
+                            title="Remove row"
                           >
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                            ✕
                           </button>
                         </td>
                       </tr>
@@ -532,36 +572,36 @@ const PurchaseOrdersPage = () => {
           </div>
 
           {/* Footer details row */}
-          <div className="flex justify-between items-start pt-4 border-t border-slate-100 dark:border-slate-800 gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Terms</label>
+          <div className="flex flex-col sm:flex-row justify-between items-start pt-4 border-t border-border-color gap-4">
+            <div className="flex-1 w-full">
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Notes / Terms</label>
               <textarea
                 name="notes"
                 rows={2}
                 placeholder="Include shipping instructions or purchase specifications..."
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field font-sans"
                 value={formHeader.notes}
                 onChange={handleHeaderChange}
               />
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800 w-64 text-right">
-              <span className="text-xs text-slate-500">Order Grand Total:</span>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-450">{formatINR(grandTotal)}</p>
+            <div className="sheet bg-bg-secondary p-4 w-full sm:w-64 text-right">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">Order Grand Total:</span>
+              <p className="font-mono text-xl font-bold text-accent-primary">{formatINR(grandTotal)}</p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="rounded-lg border border-slate-350 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Save PO (Draft)
             </button>
@@ -572,15 +612,15 @@ const PurchaseOrdersPage = () => {
       {/* VIEW PO PREVIEW & WORKFLOW CONTROL MODAL */}
       <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Purchase Order Review" size="lg">
         {viewingPO && (
-          <div className="space-y-6">
+          <div className="space-y-6 font-sans">
             {/* Control Bar for Approval & Rejection */}
-            <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-605">Workflow Status:</span>
+            <div className="flex flex-wrap justify-between items-center gap-3 p-3 sheet bg-bg-secondary">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs uppercase tracking-wider text-text-muted">Actions:</span>
                 {viewingPO.status === 'Draft' && (
                   <button
                     onClick={() => handleSubmitApproval(viewingPO.id)}
-                    className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded"
+                    className="btn btn-primary px-3 py-1.5 text-xs font-mono uppercase tracking-wider"
                   >
                     Submit for Approval
                   </button>
@@ -589,13 +629,13 @@ const PurchaseOrdersPage = () => {
                   <>
                     <button
                       onClick={() => handleApprove(viewingPO.id)}
-                      className="bg-green-600 hover:bg-green-550 text-white text-xs font-bold px-3 py-1.5 rounded"
+                      className="btn btn-primary px-3 py-1.5 text-xs font-mono uppercase tracking-wider bg-accent-success hover:brightness-110"
                     >
                       Approve Order
                     </button>
                     <button
                       onClick={handleOpenRejectModal}
-                      className="bg-red-650 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded"
+                      className="btn btn-danger px-3 py-1.5 text-xs font-mono uppercase tracking-wider"
                     >
                       Reject Order
                     </button>
@@ -604,12 +644,12 @@ const PurchaseOrdersPage = () => {
                 
                 {/* Delivery stage update select */}
                 {viewingPO.approval_status === 'Approved' && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-slate-500">Delivery Status:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">Delivery:</span>
                     <select
                       value={viewingPO.status}
                       onChange={handleDeliveryStatusChange}
-                      className="rounded border border-slate-300 text-xs px-2 py-1 bg-white dark:bg-slate-900"
+                      className="field py-1 px-2 text-xs font-mono uppercase w-auto"
                     >
                       <option value="Ordered">Ordered (Dispatched)</option>
                       <option value="Completed">Completed (Received)</option>
@@ -619,103 +659,97 @@ const PurchaseOrdersPage = () => {
                 )}
               </div>
 
-              <span className={`inline-flex items-center rounded px-2.5 py-0.5 text-xs font-semibold ${
-                viewingPO.approval_status === 'Approved' ? 'bg-green-100 text-green-800 border border-green-200' :
-                viewingPO.approval_status === 'Rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
-                'bg-orange-100 text-orange-800 border border-orange-200'
-              }`}>
-                {viewingPO.approval_status === 'Approved' ? 'Approved' : viewingPO.approval_status === 'Rejected' ? 'Rejected' : 'Pending Approval'}
-              </span>
+              <StatusBadge status={viewingPO.approval_status} />
             </div>
 
             {/* Rejection comment flag */}
             {viewingPO.approval_status === 'Rejected' && viewingPO.rejection_reason && (
-              <div className="p-3.5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 text-xs text-red-650 dark:text-red-400">
+              <div className="p-3 sheet bg-accent-danger/10 border-accent-danger/30 text-xs text-accent-danger font-mono">
                 <span className="font-bold uppercase block mb-1">Rejection Remarks:</span>
                 <p>{viewingPO.rejection_reason}</p>
               </div>
             )}
 
-            {/* Printable Area Wrapper */}
-            <div className="p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-950 space-y-6">
+            {/* Printable Area Wrapper - Literal White Paper Frame */}
+            <div className="p-6 sm:p-8 border border-border-color rounded-sm bg-white text-slate-900 shadow-sm space-y-6">
               {/* Header */}
-              <div className="flex justify-between items-start border-b border-slate-150 pb-4">
+              <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
-                  <p className="text-xs text-slate-400">123 Industrial Area, Phase II, New Delhi, India</p>
+                  <h2 className="font-display text-xl uppercase tracking-wider font-bold text-slate-950">ERP ENTERPRISE</h2>
+                  <p className="text-xs text-slate-600 font-mono">123 Industrial Area, Phase II, New Delhi, India</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-bold text-blue-600 uppercase">Purchase Order</h3>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingPO.po_no}</p>
-                  <p className="text-xs text-slate-400">Date: {formatDate(viewingPO.po_date)}</p>
-                  <p className="text-xs text-blue-600 font-semibold">Delivery Expected: {formatDate(viewingPO.expected_date)}</p>
+                  <h3 className="font-mono text-xs uppercase tracking-widest text-slate-500 font-bold">Purchase Order</h3>
+                  <p className="font-mono text-sm font-bold text-slate-900">{viewingPO.po_no}</p>
+                  <p className="text-xs text-slate-600 font-mono">Date: {formatDate(viewingPO.po_date)}</p>
+                  <p className="text-xs text-blue-700 font-mono font-semibold">Delivery Expected: {formatDate(viewingPO.expected_date)}</p>
                 </div>
               </div>
 
               {/* Vendor & Intake details */}
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Supplier Info:</h4>
-                  <p className="font-bold text-slate-900 dark:text-white">{viewingPO.vendor_name}</p>
-                  <p className="text-slate-500">{viewingPO.vendor_address}</p>
-                  <p className="text-slate-500">GSTIN: {viewingPO.vendor_gstin || 'N/A'}</p>
-                  <p className="text-slate-500">Email: {viewingPO.vendor_email || 'N/A'}</p>
+                  <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supplier Info:</h4>
+                  <p className="font-bold text-slate-900">{viewingPO.vendor_name}</p>
+                  <p className="text-slate-600">{viewingPO.vendor_address}</p>
+                  <p className="text-slate-600 font-mono">GSTIN: {viewingPO.vendor_gstin || 'N/A'}</p>
+                  <p className="text-slate-600 font-mono">Email: {viewingPO.vendor_email || 'N/A'}</p>
                 </div>
                 <div className="text-right text-xs">
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Warehouse Intake:</h4>
-                  <p className="text-slate-500">Central Storage Warehouse</p>
-                  <p className="text-slate-500">GRN Status: <span className="font-bold text-slate-900 dark:text-white">{grnStatus}</span></p>
+                  <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Warehouse Intake:</h4>
+                  <p className="text-slate-600">Central Storage Warehouse</p>
+                  <p className="text-slate-600 font-mono">GRN Status: <span className="font-bold text-slate-900">{grnStatus}</span></p>
                 </div>
               </div>
 
               {/* Line items Table */}
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Item Code / Description</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-center">Quantity</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Unit Rate (INR)</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-right">Line Total</th>
+                  <tr className="border-b-2 border-slate-200 bg-slate-50 font-mono text-[11px] uppercase tracking-wider text-slate-600">
+                    <th className="py-2.5 px-3 font-bold">Item Code / Description</th>
+                    <th className="py-2.5 px-3 font-bold text-center">Quantity</th>
+                    <th className="py-2.5 px-3 font-bold">Unit Rate (INR)</th>
+                    <th className="py-2.5 px-3 font-bold text-right">Line Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-100 font-mono">
                   {viewingItems.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="py-2 px-2">
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                      <td className="py-2.5 px-3">
+                        <div className="font-bold text-slate-900 font-sans">{item.item_name}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">{item.item_code}</div>
                       </td>
-                      <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
-                      <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
-                      <td className="py-2 px-2 text-right font-bold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
+                      <td className="py-2.5 px-3 text-center">{parseFloat(item.qty)}</td>
+                      <td className="py-2.5 px-3">{formatINR(item.unit_price)}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-900">{formatINR(item.line_total)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               {/* Summary notes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-150">
-                <div className="text-xs text-slate-500">
-                  <h4 className="font-bold uppercase mb-1">Important Specifications</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                <div className="text-xs text-slate-600 font-mono">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Important Specifications</h4>
                   <p>{viewingPO.notes || 'Goods subject to warehouse quality inspections.'}</p>
                 </div>
-                <div className="text-right text-xs space-y-1.5 self-end">
-                  <div className="flex justify-between font-bold text-sm text-slate-950 dark:text-white">
+                <div className="text-right text-xs space-y-1.5 self-end font-mono">
+                  <div className="flex justify-between font-bold text-sm text-slate-950">
                     <span>Order Value (Gross):</span>
-                    <span className="text-blue-600 dark:text-blue-450">{formatINR(viewingPO.total_amount)}</span>
+                    <span className="text-blue-700">{formatINR(viewingPO.total_amount)}</span>
                   </div>
                   {viewingPO.approver_name && (
-                    <div className="text-[10px] text-slate-400">Approved by manager: {viewingPO.approver_name}</div>
+                    <div className="text-[10px] text-slate-500">Approved by manager: {viewingPO.approver_name}</div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-350 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
               >
                 Close Review
               </button>
@@ -726,31 +760,31 @@ const PurchaseOrdersPage = () => {
 
       {/* REJECTION REASON MODAL */}
       <Modal isOpen={isRejectOpen} onClose={() => setIsRejectOpen(false)} title="Reject Purchase Order">
-        <form onSubmit={handleRejectSubmit} className="space-y-4">
+        <form onSubmit={handleRejectSubmit} className="space-y-4 font-sans">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">State Rejection Remarks *</label>
+            <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">State Rejection Remarks *</label>
             <textarea
               required
               rows={3}
               placeholder="e.g. Unit rate exceeds market value, or incorrect item specification requested..."
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
+              className="field font-sans"
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               disabled={submittingReject}
               onClick={() => setIsRejectOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-750 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submittingReject}
-              className="rounded-lg bg-red-600 hover:bg-red-550 px-4 py-2 text-sm font-semibold text-white shadow-sm"
+              className="btn btn-danger px-4 py-2 text-xs font-mono uppercase tracking-wider"
             >
               Confirm Rejection
             </button>

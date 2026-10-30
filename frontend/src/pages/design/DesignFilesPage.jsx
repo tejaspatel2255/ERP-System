@@ -4,6 +4,7 @@ import { getDesignFiles, uploadDesignFile, getDesignFileById, uploadNewVersion }
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
 import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function DesignFilesPage() {
   const [designFiles, setDesignFiles] = useState([]);
@@ -115,28 +116,28 @@ export default function DesignFilesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Design Files Directory"
         description="Upload CAD drawings, view version histories, and track engineering approvals."
         actions={
           <button
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn btn-primary text-xs uppercase tracking-wider font-mono"
           >
             + Upload Design File
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 text-accent-danger text-xs font-mono">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 text-accent-success text-xs font-mono">{success}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Files Directory Left Panel */}
-        <div className="lg:col-span-2 min-w-0 bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
+        <div className="lg:col-span-2 min-w-0 sheet overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-text-muted text-sm">Loading design files...</div>
+            <div className="p-12 text-center text-text-muted text-xs font-mono">Loading design files...</div>
           ) : designFiles.length === 0 ? (
             <div className="p-6">
               <EmptyState
@@ -149,33 +150,33 @@ export default function DesignFilesPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
-                    <th className="p-4">Design Title</th>
-                    <th className="p-4">Project Ref</th>
-                    <th className="p-4">Latest Version</th>
-                    <th className="p-4">Uploaded By</th>
-                    <th className="p-4">Upload Date</th>
+                  <tr className="border-b border-border-color bg-bg-surface text-text-muted font-mono font-bold uppercase tracking-wider">
+                    <th className="p-3">Design Title</th>
+                    <th className="p-3 font-mono">Project Ref</th>
+                    <th className="p-3 font-mono">Latest Version</th>
+                    <th className="p-3">Uploaded By</th>
+                    <th className="p-3">Upload Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-color text-sm">
+                <tbody className="divide-y divide-border-color">
                   {designFiles.map((df) => (
                     <tr
                       key={df.id}
                       onClick={() => handleSelectFile(df)}
                       className={`hover:bg-bg-hover cursor-pointer transition-colors ${
-                        selectedFile?.id === df.id ? 'bg-bg-secondary font-semibold' : ''
+                        selectedFile?.id === df.id ? 'bg-bg-surface font-semibold' : ''
                       }`}
                     >
-                      <td className="p-4 font-semibold text-text-primary">
+                      <td className="p-3 font-semibold text-text-primary">
                         <p>{df.title}</p>
-                        <p className="text-xs text-text-muted font-normal max-w-xs truncate">{df.description || 'No description'}</p>
+                        <p className="text-[11px] text-text-muted font-normal max-w-xs truncate">{df.description || 'No description'}</p>
                       </td>
-                      <td className="p-4 font-mono text-text-secondary">{df.project_ref || '—'}</td>
-                      <td className="p-4 font-mono font-semibold text-accent-primary">v{df.latest_version}</td>
-                      <td className="p-4 text-text-muted text-xs">{df.uploaded_by_name || 'System'}</td>
-                      <td className="p-4 text-xs text-text-muted">{new Date(df.created_at).toLocaleDateString()}</td>
+                      <td className="p-3 font-mono text-text-secondary">{df.project_ref || '—'}</td>
+                      <td className="p-3 font-mono font-bold text-accent-primary">v{df.latest_version}</td>
+                      <td className="p-3 text-text-muted text-xs">{df.uploaded_by_name || 'System'}</td>
+                      <td className="p-3 text-xs font-mono text-text-muted">{new Date(df.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -185,17 +186,17 @@ export default function DesignFilesPage() {
         </div>
 
         {/* Selected File Details Right Panel */}
-        <div className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-6">
+        <div className="min-w-0 sheet p-5 space-y-5">
           {selectedFile ? (
-            <div className="space-y-6">
-              <div className="flex justify-between items-start gap-2">
+            <div className="space-y-5">
+              <div className="flex justify-between items-start gap-2 border-b border-border-color pb-3">
                 <div className="truncate">
-                  <h3 className="text-lg font-bold text-text-primary truncate">{selectedFile.title}</h3>
-                  <p className="text-xs text-text-muted font-mono mt-0.5">Ref: {selectedFile.project_ref || 'N/A'}</p>
+                  <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary truncate">{selectedFile.title}</h3>
+                  <p className="text-[11px] text-text-muted font-mono mt-0.5">Ref: {selectedFile.project_ref || 'N/A'}</p>
                 </div>
                 <button
                   onClick={() => setShowNewVersionModal(true)}
-                  className="bg-accent-primary/10 hover:bg-accent-primary/20 text-accent-primary border border-accent-primary/30 font-semibold py-1.5 px-3 rounded-xl text-xs transition-all shrink-0"
+                  className="btn btn-secondary text-xs py-1 px-2.5 shrink-0"
                 >
                   + New Ver.
                 </button>
@@ -203,20 +204,20 @@ export default function DesignFilesPage() {
 
               {/* Versions list */}
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Version History</h4>
-                <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider mb-2">Version History</h4>
+                <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
                   {versions.map(v => (
-                    <div key={v.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl flex justify-between items-center text-xs">
+                    <div key={v.id} className="p-2.5 bg-bg-surface border border-border-color rounded-xs flex justify-between items-center text-xs">
                       <div className="truncate pr-2">
-                        <span className="font-mono font-extrabold text-accent-primary mr-2">v{v.version_number}</span>
-                        <span className="text-text-muted">{new Date(v.uploaded_at).toLocaleDateString()}</span>
-                        {v.notes && <p className="text-[11px] text-text-secondary mt-0.5 italic truncate">{v.notes}</p>}
+                        <span className="font-mono font-bold text-accent-primary mr-2">v{v.version_number}</span>
+                        <span className="text-text-muted font-mono text-[11px]">{new Date(v.uploaded_at).toLocaleDateString()}</span>
+                        {v.notes && <p className="text-[10px] text-text-secondary mt-0.5 italic truncate">{v.notes}</p>}
                       </div>
                       <a
                         href={v.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-accent-primary hover:underline font-semibold shrink-0"
+                        className="btn btn-secondary text-[10px] py-0.5 px-2 font-mono shrink-0"
                       >
                         Download
                       </a>
@@ -227,23 +228,19 @@ export default function DesignFilesPage() {
 
               {/* Reviews List */}
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Review Status</h4>
-                <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider mb-2">Review Status</h4>
+                <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
                   {reviews.length === 0 ? (
-                    <p className="text-text-muted text-xs italic">No reviews submitted for this file.</p>
+                    <p className="text-text-muted text-xs font-mono italic">No reviews submitted for this file.</p>
                   ) : (
                     reviews.map(r => (
-                      <div key={r.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl text-xs space-y-1">
+                      <div key={r.id} className="p-2.5 bg-bg-surface border border-border-color rounded-xs text-xs space-y-1">
                         <div className="flex justify-between items-center">
                           <span className="font-mono text-[10px] text-text-muted">Ver: v{r.version_number}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            r.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' : 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30'
-                          }`}>
-                            {r.status}
-                          </span>
+                          <StatusBadge status={r.status} />
                         </div>
-                        <p className="text-text-primary italic">{r.remarks || 'No remarks.'}</p>
-                        <p className="text-[10px] text-text-muted text-right">By: {r.reviewer_name}</p>
+                        <p className="text-text-primary italic text-[11px]">{r.remarks || 'No remarks.'}</p>
+                        <p className="text-[10px] text-text-muted text-right font-mono">By: {r.reviewer_name}</p>
                       </div>
                     ))
                   )}
@@ -271,60 +268,60 @@ export default function DesignFilesPage() {
       >
         <form onSubmit={handleUploadFileSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Design Title *</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Design Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field w-full"
               placeholder="E.g., Component layout schematics"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Project Reference</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Project Reference</label>
             <input
               type="text"
               value={projectRef}
               onChange={(e) => setProjectRef(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field w-full font-mono"
               placeholder="E.g., PRJ-2026-X"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Description</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none focus:border-accent-primary"
+              className="field w-full h-20"
               placeholder="Engineering file details..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Select File (PDF, PNG, JPG, DWG - Max 20MB) *</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Select File (PDF, PNG, JPG, DWG - Max 20MB) *</label>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none focus:border-accent-primary"
+              className="field w-full text-xs"
               accept=".pdf,.png,.jpg,.jpeg,.dwg"
               required
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowUploadModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn btn-primary text-xs"
             >
               Upload File
             </button>
@@ -341,38 +338,38 @@ export default function DesignFilesPage() {
       >
         <form onSubmit={handleUploadVersionSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Version Notes / Revision Remarks *</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Version Notes / Revision Remarks *</label>
             <textarea
               value={versionNotes}
               onChange={(e) => setVersionNotes(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-24 focus:outline-none focus:border-accent-primary"
+              className="field w-full h-24 text-xs"
               placeholder="E.g., Added component dimensions, refined connectors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Select Revision File (Max 20MB) *</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Select Revision File (Max 20MB) *</label>
             <input
               type="file"
               onChange={(e) => setVersionFile(e.target.files[0])}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none focus:border-accent-primary"
+              className="field w-full text-xs"
               accept=".pdf,.png,.jpg,.jpeg,.dwg"
               required
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowNewVersionModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn btn-primary text-xs"
             >
               Upload Version
             </button>

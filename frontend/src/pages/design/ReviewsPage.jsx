@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, FileSearch } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { getPendingReviews, submitReview, getDesignFileById } from '../../api/designApi';
 import EmptyState from '../../components/EmptyState';
 import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function ReviewsPage() {
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -56,20 +57,20 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Design Reviews"
-        description="Open pending engineering files, inspect versions, and approve or request revisions."
+        description="Inspect pending engineering files, inspect versions, and approve or request revisions."
       />
 
-      {error && <div className="mb-6 p-4 rounded-2xl border border-accent-danger/30 bg-accent-danger/10 text-accent-danger text-sm">{error}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 text-accent-danger text-xs font-mono">{error}</div>}
 
       {loading ? (
-        <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading pending reviews...</div>
+        <div className="p-12 text-center text-text-muted sheet text-xs font-mono">Loading pending reviews...</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Pending Reviews Table Left Panel */}
-          <div className="lg:col-span-2 min-w-0 rounded-2xl border border-border-color bg-bg-card shadow-brand overflow-hidden">
+          <div className="lg:col-span-2 min-w-0 sheet overflow-hidden">
             {pendingReviews.length === 0 ? (
               <div className="p-6">
                 <EmptyState
@@ -80,28 +81,31 @@ export default function ReviewsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
-                      <th className="p-4">File Title</th>
-                      <th className="p-4">Version</th>
-                      <th className="p-4">Uploaded By</th>
-                      <th className="p-4">Date</th>
+                    <tr className="border-b border-border-color bg-bg-surface text-text-muted font-mono font-bold uppercase tracking-wider">
+                      <th className="p-3">File Title</th>
+                      <th className="p-3 font-mono">Version</th>
+                      <th className="p-3">Uploaded By</th>
+                      <th className="p-3">Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color text-sm">
+                  <tbody className="divide-y divide-border-color">
                     {pendingReviews.map((review) => (
                       <tr
                         key={review.id}
                         className={`cursor-pointer hover:bg-bg-hover transition-colors ${
-                          selectedReview?.id === review.id ? 'bg-bg-secondary font-semibold' : ''
+                          selectedReview?.id === review.id ? 'bg-bg-surface font-semibold' : ''
                         }`}
                         onClick={() => openReview(review)}
                       >
-                        <td className="p-4 font-semibold text-text-primary">{review.design_file_title}</td>
-                        <td className="p-4 font-mono text-accent-primary font-bold">v{review.version_number}</td>
-                        <td className="p-4 text-text-secondary">{review.uploaded_by_name || 'Unknown'}</td>
-                        <td className="p-4 text-text-muted text-xs">{new Date(review.uploaded_at).toLocaleDateString()}</td>
+                        <td className="p-3 font-semibold text-text-primary">
+                          <p>{review.title}</p>
+                          <p className="text-[11px] text-text-muted font-mono">{review.project_ref || 'No Project Ref'}</p>
+                        </td>
+                        <td className="p-3 font-mono font-bold text-accent-primary">v{review.version_number}</td>
+                        <td className="p-3 text-text-muted text-xs">{review.uploaded_by_name || 'System'}</td>
+                        <td className="p-3 text-xs font-mono text-text-muted">{new Date(review.uploaded_at).toLocaleDateString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -110,59 +114,64 @@ export default function ReviewsPage() {
             )}
           </div>
 
-          {/* Selected File Inspection Right Panel */}
-          <div className="min-w-0 rounded-2xl border border-border-color bg-bg-card p-6 shadow-brand h-fit space-y-6">
+          {/* Review Action Form Right Panel */}
+          <div className="min-w-0 sheet p-5 space-y-5">
             {selectedReview ? (
               <div className="space-y-4">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-accent-primary font-bold">Reviewing Submission</p>
-                  <h3 className="mt-1 text-lg font-bold text-text-primary truncate">{selectedReview.design_file_title}</h3>
-                  <p className="text-xs text-text-secondary font-mono mt-0.5">Version v{selectedReview.version_number}</p>
+                <div className="border-b border-border-color pb-3">
+                  <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">
+                    Review Version v{selectedReview.version_number}
+                  </h3>
+                  <p className="text-xs text-text-secondary mt-1">{selectedReview.title}</p>
+                  {selectedReview.notes && (
+                    <p className="text-[11px] text-text-muted italic mt-1 font-mono">Notes: {selectedReview.notes}</p>
+                  )}
                 </div>
 
-                {selectedFile?.versions?.find((v) => v.id === selectedReview.id)?.file_url && (
-                  <a
-                    href={selectedFile.versions.find((v) => v.id === selectedReview.id).file_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-accent-primary/10 border border-accent-primary/30 px-3.5 py-2 text-xs font-bold text-accent-primary hover:bg-accent-primary/20 transition-all"
-                  >
-                    <span>📄</span> Open & Download File
-                  </a>
+                {selectedFile && (
+                  <div className="p-3 bg-bg-surface rounded-xs border border-border-color space-y-2 text-xs">
+                    <p className="text-text-secondary font-mono">{selectedFile.designFile.description || 'No additional file details.'}</p>
+                    <a
+                      href={selectedReview.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary text-xs inline-flex items-center gap-1 font-mono"
+                    >
+                      <span>📥</span> Download Design Spec
+                    </a>
+                  </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Review Remarks *</label>
+                <div>
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">
+                    Review Remarks / Modification Requests
+                  </label>
                   <textarea
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
-                    placeholder="Enter approval comments or specify requested revisions..."
-                    className="h-28 w-full rounded-xl border border-border-color bg-bg-secondary p-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
+                    className="field w-full h-24 text-xs"
+                    placeholder="Enter approval comments or specify modifications required..."
                   />
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-2 pt-2 border-t border-border-color">
                   <button
                     onClick={() => handleReview('Approved')}
-                    className="flex-1 rounded-xl bg-accent-success hover:opacity-90 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all"
+                    className="btn btn-success flex-1 text-xs"
                   >
-                    ✓ Approve
+                    ✓ Approve Spec
                   </button>
                   <button
-                    onClick={() => handleReview('Changes Requested')}
-                    className="flex-1 rounded-xl bg-accent-warning hover:opacity-90 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all"
+                    onClick={() => handleReview('Rejected')}
+                    className="btn btn-danger flex-1 text-xs"
                   >
-                    ⚠ Request Changes
+                    ✕ Request Changes
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-6">
-                <EmptyState
-                  icon={FileSearch}
-                  title="No Review Selected"
-                  description="Select a pending design file from the left table to open its CAD drawing, write evaluation remarks, and approve or request changes."
-                />
+              <div className="text-center py-10 text-text-muted text-xs font-mono italic">
+                Select a pending review from the list on the left to evaluate schematics and sign off.
               </div>
             )}
           </div>

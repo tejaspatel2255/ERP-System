@@ -6,6 +6,7 @@ import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
 import PageHeader from '../../components/PageHeader';
 import Table from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
@@ -119,7 +120,7 @@ export default function EmployeesPage() {
     {
       key: 'emp_code',
       label: 'Emp Code',
-      render: (emp) => <span className="font-mono text-accent-primary font-medium">{emp.emp_code}</span>
+      render: (emp) => <span className="font-mono text-accent-primary font-bold">{emp.emp_code}</span>
     },
     {
       key: 'name',
@@ -134,30 +135,33 @@ export default function EmployeesPage() {
     {
       key: 'designation',
       label: 'Designation',
-      render: (emp) => <span className="text-text-primary">{emp.designation}</span>
+      render: (emp) => <span className="text-text-primary font-medium">{emp.designation}</span>
     },
     {
       key: 'user_name',
       label: 'Linked User',
       render: (emp) => emp.user_name ? (
-        <span className="inline-flex items-center rounded-full bg-accent-success/15 px-2.5 py-0.5 text-xs font-semibold text-accent-success border border-accent-success/30">
-          {emp.user_name}
+        <span className="font-mono text-xs text-accent-success font-semibold">
+          @{emp.user_name}
         </span>
       ) : (
-        <span className="inline-flex items-center rounded-full bg-accent-warning/15 px-2.5 py-0.5 text-xs font-semibold text-accent-warning border border-accent-warning/30">
-          Unlinked
-        </span>
+        <span className="text-[10px] font-mono uppercase text-text-muted">Unlinked</span>
       )
     },
     {
       key: 'email',
       label: 'Email',
-      render: (emp) => <span className="text-text-muted text-sm">{emp.email || '—'}</span>
+      render: (emp) => <span className="text-text-muted text-xs font-mono">{emp.email || '—'}</span>
     },
     {
       key: 'phone',
       label: 'Phone',
-      render: (emp) => <span className="text-text-muted text-sm">{emp.phone || '—'}</span>
+      render: (emp) => <span className="text-text-muted text-xs font-mono">{emp.phone || '—'}</span>
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (emp) => <StatusBadge status={emp.is_active ? 'Active' : 'Inactive'} />
     },
     {
       key: 'actions',
@@ -165,7 +169,7 @@ export default function EmployeesPage() {
       render: (emp) => (
         <button
           onClick={() => handleOpenEdit(emp)}
-          className="px-3 py-1 bg-bg-secondary hover:bg-bg-hover border border-border-color rounded-xl text-xs font-semibold text-text-primary transition-all"
+          className="btn btn-secondary text-xs py-1 px-2.5"
         >
           Edit / Link
         </button>
@@ -174,29 +178,29 @@ export default function EmployeesPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Employee Directory"
         description="Manage corporate hierarchy, department roles, and user account linkages."
         actions={
           <button
             onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn btn-primary text-xs uppercase tracking-wider font-mono"
           >
             + Add Employee
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 text-accent-danger text-xs font-mono">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 text-accent-success text-xs font-mono">{success}</div>}
 
-      <div className="mb-6 flex gap-4 items-center bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
-        <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Department Filter:</label>
+      <div className="flex gap-4 items-center bg-bg-surface border border-border-color rounded-xs p-3 font-mono text-xs">
+        <label className="font-bold uppercase tracking-wider text-text-muted">Department Filter:</label>
         <select
           value={selectedDeptFilter}
           onChange={(e) => setSelectedDeptFilter(e.target.value)}
-          className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+          className="field text-xs py-1 px-2.5"
         >
           <option value="">All Departments</option>
           {departments.map(d => (
@@ -205,17 +209,19 @@ export default function EmployeesPage() {
         </select>
       </div>
 
-      {employees.length === 0 && !loading ? (
-        <EmptyState
-          icon={Users}
-          title="No Employees Found"
-          description="There are currently no employee records matching your filter criteria. Add a new employee to get started."
-          actionLabel="Add Employee"
-          onAction={handleOpenCreate}
-        />
-      ) : (
-        <Table columns={columns} data={employees} loading={loading} emptyMessage="No employees found." />
-      )}
+      <div className="sheet">
+        {employees.length === 0 && !loading ? (
+          <EmptyState
+            icon={Users}
+            title="No Employees Found"
+            description="There are currently no employee records matching your filter criteria. Add a new employee to get started."
+            actionLabel="Add Employee"
+            onAction={handleOpenCreate}
+          />
+        ) : (
+          <Table columns={columns} data={employees} loading={loading} emptyMessage="No employees found." />
+        )}
+      </div>
 
       {/* CREATE/EDIT MODAL */}
       <Modal
@@ -227,23 +233,23 @@ export default function EmployeesPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Emp Code *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Emp Code *</label>
               <input
                 type="text"
                 value={empCode}
                 onChange={(e) => setEmpCode(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full font-mono"
                 required
                 disabled={!!editingEmp}
               />
             </div>
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Full Name *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Full Name *</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
                 required
               />
             </div>
@@ -251,33 +257,33 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Email Address</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
                 placeholder="name@company.com"
               />
             </div>
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Phone Number</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Phone Number</label>
               <input
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Department</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Department</label>
               <select
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
               >
                 <option value="">-- Choose Dept --</option>
                 {departments.map(d => (
@@ -286,26 +292,26 @@ export default function EmployeesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Designation *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Designation *</label>
               <input
                 type="text"
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
                 required
               />
             </div>
           </div>
 
           {/* User Account Linkage Selection */}
-          <div className="rounded-2xl border border-border-color bg-bg-secondary/60 p-4 space-y-2">
-            <label className="block text-text-primary font-bold text-xs uppercase tracking-wider">
+          <div className="rounded-xs border border-border-color bg-bg-surface p-3.5 space-y-2">
+            <label className="block text-text-primary font-mono font-bold text-xs uppercase tracking-wider">
               Link User Account
             </label>
             <select
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              className="w-full bg-bg-card border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field w-full"
             >
               <option value="">-- No Linked User Account (Standalone Profile) --</option>
               {usersList.map(u => (
@@ -314,19 +320,19 @@ export default function EmployeesPage() {
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-text-muted leading-tight">
+            <p className="text-[11px] text-text-muted leading-tight font-mono">
               Linking a User Account grants this employee access to Self-Service features (leave applications & clock logs).
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary font-semibold mb-1 text-xs">Joining Date *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Joining Date *</label>
               <input
                 type="date"
                 value={joinDate}
                 onChange={(e) => setJoinDate(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field w-full"
                 required
               />
             </div>
@@ -337,24 +343,24 @@ export default function EmployeesPage() {
                   id="is-active"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 rounded border-border-color text-accent-primary focus:ring-accent-primary"
+                  className="rounded-xs border-border-color text-accent-primary"
                 />
-                <label htmlFor="is-active" className="text-text-primary font-semibold text-xs cursor-pointer">Is Active Profile</label>
+                <label htmlFor="is-active" className="text-text-primary font-mono text-xs cursor-pointer font-bold uppercase tracking-wider">Is Active Profile</label>
               </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn btn-primary text-xs"
             >
               Save Employee
             </button>

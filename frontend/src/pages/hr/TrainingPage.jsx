@@ -10,6 +10,7 @@ import {
 import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
 import Modal from '../../components/Modal';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function TrainingPage() {
   const [sessions, setSessions] = useState([]);
@@ -119,28 +120,28 @@ export default function TrainingPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="Training & Upskilling"
-        description="Organize professional workshops, assign attendees, and mark course completion logs."
+        description="Organize professional workshops, assign attendees, and track course completion."
         actions={
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn btn-primary text-xs uppercase tracking-wider font-mono"
           >
-            Schedule Session
+            + Schedule Session
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="p-3 bg-accent-danger/10 border border-accent-danger/30 text-accent-danger text-xs font-mono">{error}</div>}
+      {success && <div className="p-3 bg-accent-success/10 border border-accent-success/30 text-accent-success text-xs font-mono">{success}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Sessions Table Left Panel */}
-        <div className="lg:col-span-2 min-w-0 bg-bg-card border border-border-color rounded-2xl shadow-brand overflow-hidden">
+        <div className="lg:col-span-2 min-w-0 sheet overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-text-muted text-sm">Loading training sessions...</div>
+            <div className="p-12 text-center text-text-muted text-xs font-mono">Loading training sessions...</div>
           ) : sessions.length === 0 ? (
             <div className="p-6">
               <EmptyState
@@ -153,41 +154,35 @@ export default function TrainingPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
+              <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                 <thead>
-                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
-                    <th className="p-4">Session Details</th>
-                    <th className="p-4">Trainer</th>
-                    <th className="p-4">Date & Time</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-center">Completion Ratio</th>
+                  <tr className="border-b border-border-color bg-bg-surface text-text-muted font-mono font-bold uppercase tracking-wider">
+                    <th className="p-3">Session Details</th>
+                    <th className="p-3">Trainer</th>
+                    <th className="p-3">Date & Time</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-center">Completion Ratio</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-color text-sm">
+                <tbody className="divide-y divide-border-color">
                   {sessions.map((sess) => (
                     <tr
                       key={sess.id}
                       onClick={() => handleSelectSession(sess)}
                       className={`hover:bg-bg-hover cursor-pointer transition-colors ${
-                        selectedSession?.id === sess.id ? 'bg-bg-secondary font-semibold' : ''
+                        selectedSession?.id === sess.id ? 'bg-bg-surface font-semibold' : ''
                       }`}
                     >
-                      <td className="p-4">
+                      <td className="p-3">
                         <p className="font-bold text-text-primary">{sess.title}</p>
-                        <p className="text-xs text-text-muted max-w-[12rem] truncate">{sess.description || 'No description'}</p>
+                        <p className="text-[11px] text-text-muted max-w-[12rem] truncate">{sess.description || 'No description'}</p>
                       </td>
-                      <td className="p-4 font-medium text-text-primary">{sess.trainer}</td>
-                      <td className="p-4 text-xs text-text-secondary">{new Date(sess.scheduled_date).toLocaleString()}</td>
-                      <td className="p-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          sess.status === 'Completed' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
-                          sess.status === 'Ongoing' ? 'bg-accent-info/15 text-accent-info border border-accent-info/30' :
-                          'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
-                        }`}>
-                          {sess.status}
-                        </span>
+                      <td className="p-3 font-medium text-text-primary">{sess.trainer}</td>
+                      <td className="p-3 font-mono text-[11px] text-text-secondary">{new Date(sess.scheduled_date).toLocaleString()}</td>
+                      <td className="p-3">
+                        <StatusBadge status={sess.status} />
                       </td>
-                      <td className="p-4 text-center font-mono font-semibold text-text-primary">
+                      <td className="p-3 text-center font-mono font-bold text-text-primary">
                         {sess.completed_count} / {sess.assigned_count} Completed
                       </td>
                     </tr>
@@ -199,46 +194,40 @@ export default function TrainingPage() {
         </div>
 
         {/* Selected Session Info Right Panel */}
-        <div className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-6">
+        <div className="min-w-0 sheet p-5 space-y-5">
           {selectedSession ? (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
-                <h3 className="text-lg font-bold text-text-primary">{selectedSession.title}</h3>
+                <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary">{selectedSession.title}</h3>
                 <p className="text-xs text-text-secondary mt-1 leading-relaxed">{selectedSession.description}</p>
-                <div className="mt-4 text-xs space-y-2 text-text-secondary border-t border-border-color pt-4">
-                  <p><span className="text-text-muted font-medium">Instructor:</span> {selectedSession.trainer}</p>
-                  <p><span className="text-text-muted font-medium">Time:</span> {new Date(selectedSession.scheduled_date).toLocaleString()}</p>
+                <div className="mt-3 text-xs space-y-1 font-mono text-text-secondary border-t border-border-color pt-3">
+                  <p><span className="text-text-muted uppercase font-bold text-[10px]">Instructor:</span> {selectedSession.trainer}</p>
+                  <p><span className="text-text-muted uppercase font-bold text-[10px]">Time:</span> {new Date(selectedSession.scheduled_date).toLocaleString()}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">Assigned Employees</h4>
-                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider mb-2 border-b border-border-color pb-1">Assigned Employees</h4>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                   {attendees.map(att => (
-                    <div key={att.employee_id} className="bg-bg-secondary border border-border-color rounded-xl p-3 flex justify-between items-center text-xs">
+                    <div key={att.employee_id} className="bg-bg-surface border border-border-color rounded-xs p-2.5 flex justify-between items-center text-xs">
                       <div className="truncate pr-2">
-                        <p className="font-bold text-text-primary truncate">{att.employee_name}</p>
-                        <p className="text-text-muted text-[11px] truncate">{att.designation}</p>
+                        <p className="font-semibold text-text-primary truncate">{att.employee_name}</p>
+                        <p className="text-text-muted text-[10px] truncate">{att.designation}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          att.status === 'Completed' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
-                          att.status === 'Absent' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
-                          'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
-                        }`}>
-                          {att.status}
-                        </span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <StatusBadge status={att.status} />
                         {att.status === 'Assigned' && (
-                          <div className="flex gap-1.5 mt-1">
+                          <div className="flex gap-1 mt-1">
                             <button
                               onClick={() => handleMarkAttendance(att.employee_id, 'Completed')}
-                              className="px-2 py-1 bg-accent-success hover:opacity-90 rounded-lg text-xs text-white shadow-sm transition-colors"
+                              className="btn btn-success text-[10px] py-0.5 px-2"
                             >
                               Done
                             </button>
                             <button
                               onClick={() => handleMarkAttendance(att.employee_id, 'Absent')}
-                              className="px-2 py-1 bg-accent-danger hover:opacity-90 rounded-lg text-xs text-white shadow-sm transition-colors"
+                              className="btn btn-danger text-[10px] py-0.5 px-2"
                             >
                               Abs
                             </button>
@@ -251,101 +240,97 @@ export default function TrainingPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-8">
-              <EmptyState
-                icon={BookOpen}
-                title="No session selected"
-                description="Select a training session from the table on the left to view the roster and mark completion records."
-              />
+            <div className="text-center py-10 text-text-muted text-xs font-mono italic">
+              Select a training session on the left to inspect its details and attendee checklist.
             </div>
           )}
         </div>
       </div>
 
+      {/* CREATE SESSION MODAL */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Schedule Training Session"
-        size="md"
+        size="lg"
       >
         <form onSubmit={handleCreateSessionSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1.5">Course Title *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2 px-3 text-sm text-text-primary focus:outline-none focus:border-accent-primary"
-                placeholder="E.g., Safety induction"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1.5">Trainer Name *</label>
-              <input
-                type="text"
-                value={trainer}
-                onChange={(e) => setTrainer(e.target.value)}
-                className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2 px-3 text-sm text-text-primary focus:outline-none focus:border-accent-primary"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Session Title *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="field w-full"
+              placeholder="E.g., CNC Machine Operation & Safety Procedures"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="field w-full h-20"
+              placeholder="Curriculum overview and objectives..."
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1.5">Session Date & Time *</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Trainer / Instructor *</label>
               <input
-                type="datetime-local"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2 px-3 text-sm font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                type="text"
+                value={trainer}
+                onChange={(e) => setTrainer(e.target.value)}
+                className="field w-full"
+                placeholder="Name or agency"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1.5">Description</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Scheduled Date & Time *</label>
               <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="block w-full rounded-xl border border-border-color bg-bg-secondary py-2 px-3 text-sm text-text-primary focus:outline-none focus:border-accent-primary"
+                type="datetime-local"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="field w-full font-mono text-xs"
+                required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-2">Assign Roster (Select Employees)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-bg-secondary/60 p-3 rounded-2xl border border-border-color max-h-[160px] overflow-y-auto">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1.5">Assign Employees</label>
+            <div className="border border-border-color rounded-xs bg-bg-surface p-3 max-h-48 overflow-y-auto space-y-1.5">
               {employees.map(emp => (
-                <div key={emp.id} className="flex items-center gap-2 text-xs">
+                <label key={emp.id} className="flex items-center gap-2 text-xs text-text-primary cursor-pointer hover:bg-bg-hover p-1 rounded-xs">
                   <input
                     type="checkbox"
-                    id={`emp-${emp.id}`}
                     checked={selectedEmpIds.includes(emp.id)}
                     onChange={() => handleEmpCheckboxChange(emp.id)}
-                    className="w-4 h-4 rounded border-border-color text-accent-primary focus:ring-accent-primary"
+                    className="rounded-xs border-border-color text-accent-primary"
                   />
-                  <label htmlFor={`emp-${emp.id}`} className="text-text-primary truncate cursor-pointer" title={emp.name}>{emp.name}</label>
-                </div>
+                  <span>{emp.name} <span className="text-text-muted font-mono">({emp.emp_code} - {emp.designation})</span></span>
+                </label>
               ))}
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="rounded-xl border border-border-color bg-bg-secondary py-2 px-4 text-sm font-semibold text-text-secondary hover:bg-bg-hover transition-colors"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-accent-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-colors shadow-sm"
+              className="btn btn-primary text-xs"
             >
-              Schedule Course
+              Create Session
             </button>
           </div>
         </form>

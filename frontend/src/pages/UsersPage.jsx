@@ -6,7 +6,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import SearchBar from '../components/SearchBar';
 import { useRole } from '../context/RoleContext';
-import { Clock, CheckCircle, XCircle, UserCheck, AlertTriangle } from 'lucide-react';
+import { Clock, CheckCircle, XCircle } from 'lucide-react';
 import {
   getUsers,
   createUser,
@@ -21,6 +21,7 @@ import {
   rejectUser
 } from '../api/userApi';
 import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
 
 const UsersPage = () => {
   const { hasPermission } = useRole();
@@ -293,20 +294,12 @@ const UsersPage = () => {
 
     try {
       if (editingUser) {
-        console.debug('Sending updateUser department_id:', String(formData.department_id));
         const updateRes = await updateUser(editingUser.id, {
           name: formData.name,
           email: formData.email,
           department_id: String(formData.department_id),
           is_active: formData.is_active
         });
-
-        const returnedDeptId = updateRes?.user?.department_id;
-        console.debug('Received updateUser user.department_id:', String(returnedDeptId));
-
-        if (returnedDeptId && String(returnedDeptId) !== String(formData.department_id)) {
-          console.warn(`[Department Update Mismatch] Sent: ${formData.department_id}, Returned: ${returnedDeptId}`);
-        }
 
         if (updateRes?.success && updateRes?.user) {
           setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updateRes.user, roles: formData.roles || u.roles } : u));
@@ -378,9 +371,21 @@ const UsersPage = () => {
 
   // Columns for Users table
   const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'department_name', label: 'Department', render: (item) => item.department_name || 'N/A' },
+    {
+      key: 'name',
+      label: 'Name',
+      render: (item) => <span className="font-semibold text-text-primary">{item.name}</span>
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (item) => <span className="font-mono text-xs text-text-muted">{item.email}</span>
+    },
+    {
+      key: 'department_name',
+      label: 'Department',
+      render: (item) => <span className="text-text-secondary">{item.department_name || 'N/A'}</span>
+    },
     {
       key: 'roles',
       label: 'Roles',
@@ -388,12 +393,12 @@ const UsersPage = () => {
         <div className="flex flex-wrap gap-1">
           {item.roles && item.roles.length > 0 ? (
             item.roles.map((r, i) => (
-              <span key={i} className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+              <span key={i} className="inline-flex items-center rounded-xs bg-accent-primary/10 px-2 py-0.5 text-[10px] font-mono font-bold text-accent-primary border border-accent-primary/20">
                 {r}
               </span>
             ))
           ) : (
-            <span className="text-slate-400 dark:text-slate-500">None</span>
+            <span className="text-text-muted text-xs font-mono">None</span>
           )}
         </div>
       )
@@ -401,25 +406,17 @@ const UsersPage = () => {
     {
       key: 'is_active',
       label: 'Status',
-      render: (item) => (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          item.is_active 
-            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-800' 
-            : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {item.is_active ? 'Active' : 'Inactive'}
-        </span>
-      )
+      render: (item) => <StatusBadge status={item.is_active ? 'Active' : 'Inactive'} />
     },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {hasPermission('auth', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md transition-colors"
+              className="btn btn-secondary text-xs py-0.5 px-2 font-mono"
             >
               Edit
             </button>
@@ -427,10 +424,8 @@ const UsersPage = () => {
           {hasPermission('auth', 'edit') && (
             <button
               onClick={() => handleToggleStatus(item)}
-              className={`font-semibold text-xs px-2 py-1 rounded-md transition-colors ${
-                item.is_active 
-                  ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/10' 
-                  : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/10'
+              className={`btn text-xs py-0.5 px-2 font-mono ${
+                item.is_active ? 'btn-danger' : 'btn-success'
               }`}
             >
               {item.is_active ? 'Deactivate' : 'Activate'}
@@ -438,7 +433,7 @@ const UsersPage = () => {
           )}
           <button
             onClick={() => handleOpenActivity(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md transition-colors"
+            className="btn btn-secondary text-xs py-0.5 px-2 font-mono"
           >
             Activity
           </button>
@@ -448,17 +443,17 @@ const UsersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
       <PageHeader
         title="User Accounts"
-        description="Manage your organization's user accounts, approvals, departments, and roles."
+        description="Manage organization accounts, credentials, approvals, departments, and role assignments."
         actions={
           hasPermission('auth', 'create') && (
             <button
               onClick={handleOpenCreate}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+              className="btn btn-primary text-xs uppercase tracking-wider font-mono"
             >
-              Create User
+              + Create User
             </button>
           )
         }
@@ -466,40 +461,39 @@ const UsersPage = () => {
 
       {/* PENDING APPROVALS SECTION */}
       {pendingUsers.length > 0 && (
-        <div className="mb-8 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="sheet p-5 border-l-4 border-l-accent-warning space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
-                <Clock size={20} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xs bg-accent-warning/20 text-accent-warning border border-accent-warning/30 font-bold">
+                <Clock size={18} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                   Pending Account Approvals
-                  <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-slate-950">
+                  <span className="rounded-xs bg-accent-warning px-2 py-0.5 text-[10px] font-bold text-slate-950 font-mono">
                     {pendingUsers.length}
                   </span>
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Self-registered users awaiting admin review and role assignment.
+                <p className="text-xs text-text-muted mt-0.5">
+                  Self-registered users awaiting review and role assignment.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="divide-y divide-amber-200/60 dark:divide-amber-900/30">
+          <div className="divide-y divide-border-color">
             {pendingUsers.map((pUser) => (
-              <div key={pUser.id} className="py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div key={pUser.id} className="py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs">
                 <div>
-                  <div className="font-semibold text-slate-900 dark:text-white text-sm">{pUser.name}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{pUser.email} &bull; Registered {new Date(pUser.created_at).toLocaleDateString()}</div>
+                  <div className="font-semibold text-text-primary">{pUser.name}</div>
+                  <div className="text-[11px] font-mono text-text-muted mt-0.5">{pUser.email} &bull; Registered {new Date(pUser.created_at).toLocaleDateString()}</div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  {/* Select Role Dropdown */}
+                <div className="flex items-center gap-2">
                   <select
                     value={selectedPendingRoles[pUser.id] || (roles[0]?.id || '')}
                     onChange={(e) => setSelectedPendingRoles(prev => ({ ...prev, [pUser.id]: e.target.value }))}
-                    className="rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 py-1.5 px-3 text-xs text-slate-900 dark:text-white shadow-xs focus:outline-none focus:border-amber-500"
+                    className="field text-xs py-1 px-2.5 font-mono"
                   >
                     {roles.map((r) => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -508,17 +502,17 @@ const UsersPage = () => {
 
                   <button
                     onClick={() => handleApprove(pUser.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-500 transition-colors shadow-xs"
+                    className="btn btn-success text-xs py-1 px-2.5 inline-flex items-center gap-1 font-mono"
                   >
-                    <CheckCircle size={14} />
+                    <CheckCircle size={13} />
                     Approve
                   </button>
 
                   <button
                     onClick={() => handleReject(pUser.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 transition-colors shadow-xs"
+                    className="btn btn-danger text-xs py-1 px-2.5 inline-flex items-center gap-1 font-mono"
                   >
-                    <XCircle size={14} />
+                    <XCircle size={13} />
                     Reject
                   </button>
                 </div>
@@ -529,16 +523,16 @@ const UsersPage = () => {
       )}
 
       {/* Filters & Search Grid */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1">
+      <div className="flex flex-col md:flex-row gap-3 items-center">
+        <div className="flex-1 w-full">
           <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Search users by name or email..." />
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           {/* Department Filter */}
           <select
             value={selectedDept}
             onChange={(e) => { setSelectedDept(e.target.value); setPage(1); }}
-            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none focus:border-blue-500"
+            className="field text-xs py-2 px-3 font-mono"
           >
             <option value="">All Departments</option>
             {departments.map((dept) => (
@@ -550,7 +544,7 @@ const UsersPage = () => {
           <select
             value={selectedRole}
             onChange={(e) => { setSelectedRole(e.target.value); setPage(1); }}
-            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none focus:border-blue-500"
+            className="field text-xs py-2 px-3 font-mono"
           >
             <option value="">All Roles</option>
             {roles.map((role) => (
@@ -561,35 +555,37 @@ const UsersPage = () => {
       </div>
 
       {/* Main Users Table */}
-      <Table columns={columns} data={users} loading={loading} emptyMessage="No users found matching your search criteria." />
+      <div className="sheet">
+        <Table columns={columns} data={users} loading={loading} emptyMessage="No users found matching your search criteria." />
+      </div>
 
       {/* Pagination */}
-      <div className="mt-4">
+      <div>
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
       {/* CREATE/EDIT USER MODAL */}
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUser ? 'Edit User Details' : 'Create New User'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-sans">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Full Name *</label>
             <input
               type="text"
               name="name"
               required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field w-full"
               value={formData.name}
               onChange={handleInputChange}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Email Address *</label>
             <input
               type="email"
               name="email"
               required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field w-full font-mono text-xs"
               value={formData.email}
               onChange={handleInputChange}
             />
@@ -597,12 +593,12 @@ const UsersPage = () => {
 
           {!editingUser && (
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Password *</label>
               <input
                 type="password"
                 name="password"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field w-full font-mono text-xs"
                 value={formData.password}
                 onChange={handleInputChange}
               />
@@ -610,12 +606,12 @@ const UsersPage = () => {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Department</label>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Department *</label>
             {!isAddingDept ? (
               <select
                 name="department_id"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field w-full text-xs"
                 value={formData.department_id}
                 onChange={handleDepartmentChange}
               >
@@ -632,7 +628,7 @@ const UsersPage = () => {
                 <input
                   type="text"
                   placeholder="New Department Name"
-                  className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  className="field w-full text-xs"
                   value={newDeptName}
                   onChange={(e) => setNewDeptName(e.target.value)}
                   autoFocus
@@ -641,7 +637,7 @@ const UsersPage = () => {
                   type="button"
                   onClick={handleCreateInlineDept}
                   disabled={creatingDeptLoading}
-                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  className="btn btn-primary text-xs shrink-0"
                 >
                   {creatingDeptLoading ? 'Creating...' : 'Create'}
                 </button>
@@ -649,7 +645,7 @@ const UsersPage = () => {
                   type="button"
                   onClick={handleCancelInlineDept}
                   disabled={creatingDeptLoading}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap"
+                  className="btn btn-secondary text-xs shrink-0"
                 >
                   Cancel
                 </button>
@@ -659,15 +655,15 @@ const UsersPage = () => {
 
           {/* User Roles Selection */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Assign Roles</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-bg-secondary rounded-xl border border-border-color">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1.5">Assign Roles</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-bg-surface rounded-xs border border-border-color">
               {roles.map((role) => {
                 const isChecked = formData.roles.includes(role.name);
                 return (
-                  <label key={role.id} className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label key={role.id} className="flex items-center space-x-2 text-xs text-text-primary cursor-pointer hover:bg-bg-hover p-1 rounded-xs">
                     <input
                       type="checkbox"
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded-xs border-border-color text-accent-primary"
                       checked={isChecked}
                       onChange={() => handleRoleCheckboxChange(role.name)}
                     />
@@ -679,33 +675,33 @@ const UsersPage = () => {
           </div>
 
           {editingUser && (
-            <div className="flex items-center space-x-2 py-2">
+            <div className="flex items-center space-x-2 py-1">
               <input
                 type="checkbox"
                 name="is_active"
                 id="is_active"
-                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                className="rounded-xs border-border-color text-accent-primary h-4 w-4"
                 checked={formData.is_active}
                 onChange={handleInputChange}
               />
-              <label htmlFor="is_active" className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+              <label htmlFor="is_active" className="text-xs font-mono font-bold uppercase tracking-wider text-text-primary cursor-pointer">
                 Account Active
               </label>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={handleCloseModal}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn btn-secondary text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-opacity"
+              className="btn btn-primary text-xs"
             >
               {submitting ? 'Saving...' : 'Save Details'}
             </button>
@@ -713,44 +709,42 @@ const UsersPage = () => {
         </form>
       </Modal>
 
-      {/* USER ACTIVITY SLIDE-IN DRAWER (Rendered via React Portal) */}
+      {/* USER ACTIVITY SLIDE-IN DRAWER */}
       {isDrawerOpen && createPortal(
         <>
           <div 
-            className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-[3px] transition-opacity animate-in fade-in"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] transition-opacity animate-in fade-in"
             onClick={() => setIsDrawerOpen(false)}
           />
 
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col animate-in slide-in-from-right duration-200">
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-bg-card shadow-2xl border-l border-border-color flex flex-col animate-in slide-in-from-right duration-200">
             {/* Drawer Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 select-none">
+            <div className="flex items-center justify-between p-5 border-b border-border-color bg-bg-surface select-none font-mono">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">User Activity History</h2>
-                {drawerUser && <p className="text-sm text-slate-500 dark:text-slate-400">{drawerUser.name} ({drawerUser.email})</p>}
+                <h2 className="text-sm font-bold uppercase tracking-wider text-text-primary">User Activity History</h2>
+                {drawerUser && <p className="text-xs text-text-muted mt-0.5">{drawerUser.name} ({drawerUser.email})</p>}
               </div>
               <button
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="btn btn-secondary text-xs py-1 px-2"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ✕ Close
               </button>
             </div>
 
             {/* Drawer Body Table */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900">
+            <div className="flex-1 overflow-y-auto p-5 bg-bg-card">
               <Table
                 loading={drawerLoading}
                 emptyMessage="No activity recorded for this user."
                 columns={[
-                  { key: 'action', label: 'Action' },
-                  { key: 'module', label: 'Module' },
-                  { key: 'record_id', label: 'ID', render: (item) => item.record_id || 'N/A' },
+                  { key: 'action', label: 'Action', render: (i) => <span className="font-mono text-xs font-bold text-accent-primary">{i.action}</span> },
+                  { key: 'module', label: 'Module', render: (i) => <span className="text-xs font-mono uppercase">{i.module}</span> },
+                  { key: 'record_id', label: 'ID', render: (item) => <span className="font-mono text-xs text-text-muted">{item.record_id || 'N/A'}</span> },
                   {
                     key: 'created_at',
                     label: 'Time',
-                    render: (item) => new Date(item.created_at).toLocaleString()
+                    render: (item) => <span className="font-mono text-xs text-text-muted">{new Date(item.created_at).toLocaleString()}</span>
                   }
                 ]}
                 data={drawerLogs}

@@ -103,76 +103,154 @@ const GRNPage = () => {
   };
 
   const columns = [
-    { key: 'grn_no', label: 'GRN Ref' },
-    { key: 'po_no', label: 'PO Reference' },
-    { key: 'vendor_name', label: 'Supplier', render: i => <span className="font-mono font-bold text-text-primary">{i.vendor_name}</span> },
-    { key: 'received_date', label: 'Received Date', render: i => <span className="font-mono text-xs">{formatDate(i.received_date)}</span> },
-    { key: 'item_count', label: 'Deliveries', render: i => <span className="font-mono text-xs">{i.item_count} item(s)</span> },
-    { key: 'received_by_name', label: 'Received By', render: i => <span className="font-mono text-xs text-text-secondary">{i.received_by_name || 'N/A'}</span> },
-    { key: 'actions', label: 'Actions', render: i => <button onClick={() => handleView(i)} className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase">View GRN</button> }
+    {
+      key: 'grn_no',
+      label: 'GRN Ref',
+      render: i => (
+        <span className="font-mono text-xs font-semibold tracking-wider text-text-primary">
+          {i.grn_no}
+        </span>
+      )
+    },
+    {
+      key: 'po_no',
+      label: 'PO Reference',
+      render: i => (
+        <span className="font-mono text-xs text-text-secondary">
+          {i.po_no}
+        </span>
+      )
+    },
+    {
+      key: 'vendor_name',
+      label: 'Supplier',
+      render: i => <span className="font-medium text-text-primary">{i.vendor_name}</span>
+    },
+    {
+      key: 'received_date',
+      label: 'Received Date',
+      render: i => <span className="font-mono text-xs text-text-secondary">{formatDate(i.received_date)}</span>
+    },
+    {
+      key: 'item_count',
+      label: 'Deliveries',
+      render: i => <span className="font-mono text-xs text-text-primary">{i.item_count} item(s)</span>
+    },
+    {
+      key: 'received_by_name',
+      label: 'Received By',
+      render: i => <span className="font-mono text-xs text-text-muted">{i.received_by_name || 'N/A'}</span>
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: i => (
+        <button
+          onClick={() => handleView(i)}
+          className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider"
+        >
+          View GRN
+        </button>
+      )
+    }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl animate-fadeIn font-sans">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       <PageHeader
         title="Goods Receipt Notes (GRN)"
         description="Record inward supplier deliveries against approved PO contracts and route to Quality Control Gating."
         actions={
           hasPermission('store', 'create') && (
-            <button onClick={openCreate} className="rounded-xs bg-accent-primary px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white hover:bg-accent-secondary transition-all shadow-2xs">
+            <button
+              onClick={openCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
               + Create Inward GRN
             </button>
           )
         }
       />
 
-      <Table columns={columns} data={grns} loading={loading} emptyMessage="No inward GRN deliveries recorded." />
+      <div className="sheet">
+        <Table columns={columns} data={grns} loading={loading} emptyMessage="No inward GRN deliveries recorded." />
+      </div>
 
       {/* Create GRN Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Create Goods Receipt Note (GRN)" size="lg">
         <form onSubmit={handleSubmit} className="space-y-4 font-sans">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Select Purchase Order *</label>
-              <select required onChange={e => handlePOSelect(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary">
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Select Purchase Order *</label>
+              <select
+                required
+                onChange={e => handlePOSelect(e.target.value)}
+                className="field font-sans"
+              >
                 <option value="">— Select Approved PO Contract —</option>
                 {approvedPOs.map(po => <option key={po.id} value={po.id}>{po.po_no} · {po.vendor_name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Received Date</label>
-              <input type="date" value={receivedDate} onChange={e => setReceivedDate(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Received Date</label>
+              <input
+                type="date"
+                value={receivedDate}
+                onChange={e => setReceivedDate(e.target.value)}
+                className="field font-mono"
+              />
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Inward Notes</label>
-              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Carrier details, delivery note..." className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Inward Notes</label>
+              <input
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="Carrier details, delivery note..."
+                className="field font-sans"
+              />
             </div>
           </div>
 
           {poItems.length > 0 && (
-            <div className="border border-border-color rounded-xs overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-bg-card border-b border-border-color font-mono text-[10px] uppercase text-text-muted">
+            <div className="sheet overflow-hidden">
+              <table className="w-full text-left text-xs border-collapse font-mono">
+                <thead className="bg-bg-secondary border-b border-border-color text-[10px] uppercase tracking-wider text-text-muted">
                   <tr>
-                    <th className="px-3 py-2 font-bold">Item Description</th>
-                    <th className="px-2 py-2 font-bold text-center">Ordered</th>
-                    <th className="px-2 py-2 font-bold text-center">Received *</th>
-                    <th className="px-2 py-2 font-bold text-center">Rejected</th>
+                    <th className="px-3 py-2.5 font-bold">Item Description</th>
+                    <th className="px-2 py-2.5 font-bold text-center w-24">Ordered</th>
+                    <th className="px-2 py-2.5 font-bold text-center w-28">Received *</th>
+                    <th className="px-2 py-2.5 font-bold text-center w-28">Rejected</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-color/50 bg-bg-secondary">
+                <tbody className="divide-y divide-border-color">
                   {poItems.map(it => (
-                    <tr key={it.item_id}>
+                    <tr key={it.item_id} className="hover:bg-bg-hover">
                       <td className="px-3 py-2">
-                        <div className="font-mono font-bold text-text-primary">{it.item_name}</div>
-                        <div className="text-[10px] font-mono text-text-muted">{it.item_code} · {it.unit || '—'}</div>
+                        <div className="font-bold text-text-primary font-sans">{it.item_name}</div>
+                        <div className="text-[10px] text-text-muted font-mono">{it.item_code} · {it.unit || '—'}</div>
                       </td>
-                      <td className="px-2 py-2 text-center font-mono font-bold">{parseFloat(it.qty)}</td>
+                      <td className="px-2 py-2 text-center font-bold text-text-primary">{parseFloat(it.qty)}</td>
                       <td className="px-2 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={receivedQtys[it.item_id] ?? ''} onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-1 px-2 text-xs font-mono text-center focus:outline-none focus:border-accent-primary" />
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          placeholder="0"
+                          value={receivedQtys[it.item_id] ?? ''}
+                          onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))}
+                          className="field py-1 px-2 text-xs text-center font-mono"
+                        />
                       </td>
                       <td className="px-2 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={rejectedQtys[it.item_id] ?? '0'} onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-1 px-2 text-xs font-mono text-center focus:outline-none focus:border-accent-danger text-accent-danger" />
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          placeholder="0"
+                          value={rejectedQtys[it.item_id] ?? '0'}
+                          onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))}
+                          className="field py-1 px-2 text-xs text-center font-mono text-accent-danger border-accent-danger/50"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -181,9 +259,19 @@ const GRNPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-border-color">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Cancel</button>
-            <button type="submit" disabled={submitting} className="rounded-xs bg-accent-success px-4 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-accent-success/90 disabled:opacity-50 shadow-2xs">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider bg-accent-success hover:brightness-110 disabled:opacity-50"
+            >
               {submitting ? 'Confirming...' : 'Confirm Receipt & Route to QC Gate'}
             </button>
           </div>
@@ -193,24 +281,64 @@ const GRNPage = () => {
       {/* View GRN Modal */}
       <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Details: ${viewingGrn?.grn_no}`} size="lg">
         {viewingGrn && (
-          <div className="space-y-4 font-sans">
-            <div className="grid grid-cols-3 gap-3 p-3 rounded-xs bg-bg-card border border-border-color text-xs">
-              <div><p className="text-text-muted font-mono text-[10px] uppercase">Supplier</p><p className="font-mono font-bold text-text-primary mt-0.5">{viewingGrn.vendor_name}</p></div>
-              <div><p className="text-text-muted font-mono text-[10px] uppercase">PO Contract Ref</p><p className="font-mono font-bold text-accent-primary mt-0.5">{viewingGrn.po_no}</p></div>
-              <div><p className="text-text-muted font-mono text-[10px] uppercase">Received Date</p><p className="font-mono font-bold text-text-primary mt-0.5">{formatDate(viewingGrn.received_date)}</p></div>
+          <div className="space-y-6 font-sans">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 sheet bg-bg-secondary text-xs">
+              <div>
+                <p className="text-text-muted font-mono text-[10px] uppercase tracking-wider">Supplier</p>
+                <p className="font-bold text-text-primary mt-1 text-sm">{viewingGrn.vendor_name}</p>
+              </div>
+              <div>
+                <p className="text-text-muted font-mono text-[10px] uppercase tracking-wider">PO Contract Ref</p>
+                <p className="font-mono font-bold text-accent-primary mt-1 text-sm">{viewingGrn.po_no}</p>
+              </div>
+              <div>
+                <p className="text-text-muted font-mono text-[10px] uppercase tracking-wider">Received Date</p>
+                <p className="font-mono font-bold text-text-primary mt-1 text-sm">{formatDate(viewingGrn.received_date)}</p>
+              </div>
             </div>
-            <Table
-              columns={[
-                { key: 'item_name', label: 'Item Description', render: i => <div><div className="font-mono font-bold text-text-primary">{i.item_name}</div><div className="text-[10px] font-mono text-text-muted">{i.item_code}</div></div> },
-                { key: 'ordered_qty', label: 'Ordered', isNumeric: true, render: i => parseFloat(i.ordered_qty) },
-                { key: 'received_qty', label: 'Received', isNumeric: true, render: i => <span className="text-accent-success font-mono font-bold">{parseFloat(i.received_qty)}</span> },
-                { key: 'rejected_qty', label: 'Rejected', isNumeric: true, render: i => <span className="text-accent-danger font-mono font-bold">{parseFloat(i.rejected_qty)}</span> }
-              ]}
-              data={viewingItems}
-              emptyMessage=""
-            />
-            <div className="flex justify-end pt-3 border-t border-border-color">
-              <button onClick={() => setIsViewOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close</button>
+            <div className="sheet">
+              <Table
+                columns={[
+                  {
+                    key: 'item_name',
+                    label: 'Item Description',
+                    render: i => (
+                      <div>
+                        <div className="font-bold text-text-primary">{i.item_name}</div>
+                        <div className="text-[10px] font-mono text-text-muted">{i.item_code}</div>
+                      </div>
+                    )
+                  },
+                  {
+                    key: 'ordered_qty',
+                    label: 'Ordered',
+                    isNumeric: true,
+                    render: i => <span className="font-mono text-xs">{parseFloat(i.ordered_qty)}</span>
+                  },
+                  {
+                    key: 'received_qty',
+                    label: 'Received',
+                    isNumeric: true,
+                    render: i => <span className="text-accent-success font-mono text-xs font-bold">{parseFloat(i.received_qty)}</span>
+                  },
+                  {
+                    key: 'rejected_qty',
+                    label: 'Rejected',
+                    isNumeric: true,
+                    render: i => <span className="text-accent-danger font-mono text-xs font-bold">{parseFloat(i.rejected_qty)}</span>
+                  }
+                ]}
+                data={viewingItems}
+                emptyMessage=""
+              />
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button
+                onClick={() => setIsViewOpen(false)}
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

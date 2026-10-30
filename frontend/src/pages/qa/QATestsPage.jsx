@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getTests, createTest, getTestById, submitTestResults, approveTest, getPendingApprovals, getChecklists } from '../../api/qaApi';
 import { getWorkOrders } from '../../api/productionApi';
@@ -67,20 +69,10 @@ const QATestsPage = () => {
       const d = await getTestById(test.id);
       if (d.success) {
         setConductTest(d.test);
-        // Map checklist items to results. If results exist, map them. Otherwise, initialize empty results.
         if (d.results?.length > 0) {
           setConductResults(d.results.map(r => ({ ...r, passed: String(r.passed) === 'true' })));
         } else {
-          const clRes = await getChecklistById(d.test.checklist_id);
-          if (clRes.success) {
-            setConductResults(clRes.items.map(item => ({
-              checklist_item_id: item.id,
-              question: item.question,
-              expected_value: item.expected_value,
-              actual_value: '',
-              passed: true
-            })));
-          }
+          setConductResults([]);
         }
         setIsConductOpen(true);
       }
@@ -123,88 +115,118 @@ const QATestsPage = () => {
   };
 
   const columns = [
-    { key: 'wo_no', label: 'Work Order' },
-    { key: 'checklist_name', label: 'Checklist' },
-    { key: 'tested_by_name', label: 'Tested By', render: i => i.tested_by_name || '—' },
-    { key: 'test_date', label: 'Test Date', render: i => formatDate(i.test_date) },
-    { key: 'result', label: 'Test Result', render: i => {
-      const cls = i.result === 'Pass' ? 'bg-green-100 text-green-800 border-green-200' : i.result === 'Fail' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold border ${cls}`}>{i.result}</span>;
-    }},
-    { key: 'approval_status', label: 'Approval', render: i => {
-      const cls = i.approval_status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : i.approval_status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold border ${cls}`}>{i.approval_status}</span>;
-    }},
+    { key: 'wo_no', label: 'Work Order', render: i => <span className="font-mono font-bold text-accent-primary">{i.wo_no}</span> },
+    { key: 'checklist_name', label: 'Checklist', render: i => <span className="font-medium text-text-primary">{i.checklist_name}</span> },
+    { key: 'tested_by_name', label: 'Tested By', render: i => <span className="text-xs text-text-muted">{i.tested_by_name || '—'}</span> },
+    { key: 'test_date', label: 'Test Date', render: i => <span className="font-mono text-xs text-text-muted">{formatDate(i.test_date)}</span> },
+    { key: 'result', label: 'Test Result', render: i => <StatusBadge status={i.result || 'Pending'} /> },
+    { key: 'approval_status', label: 'Approval', render: i => <StatusBadge status={i.approval_status} /> },
     { key: 'actions', label: 'Actions', render: i => (
       <div className="flex gap-2">
-        {i.approval_status === 'Pending' && <button onClick={() => handleOpenConduct(i)} className="text-white text-xs font-semibold bg-blue-600 px-2.5 py-1 rounded-md hover:bg-blue-500">Conduct Test</button>}
-        {i.approval_status !== 'Pending' && <button onClick={() => handleOpenConduct(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2.5 py-1 rounded-md hover:bg-slate-100 font-medium">View Results</button>}
+        {i.approval_status === 'Pending' ? (
+          <button onClick={() => handleOpenConduct(i)} className="btn btn-primary text-xs py-1 px-2.5">
+            Conduct Test
+          </button>
+        ) : (
+          <button onClick={() => handleOpenConduct(i)} className="btn btn-secondary text-xs py-1 px-2.5">
+            View Results
+          </button>
+        )}
       </div>
     )}
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Quality Inspection Tests</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Log quality inspection tests, document test actuals, and manage approvals.</p>
-        </div>
-        {hasPermission('qa', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Initialize QA Test</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 font-sans">
+      <PageHeader
+        title="Quality Inspection Tests"
+        description="Log quality inspection tests, document test actuals against checklists, and manage release approvals."
+        actions={
+          hasPermission('qa', 'create') && (
+            <button onClick={openCreate} className="btn btn-primary text-xs uppercase tracking-wider font-mono">
+              + Initialize QA Test
+            </button>
+          )
+        }
+      />
 
-      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 mb-6">
-        <button onClick={() => setActiveTab('tests')} className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'tests' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'}`}>All Inspection Tests</button>
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-border-color pb-1">
+        <button
+          onClick={() => setActiveTab('tests')}
+          className={`px-4 py-2 text-xs font-mono font-bold uppercase transition-colors border-b-2 -mb-[1px] ${
+            activeTab === 'tests'
+              ? 'border-accent-primary text-accent-primary'
+              : 'border-transparent text-text-muted hover:text-text-primary'
+          }`}
+        >
+          All Inspection Tests ({tests.length})
+        </button>
         {hasPermission('qa', 'approve') && (
-          <button onClick={() => setActiveTab('pending')} className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'pending' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'}`}>Pending QA Approvals ({pending.length})</button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-4 py-2 text-xs font-mono font-bold uppercase transition-colors border-b-2 -mb-[1px] ${
+              activeTab === 'pending'
+                ? 'border-accent-primary text-accent-primary'
+                : 'border-transparent text-text-muted hover:text-text-primary'
+            }`}
+          >
+            Pending QA Approvals ({pending.length})
+          </button>
         )}
       </div>
 
-      {activeTab === 'tests' ? (
-        <Table columns={columns} data={tests} loading={loading} emptyMessage="No QA tests registered." />
-      ) : (
-        <Table
-          columns={[
-            { key: 'wo_no', label: 'Work Order' },
-            { key: 'checklist_name', label: 'Checklist' },
-            { key: 'tested_by_name', label: 'Tested By' },
-            { key: 'result', label: 'Conduct Result' },
-            { key: 'actions', label: 'Action', render: i => <button onClick={() => handleOpenApprove(i)} className="text-white text-xs font-semibold bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-500">Review & Approve</button> }
-          ]}
-          data={pending}
-          loading={loading}
-          emptyMessage="No tests pending approval."
-        />
-      )}
+      <div className="sheet">
+        {activeTab === 'tests' ? (
+          <Table columns={columns} data={tests} loading={loading} emptyMessage="No QA tests registered." />
+        ) : (
+          <Table
+            columns={[
+              { key: 'wo_no', label: 'Work Order', render: i => <span className="font-mono font-bold text-accent-primary">{i.wo_no}</span> },
+              { key: 'checklist_name', label: 'Checklist', render: i => <span className="font-medium text-text-primary">{i.checklist_name}</span> },
+              { key: 'tested_by_name', label: 'Tested By', render: i => <span className="text-xs text-text-muted">{i.tested_by_name || '—'}</span> },
+              { key: 'result', label: 'Conduct Result', render: i => <StatusBadge status={i.result} /> },
+              { key: 'actions', label: 'Action', render: i => (
+                <button onClick={() => handleOpenApprove(i)} className="btn btn-warning text-xs py-1 px-3">
+                  Review & Approve
+                </button>
+              )}
+            ]}
+            data={pending}
+            loading={loading}
+            emptyMessage="No tests pending approval."
+          />
+        )}
+      </div>
 
       {/* Initialize Test Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Initialize Inspection Run">
         <form onSubmit={handleCreateTest} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Work Order Reference *</label>
-            <select value={form.work_order_id} onChange={e => setForm(p => ({ ...p, work_order_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Work Order Reference *</label>
+            <select value={form.work_order_id} onChange={e => setForm(p => ({ ...p, work_order_id: e.target.value }))} className="field w-full">
               <option value="" disabled>Select Work Order</option>
-              {wos.map(w => <option key={w.id} value={w.id}>{w.wo_no} (item: {w.finished_item_name})</option>)}
+              {wos.map(w => <option key={w.id} value={w.id}>{w.wo_no} ({w.finished_item_name})</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">QA Checklist *</label>
-            <select value={form.checklist_id} onChange={e => setForm(p => ({ ...p, checklist_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">QA Checklist *</label>
+            <select value={form.checklist_id} onChange={e => setForm(p => ({ ...p, checklist_id: e.target.value }))} className="field w-full">
               <option value="" disabled>Select Checklist</option>
               {checklists.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Test Date</label>
-            <input type="date" value={form.test_date} onChange={e => setForm(p => ({ ...p, test_date: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Test Date</label>
+            <input type="date" value={form.test_date} onChange={e => setForm(p => ({ ...p, test_date: e.target.value }))} className="field w-full" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Remarks</label>
-            <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" rows={2} />
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Remarks</label>
+            <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="field w-full" rows={2} placeholder="Optional initial notes..." />
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Initialize Test</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn btn-secondary text-xs">Cancel</button>
+            <button type="submit" className="btn btn-primary text-xs">Initialize Test</button>
           </div>
         </form>
       </Modal>
@@ -213,18 +235,18 @@ const QATestsPage = () => {
       <Modal isOpen={isConductOpen} onClose={() => setIsConductOpen(false)} title="Conduct Quality Test Inspection" size="lg">
         {conductTest && (
           <form onSubmit={handleResultSubmit} className="space-y-4">
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border text-xs text-slate-600 dark:text-slate-400 space-y-1">
-              <div><strong className="text-slate-800 dark:text-white">Work Order:</strong> {conductTest.wo_no}</div>
-              <div><strong className="text-slate-800 dark:text-white">Checklist:</strong> {conductTest.checklist_name}</div>
+            <div className="p-3 bg-bg-surface rounded-xs border border-border-color text-xs text-text-secondary space-y-1 font-mono">
+              <div><strong className="text-text-primary">Work Order:</strong> {conductTest.wo_no}</div>
+              <div><strong className="text-text-primary">Checklist:</strong> {conductTest.checklist_name}</div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
               {conductResults.map((item, idx) => (
-                <div key={idx} className="border border-slate-100 dark:border-slate-800 p-3 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={idx} className="border border-border-color p-3 rounded-xs bg-bg-surface flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-slate-500">Item #{idx+1}</p>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.question}</p>
-                    <p className="text-[10px] text-blue-600">Expected: {item.expected_value}</p>
+                    <p className="text-[10px] font-mono font-bold text-text-muted uppercase">Item #{idx+1}</p>
+                    <p className="text-sm font-semibold text-text-primary">{item.question}</p>
+                    <p className="text-xs font-mono text-accent-primary mt-0.5">Expected: {item.expected_value}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -236,7 +258,7 @@ const QATestsPage = () => {
                         setConductResults(prev => prev.map((it, i) => i === idx ? { ...it, actual_value: val } : it));
                       }}
                       disabled={conductTest.approval_status !== 'Pending'}
-                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1 px-2.5 text-xs text-slate-900 dark:text-white focus:outline-none w-36"
+                      className="field w-36 text-xs"
                     />
                     <select
                       value={String(item.passed)}
@@ -245,7 +267,7 @@ const QATestsPage = () => {
                         setConductResults(prev => prev.map((it, i) => i === idx ? { ...it, passed: pass } : it));
                       }}
                       disabled={conductTest.approval_status !== 'Pending'}
-                      className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1 px-2 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="field text-xs"
                     >
                       <option value="true">Pass</option>
                       <option value="false">Fail</option>
@@ -253,11 +275,14 @@ const QATestsPage = () => {
                   </div>
                 </div>
               ))}
+              {conductResults.length === 0 && (
+                <p className="text-center py-6 text-xs font-mono text-text-muted">No checklist questions recorded for this test.</p>
+              )}
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button type="button" onClick={() => setIsConductOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-              {conductTest.approval_status === 'Pending' && <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Submit Results</button>}
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+              <button type="button" onClick={() => setIsConductOpen(false)} className="btn btn-secondary text-xs">Cancel</button>
+              {conductTest.approval_status === 'Pending' && <button type="submit" className="btn btn-primary text-xs">Submit Results</button>}
             </div>
           </form>
         )}
@@ -267,44 +292,49 @@ const QATestsPage = () => {
       <Modal isOpen={isApproveOpen} onClose={() => setIsApproveOpen(false)} title="QA Manager Review Inspection">
         {approveTestObj && (
           <form onSubmit={handleApprovalSubmit} className="space-y-4">
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border text-xs text-slate-600 dark:text-slate-400 space-y-1 mb-4">
-              <div><strong>Work Order:</strong> {approveTestObj.test.wo_no}</div>
-              <div><strong>Checklist:</strong> {approveTestObj.test.checklist_name}</div>
-              <div><strong>Conducted By:</strong> {approveTestObj.test.tested_by_name}</div>
-              <div><strong>Overall Result:</strong> <span className={approveTestObj.test.result === 'Pass' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{approveTestObj.test.result}</span></div>
+            <div className="p-3 bg-bg-surface rounded-xs border border-border-color text-xs text-text-secondary space-y-1 mb-4 font-mono">
+              <div><strong className="text-text-primary">Work Order:</strong> {approveTestObj.test.wo_no}</div>
+              <div><strong className="text-text-primary">Checklist:</strong> {approveTestObj.test.checklist_name}</div>
+              <div><strong className="text-text-primary">Conducted By:</strong> {approveTestObj.test.tested_by_name}</div>
+              <div className="flex items-center gap-2">
+                <strong className="text-text-primary">Overall Result:</strong>
+                <StatusBadge status={approveTestObj.test.result} />
+              </div>
             </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto mb-4 border border-slate-100 dark:border-slate-800 p-2 rounded-lg">
+            <div className="space-y-2 max-h-48 overflow-y-auto mb-4 border border-border-color p-2 rounded-xs bg-bg-surface">
               {approveTestObj.results?.map((r, idx) => (
-                <div key={idx} className="flex justify-between items-center text-xs p-1.5 border-b last:border-0 border-slate-100 dark:border-slate-800">
+                <div key={idx} className="flex justify-between items-center text-xs p-1.5 border-b last:border-0 border-border-color font-mono">
                   <div>
-                    <span className="font-semibold">{r.question}</span>
-                    <span className="text-slate-400 ml-2">(expected: {r.expected_value})</span>
+                    <span className="font-semibold text-text-primary">{r.question}</span>
+                    <span className="text-text-muted ml-2">(expected: {r.expected_value})</span>
                   </div>
-                  <div className="flex gap-2">
-                    <span className="text-slate-500">Actual: {r.actual_value}</span>
-                    <span className={r.passed ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{r.passed ? '✓ Pass' : '✕ Fail'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-text-muted">Actual: {r.actual_value}</span>
+                    <span className={r.passed ? 'text-accent-success font-bold' : 'text-accent-danger font-bold'}>
+                      {r.passed ? '✓ Pass' : '✕ Fail'}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Approval Decision</label>
-              <select value={approveForm.status} onChange={e => setApproveForm(p => ({ ...p, status: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Approval Decision</label>
+              <select value={approveForm.status} onChange={e => setApproveForm(p => ({ ...p, status: e.target.value }))} className="field w-full">
                 <option value="Approved">Approve (Release WO for Dispatch)</option>
                 <option value="Rejected">Reject & Flag WO</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Remarks / Rejection Reason</label>
-              <textarea value={approveForm.remarks} onChange={e => setApproveForm(p => ({ ...p, remarks: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" rows={2} />
+              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Remarks / Rejection Reason</label>
+              <textarea value={approveForm.remarks} onChange={e => setApproveForm(p => ({ ...p, remarks: e.target.value }))} className="field w-full" rows={2} placeholder="Inspection feedback..." />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button type="button" onClick={() => setIsApproveOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-              <button type="submit" className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-500 font-bold">Submit Review</button>
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+              <button type="button" onClick={() => setIsApproveOpen(false)} className="btn btn-secondary text-xs">Cancel</button>
+              <button type="submit" className="btn btn-primary text-xs">Submit Review</button>
             </div>
           </form>
         )}

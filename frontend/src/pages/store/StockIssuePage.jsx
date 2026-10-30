@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { issueStock, getIssues, getItems } from '../../api/storeApi';
-import { formatDate, formatDateTime } from '../../utils/formatDate';
+import { formatDate } from '../../utils/formatDate';
 
 const StockIssuePage = () => {
-  const { hasPermission, user } = useRole();
+  const { hasPermission } = useRole();
   const [issues, setIssues] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -70,95 +72,198 @@ const StockIssuePage = () => {
   };
 
   const columns = [
-    { key: 'date', label: 'Date', render: i => formatDate(i.date) },
-    { key: 'reference_type', label: 'Issued To' },
-    { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
-    { key: 'qty', label: 'Qty Issued', render: i => <span className="text-red-600 font-bold">-{parseFloat(i.qty)} {i.unit}</span> },
-    { key: 'issued_by', label: 'Issued By', render: i => i.issued_by || 'N/A' },
-    { key: 'notes', label: 'Notes / Ref', render: i => i.notes || '—' }
+    {
+      key: 'date',
+      label: 'Date',
+      render: i => <span className="font-mono text-xs text-text-secondary">{formatDate(i.date)}</span>
+    },
+    {
+      key: 'reference_type',
+      label: 'Issued To',
+      render: i => <StatusBadge status={i.reference_type} />
+    },
+    {
+      key: 'item_name',
+      label: 'Item',
+      render: i => (
+        <div>
+          <div className="font-medium text-text-primary">{i.item_name}</div>
+          <div className="font-mono text-[10px] text-text-muted">{i.item_code}</div>
+        </div>
+      )
+    },
+    {
+      key: 'qty',
+      label: 'Qty Issued',
+      render: i => (
+        <span className="font-mono text-xs font-bold text-accent-danger">
+          -{parseFloat(i.qty)} {i.unit}
+        </span>
+      )
+    },
+    {
+      key: 'issued_by',
+      label: 'Issued By',
+      render: i => <span className="font-mono text-xs text-text-secondary">{i.issued_by || 'N/A'}</span>
+    },
+    {
+      key: 'notes',
+      label: 'Notes / Ref',
+      render: i => <span className="font-mono text-xs text-text-muted">{i.notes || '—'}</span>
+    }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Stock Issues</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Issue materials to production work orders or sales fulfilment.</p>
-        </div>
-        {hasPermission('store', 'create') && <button onClick={openForm} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-500">Issue Stock</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
+      <PageHeader
+        title="Stock Issues"
+        description="Issue materials to production work orders or sales fulfilment."
+        actions={
+          hasPermission('store', 'create') && (
+            <button
+              onClick={openForm}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider bg-accent-danger hover:brightness-110"
+            >
+              - Issue Stock
+            </button>
+          )
+        }
+      />
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <select value={refType} onChange={e => setRefType(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none">
+      {/* Filters Toolbar */}
+      <div className="sheet p-3 flex flex-wrap gap-3 bg-bg-secondary">
+        <select
+          value={refType}
+          onChange={e => setRefType(e.target.value)}
+          className="field text-xs font-sans w-auto min-w-[160px]"
+        >
           <option value="">All Types</option>
           <option value="WorkOrder">Work Order</option>
           <option value="SalesOrder">Sales Order</option>
           <option value="Manual">Manual</option>
         </select>
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
+        <input
+          type="date"
+          value={startDate}
+          onChange={e => setStartDate(e.target.value)}
+          className="field text-xs font-mono w-auto"
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={e => setEndDate(e.target.value)}
+          className="field text-xs font-mono w-auto"
+        />
       </div>
 
-      <Table columns={columns} data={issues} loading={loading} emptyMessage="No stock issues recorded." />
+      {/* Issues Table */}
+      <div className="sheet">
+        <Table columns={columns} data={issues} loading={loading} emptyMessage="No stock issues recorded." />
+      </div>
 
       {/* Issue Form Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Issue Stock from Warehouse" size="lg">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 font-sans">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue To *</label>
-              <select value={form.reference_type} onChange={e => setForm(p => ({ ...p, reference_type: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Issue To *</label>
+              <select
+                value={form.reference_type}
+                onChange={e => setForm(p => ({ ...p, reference_type: e.target.value }))}
+                className="field font-sans"
+              >
                 <option value="WorkOrder">Production / Work Order</option>
                 <option value="SalesOrder">Sales / Dispatch</option>
                 <option value="Manual">Manual / Internal</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue Date</label>
-              <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Issue Date</label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Reference No</label>
-              <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. WO-202406-0012 or dispatch note..." className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Notes / Reference No</label>
+              <input
+                value={form.notes}
+                onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                placeholder="e.g. WO-202406-0012 or dispatch note..."
+                className="field font-sans"
+              />
             </div>
           </div>
 
           {/* Line Items */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Items to Issue</h4>
-              <button type="button" onClick={addRow} className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100">+ Add Item</button>
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary">Items to Issue</h4>
+              <button
+                type="button"
+                onClick={addRow}
+                className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
+              >
+                + Add Item
+              </button>
             </div>
 
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="sheet overflow-hidden">
+              <table className="w-full text-xs font-mono border-collapse">
+                <thead className="bg-bg-secondary border-b border-border-color text-[10px] uppercase tracking-wider text-text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 uppercase text-left">Item (Current Stock)</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center w-28">Qty to Issue</th>
+                    <th className="px-3 py-2.5 text-left">Item (Current Stock)</th>
+                    <th className="px-3 py-2.5 text-center w-32">Qty to Issue</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color">
                   {issueItems.map((row, idx) => {
                     const itemDetail = getItemDetails(row.item_id);
                     const warn = rowHasStockWarning(row);
                     return (
-                      <tr key={idx} className={warn ? 'bg-red-50 dark:bg-red-950/20' : ''}>
-                        <td className="px-2 py-2">
-                          <select required value={row.item_id} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, item_id: e.target.value } : r))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none">
+                      <tr key={idx} className={warn ? 'bg-accent-danger/10' : 'hover:bg-bg-hover'}>
+                        <td className="p-2">
+                          <select
+                            required
+                            value={row.item_id}
+                            onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, item_id: e.target.value } : r))}
+                            className="field py-1 px-2 text-xs font-sans"
+                          >
                             <option value="" disabled>Select Item</option>
-                            {allItems.map(it => <option key={it.id} value={it.id}>{it.name} ({it.item_code}) · Stock: {parseFloat(it.current_stock)} {it.unit}</option>)}
+                            {allItems.map(it => (
+                              <option key={it.id} value={it.id}>
+                                {it.name} ({it.item_code}) · Stock: {parseFloat(it.current_stock)} {it.unit}
+                              </option>
+                            ))}
                           </select>
-                          {warn && <p className="text-[10px] text-red-600 mt-0.5">⚠ Exceeds available stock ({parseFloat(itemDetail?.current_stock)} {itemDetail?.unit})</p>}
+                          {warn && (
+                            <p className="text-[10px] text-accent-danger mt-1 font-mono">
+                              ⚠ Exceeds available stock ({parseFloat(itemDetail?.current_stock)} {itemDetail?.unit})
+                            </p>
+                          )}
                         </td>
-                        <td className="px-2 py-2">
-                          <input type="number" min="0.0001" step="any" required value={row.qty} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, qty: e.target.value } : r))} className={`block w-full rounded border py-1.5 px-2 text-sm text-center focus:outline-none ${warn ? 'border-red-400' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-950`} />
+                        <td className="p-2">
+                          <input
+                            type="number"
+                            min="0.0001"
+                            step="any"
+                            required
+                            value={row.qty}
+                            onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, qty: e.target.value } : r))}
+                            className={`field py-1 px-2 text-xs text-center font-mono ${warn ? 'border-accent-danger text-accent-danger' : ''}`}
+                          />
                         </td>
-                        <td className="px-2 py-2 text-center">
-                          <button type="button" onClick={() => removeRow(idx)} className="text-red-500 hover:text-red-700 p-1">
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeRow(idx)}
+                            className="btn btn-ghost px-1.5 py-1 text-xs text-accent-danger hover:bg-accent-danger/10"
+                            title="Remove row"
+                          >
+                            ✕
                           </button>
                         </td>
                       </tr>
@@ -169,9 +274,20 @@ const StockIssuePage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">Confirm Issue</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider bg-accent-danger hover:brightness-110"
+            >
+              Confirm Issue
+            </button>
           </div>
         </form>
       </Modal>

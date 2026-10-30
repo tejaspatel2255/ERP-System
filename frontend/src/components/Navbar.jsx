@@ -59,15 +59,20 @@ export default function Navbar({ onMenuClick }) {
     navigate('/login');
   };
 
-  const getBreadcrumb = () => {
+  const getBreadcrumbs = () => {
     const segments = location.pathname.split('/').filter(Boolean);
-    if (segments.length === 0) return 'OPERATIONS COMMAND';
-    const last = segments[segments.length - 1];
-    return last
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-      .toUpperCase();
+    if (segments.length === 0 || segments[0] === 'dashboard') {
+      return ['ERP NEXUS', 'COMMAND CENTER'];
+    }
+
+    const formattedSegments = segments.map((seg) =>
+      seg
+        .split('-')
+        .map((word) => word.toUpperCase())
+        .join(' ')
+    );
+
+    return ['ERP NEXUS', ...formattedSegments];
   };
 
   const getInitials = (name) => {
@@ -100,14 +105,22 @@ export default function Navbar({ onMenuClick }) {
         >
           <Menu size={18} />
         </button>
-        <div className="flex items-center gap-2">
-          <Cpu size={16} className="text-accent-primary hidden sm:block" />
-          <span className="text-xs font-mono font-semibold text-text-muted uppercase tracking-wider hidden sm:inline">
-            PLANT <span className="text-accent-primary font-bold">/</span>
-          </span>
-          <h1 className="text-sm font-mono font-bold text-text-primary uppercase tracking-wider truncate">
-            {getBreadcrumb()}
-          </h1>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Cpu size={16} className="text-accent-primary hidden sm:block shrink-0" />
+          {getBreadcrumbs().map((crumb, idx, arr) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && <span className="text-accent-primary font-bold text-xs select-none">/</span>}
+              <span
+                className={`text-xs font-mono uppercase tracking-wider truncate ${
+                  idx === arr.length - 1
+                    ? 'font-bold text-text-primary'
+                    : 'font-semibold text-text-muted hidden sm:inline'
+                }`}
+              >
+                {crumb}
+              </span>
+            </React.Fragment>
+          ))}
         </div>
       </div>
 

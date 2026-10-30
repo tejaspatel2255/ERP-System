@@ -34,26 +34,26 @@ const InlineMaterialIssueRow = ({ m, woStatus, onIssue }) => {
   };
 
   return (
-    <tr className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'bg-accent-success/10' : ''}>
-      <td className="px-3 py-2 font-mono">
-        <div className="font-bold text-text-primary">{m.material_name}</div>
-        <div className="text-[10px] text-text-muted">{m.item_code}</div>
+    <tr className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'bg-accent-success/10' : 'hover:bg-bg-hover'}>
+      <td className="p-2 font-mono">
+        <div className="font-bold text-text-primary font-sans">{m.material_name}</div>
+        <div className="text-[10px] text-text-muted font-mono">{m.item_code}</div>
       </td>
-      <td className="px-2 py-2 text-right font-mono text-text-secondary">{parseFloat(m.total_required).toFixed(2)} {m.unit}</td>
-      <td className="px-2 py-2 text-right font-mono">
-        <span className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'text-accent-success font-bold' : 'text-accent-warning font-bold'}>
+      <td className="p-2 text-right font-mono text-text-secondary">{parseFloat(m.total_required).toFixed(2)} {m.unit}</td>
+      <td className="p-2 text-right font-mono">
+        <span className={parseFloat(m.total_issued) >= parseFloat(m.total_required) ? 'text-accent-success font-bold' : 'text-amber-500 font-bold'}>
           {parseFloat(m.total_issued).toFixed(2)}
         </span>
       </td>
-      <td className="px-2 py-2 text-right font-mono text-text-secondary">{parseFloat(m.current_stock).toFixed(2)}</td>
+      <td className="p-2 text-right font-mono text-text-secondary">{parseFloat(m.current_stock).toFixed(2)}</td>
       {canIssue && (
-        <td className="px-2 py-2">
+        <td className="p-2">
           {isFulfilled ? (
             <span className="text-accent-success font-mono font-bold text-center block text-xs">✓ Done</span>
           ) : maxIssuable <= 0 ? (
             <span className="text-accent-danger text-[10px] font-mono font-bold text-center block uppercase">No Stock</span>
           ) : (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 justify-center">
               <input
                 type="number"
                 min="0.0001"
@@ -61,13 +61,13 @@ const InlineMaterialIssueRow = ({ m, woStatus, onIssue }) => {
                 step="any"
                 value={qty}
                 onChange={e => setQty(e.target.value)}
-                className="w-20 rounded-xs border border-border-color bg-bg-card py-1 px-1.5 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field py-1 px-1.5 text-xs font-mono text-center w-20"
               />
               <button
                 type="button"
                 onClick={handleIssue}
                 disabled={issuing}
-                className="rounded-xs bg-accent-warning px-2 py-1 text-[10px] font-mono font-bold uppercase text-white hover:bg-accent-warning/90 disabled:opacity-50 whitespace-nowrap shadow-2xs"
+                className="btn btn-primary px-2 py-1 text-[10px] font-mono uppercase tracking-wider bg-amber-500 hover:brightness-110 disabled:opacity-50 whitespace-nowrap"
               >
                 {issuing ? '...' : 'Issue'}
               </button>
@@ -212,7 +212,7 @@ const WorkOrdersPage = () => {
     if (!completeQty || parseFloat(completeQty) <= 0) return toast.error('Enter produced qty > 0.');
     setCompleting(true);
     try {
-      const d = await completeWorkOrder(detailWO.id, completeQty);
+      await completeWorkOrder(detailWO.id, completeQty);
       toast.success('Work Order completed. Finished goods added to stock.');
       setIsCompleteOpen(false);
       setIsDetailOpen(false);
@@ -231,18 +231,6 @@ const WorkOrdersPage = () => {
     catch { toast.error('Cancel failed.'); }
   };
 
-  const handleIssue = async (e) => {
-    e.preventDefault();
-    if (!issueForm.item_id || !issueForm.qty_issued) return toast.error('Select item and enter qty.');
-    try {
-      await issueToWorkOrder({ work_order_id: detailWO.id, ...issueForm });
-      toast.success('Material issued to WO.');
-      const d = await getWorkOrderById(detailWO.id);
-      if (d.success) { setDetailPlan(d.materialPlan); setDetailConsumption(d.consumption); }
-      setIssueForm(p => ({ ...p, qty_issued: '' }));
-    } catch (err) { toast.error(err.response?.data?.message || 'Issue failed.'); }
-  };
-
   const handleSaveCosting = async () => {
     try {
       const d = await updateCosting(detailWO.id, { labor_cost: laborCost, overhead_cost: overheadCost });
@@ -251,61 +239,135 @@ const WorkOrdersPage = () => {
   };
 
   const columns = [
-    { key: 'wo_no', label: 'WO Ref' },
-    { key: 'finished_item_name', label: 'Finished Item Run', render: i => <span className="font-mono font-bold text-text-primary">{i.finished_item_name}</span> },
-    { key: 'planned_qty', label: 'Planned Run Qty', isNumeric: true, render: i => parseFloat(i.planned_qty) },
-    { key: 'planned_start', label: 'Planned Start', render: i => <span className="font-mono text-xs">{formatDate(i.planned_start)}</span> },
-    { key: 'planned_end', label: 'Planned End', render: i => <span className="font-mono text-xs">{formatDate(i.planned_end)}</span> },
-    { key: 'status', label: 'Run Status', render: i => <StatusBadge status={i.status} /> },
-    { key: 'actions', label: 'Actions', render: i => <button onClick={() => openDetail(i)} className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase">Open Run</button> }
+    {
+      key: 'wo_no',
+      label: 'WO Ref',
+      render: i => (
+        <span className="font-mono text-xs font-semibold tracking-wider text-text-primary">
+          {i.wo_no}
+        </span>
+      )
+    },
+    {
+      key: 'finished_item_name',
+      label: 'Finished Item Run',
+      render: i => <span className="font-medium text-text-primary">{i.finished_item_name}</span>
+    },
+    {
+      key: 'planned_qty',
+      label: 'Planned Run Qty',
+      isNumeric: true,
+      render: i => <span className="font-mono text-xs font-bold text-text-primary">{parseFloat(i.planned_qty)}</span>
+    },
+    {
+      key: 'planned_start',
+      label: 'Planned Start',
+      render: i => <span className="font-mono text-xs text-text-secondary">{formatDate(i.planned_start)}</span>
+    },
+    {
+      key: 'planned_end',
+      label: 'Planned End',
+      render: i => <span className="font-mono text-xs text-text-secondary">{formatDate(i.planned_end)}</span>
+    },
+    {
+      key: 'status',
+      label: 'Run Status',
+      render: i => <StatusBadge status={i.status} />
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: i => (
+        <button
+          onClick={() => openDetail(i)}
+          className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider"
+        >
+          Open Run
+        </button>
+      )
+    }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl animate-fadeIn font-sans">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       <PageHeader
         title="Manufacturing Work Orders"
         description="Schedule shop floor production runs, track raw material BOM explosion, and manage assembly execution."
         actions={
           hasPermission('production', 'create') && (
-            <button onClick={openCreate} className="rounded-xs bg-accent-primary px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white hover:bg-accent-secondary transition-all shadow-2xs">
+            <button
+              onClick={openCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
               + New Work Order
             </button>
           )
         }
       />
 
-      <div className="flex flex-wrap gap-2.5 mb-5">
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary">
+      {/* Filter Toolbar */}
+      <div className="sheet p-3 flex flex-wrap gap-3 bg-bg-secondary">
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="field text-xs font-sans w-auto min-w-[160px]"
+        >
           <option value="">All Run Statuses</option>
           {['Pending','In Progress','QA Hold','Completed','Cancelled'].map(s => <option key={s}>{s}</option>)}
         </select>
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
+        <input
+          type="date"
+          value={startDate}
+          onChange={e => setStartDate(e.target.value)}
+          className="field text-xs font-mono w-auto"
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={e => setEndDate(e.target.value)}
+          className="field text-xs font-mono w-auto"
+        />
       </div>
 
-      <Table columns={columns} data={wos} loading={loading} emptyMessage="No manufacturing work orders scheduled." />
+      {/* Main Table */}
+      <div className="sheet">
+        <Table columns={columns} data={wos} loading={loading} emptyMessage="No manufacturing work orders scheduled." />
+      </div>
 
       {/* Create WO Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Schedule Manufacturing Work Order" size="lg">
         <form onSubmit={handleCreateWO} className="space-y-4 font-sans">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Active Assembly BOM *</label>
-              <select required value={form.bom_id} onChange={e => setForm(p => ({ ...p, bom_id: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary">
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Active Assembly BOM *</label>
+              <select
+                required
+                value={form.bom_id}
+                onChange={e => setForm(p => ({ ...p, bom_id: e.target.value }))}
+                className="field font-sans"
+              >
                 <option value="">— Select BOM —</option>
                 {boms.map(b => <option key={b.id} value={b.id}>{b.finished_item_name} (v{b.version})</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Planned Run Qty *</label>
-              <input type="number" min="0.0001" step="any" required value={form.planned_qty} onChange={e => setForm(p => ({ ...p, planned_qty: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Planned Run Qty *</label>
+              <input
+                type="number"
+                min="0.0001"
+                step="any"
+                required
+                value={form.planned_qty}
+                onChange={e => setForm(p => ({ ...p, planned_qty: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Sales Order Contract (optional)</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Sales Order Contract (optional)</label>
               <select
                 value={form.sales_order_id}
                 onChange={e => handleSalesOrderSelect(e.target.value)}
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field font-sans"
               >
                 <option value="">— Stock Production (No SO Ref) —</option>
                 {openOrders.map(o => (
@@ -316,11 +378,11 @@ const WorkOrdersPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Assigned Machine / Asset</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Assigned Machine / Asset</label>
               <select
                 value={form.asset_id}
                 onChange={e => setForm(p => ({ ...p, asset_id: e.target.value }))}
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field font-sans"
               >
                 <option value="">— Unassigned Machine —</option>
                 {assets.map(a => (
@@ -331,35 +393,54 @@ const WorkOrdersPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Planned Start</label>
-              <input type="date" value={form.planned_start} onChange={e => setForm(p => ({ ...p, planned_start: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Planned Start</label>
+              <input
+                type="date"
+                value={form.planned_start}
+                onChange={e => setForm(p => ({ ...p, planned_start: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Planned End</label>
-              <input type="date" value={form.planned_end} onChange={e => setForm(p => ({ ...p, planned_end: e.target.value }))} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Planned End</label>
+              <input
+                type="date"
+                value={form.planned_end}
+                onChange={e => setForm(p => ({ ...p, planned_end: e.target.value }))}
+                className="field font-mono"
+              />
             </div>
           </div>
 
-          <button type="button" onClick={handlePreviewMaterials} className="w-full text-xs font-mono font-bold uppercase text-accent-primary bg-bg-card py-2 rounded-xs border border-border-color hover:bg-bg-hover">Check Material Availability & Shortages</button>
+          <button
+            type="button"
+            onClick={handlePreviewMaterials}
+            className="btn btn-ghost w-full py-2 text-xs font-mono uppercase tracking-wider text-accent-primary"
+          >
+            Check Material Availability & Shortages
+          </button>
 
           {materialPlan.length > 0 && (
-            <div className="border border-border-color rounded-xs overflow-hidden">
-              <table className="w-full text-xs">
-                <thead className="bg-bg-card border-b border-border-color font-mono text-[10px] uppercase text-text-muted">
+            <div className="sheet overflow-hidden">
+              <table className="w-full text-xs font-mono border-collapse">
+                <thead className="bg-bg-secondary border-b border-border-color text-[10px] uppercase tracking-wider text-text-muted">
                   <tr>
-                    <th className="px-3 py-2 font-bold text-left">Material Description</th>
-                    <th className="px-2 py-2 font-bold text-right">Required</th>
-                    <th className="px-2 py-2 font-bold text-right">Available</th>
-                    <th className="px-2 py-2 font-bold text-center">Status</th>
+                    <th className="px-3 py-2.5 font-bold text-left">Material Description</th>
+                    <th className="px-2 py-2.5 font-bold text-right">Required</th>
+                    <th className="px-2 py-2.5 font-bold text-right">Available</th>
+                    <th className="px-2 py-2.5 font-bold text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-color/50 bg-bg-secondary font-mono">
+                <tbody className="divide-y divide-border-color">
                   {materialPlan.map((m, i) => (
-                    <tr key={i} className={m.status === 'Shortage' ? 'bg-accent-danger/10' : ''}>
-                      <td className="px-3 py-2"><div className="font-bold text-text-primary">{m.material_name}</div><div className="text-[10px] text-text-muted">{m.item_code}</div></td>
-                      <td className="px-2 py-2 text-right">{m.required_qty.toFixed(2)} {m.unit}</td>
-                      <td className="px-2 py-2 text-right">{m.available_qty.toFixed(2)}</td>
-                      <td className="px-2 py-2 text-center"><StatusBadge status={m.status} /></td>
+                    <tr key={i} className={m.status === 'Shortage' ? 'bg-accent-danger/10' : 'hover:bg-bg-hover'}>
+                      <td className="p-2">
+                        <div className="font-bold text-text-primary font-sans">{m.material_name}</div>
+                        <div className="text-[10px] text-text-muted">{m.item_code}</div>
+                      </td>
+                      <td className="p-2 text-right text-text-primary">{m.required_qty.toFixed(2)} {m.unit}</td>
+                      <td className="p-2 text-right text-text-secondary">{m.available_qty.toFixed(2)}</td>
+                      <td className="p-2 text-center"><StatusBadge status={m.status} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -367,9 +448,20 @@ const WorkOrdersPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-border-color">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover" disabled={submitting}>Cancel</button>
-            <button type="submit" className="rounded-xs bg-accent-primary px-4 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-accent-secondary disabled:opacity-50 shadow-2xs" disabled={submitting}>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              disabled={submitting}
+            >
               {submitting ? 'Creating...' : 'Create Work Order Run'}
             </button>
           </div>
@@ -381,43 +473,70 @@ const WorkOrdersPage = () => {
         {detailWO && (
           <div className="space-y-4 font-sans">
             {/* Header + Actions */}
-            <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-bg-card rounded-xs border border-border-color">
-              <div className="text-xs space-y-0.5 font-mono">
-                <p className="font-bold text-text-primary">{detailWO.finished_item_name} <span className="text-text-muted font-normal">· Run Qty: {parseFloat(detailWO.planned_qty)}</span></p>
-                <p className="text-text-muted text-[10px]">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
-                {detailWO.actual_start && <p className="text-accent-info text-[10px]">Started: {formatDate(detailWO.actual_start)}</p>}
+            <div className="flex flex-wrap justify-between items-center gap-3 p-4 sheet bg-bg-secondary">
+              <div className="text-xs space-y-1 font-mono">
+                <p className="font-bold text-text-primary text-sm">{detailWO.finished_item_name} <span className="text-text-muted font-normal">· Run Qty: {parseFloat(detailWO.planned_qty)}</span></p>
+                <p className="text-text-secondary text-[11px]">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
+                {detailWO.actual_start && <p className="text-accent-primary text-[11px] font-semibold">Started: {formatDate(detailWO.actual_start)}</p>}
               </div>
               <div className="flex gap-2 flex-wrap items-center">
                 <StatusBadge status={detailWO.status} />
-                {detailWO.status === 'Pending' && <button onClick={handleStart} className="bg-accent-primary text-white text-[10px] font-mono font-bold uppercase px-3 py-1 rounded-xs hover:bg-accent-secondary shadow-2xs">▶ Start Run</button>}
-                {detailWO.status === 'In Progress' && <button onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }} className="bg-accent-success text-white text-[10px] font-mono font-bold uppercase px-3 py-1 rounded-xs hover:bg-accent-success/90 shadow-2xs">✓ Complete Run</button>}
-                {!['Completed','Cancelled'].includes(detailWO.status) && <button onClick={handleCancel} className="bg-accent-danger/10 text-accent-danger border border-accent-danger/30 text-[10px] font-mono font-bold uppercase px-3 py-1 rounded-xs hover:bg-accent-danger/20">✕ Cancel</button>}
+                {detailWO.status === 'Pending' && (
+                  <button
+                    onClick={handleStart}
+                    className="btn btn-primary px-3 py-1.5 text-xs font-mono uppercase tracking-wider"
+                  >
+                    ▶ Start Run
+                  </button>
+                )}
+                {detailWO.status === 'In Progress' && (
+                  <button
+                    onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }}
+                    className="btn btn-primary px-3 py-1.5 text-xs font-mono uppercase tracking-wider bg-accent-success hover:brightness-110"
+                  >
+                    ✓ Complete Run
+                  </button>
+                )}
+                {!['Completed','Cancelled'].includes(detailWO.status) && (
+                  <button
+                    onClick={handleCancel}
+                    className="btn btn-danger px-3 py-1.5 text-xs font-mono uppercase tracking-wider"
+                  >
+                    ✕ Cancel
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Tabs */}
             <div className="flex gap-2 border-b border-border-color">
               {['plan', 'consumption', 'costing'].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-3 py-1.5 text-xs font-mono font-bold uppercase border-b-2 transition-colors ${activeTab === tab ? 'border-accent-primary text-accent-primary' : 'border-transparent text-text-muted hover:text-text-primary'}`}>{tab === 'plan' ? 'BOM Materials Plan' : tab}</button>
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3.5 py-2 text-xs font-mono uppercase tracking-wider border-b-2 transition-colors ${activeTab === tab ? 'border-accent-primary text-accent-primary font-bold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
+                >
+                  {tab === 'plan' ? 'BOM Materials Plan' : tab}
+                </button>
               ))}
             </div>
 
             {activeTab === 'plan' && (
               <div className="space-y-3">
-                <div className="border border-border-color rounded-xs overflow-hidden">
-                  <table className="w-full text-xs">
-                    <thead className="bg-bg-card border-b border-border-color font-mono text-[10px] uppercase text-text-muted">
+                <div className="sheet overflow-hidden">
+                  <table className="w-full text-xs font-mono border-collapse">
+                    <thead className="bg-bg-secondary border-b border-border-color text-[10px] uppercase tracking-wider text-text-muted">
                       <tr>
-                        <th className="px-3 py-2 font-bold text-left">Material Description</th>
-                        <th className="px-2 py-2 font-bold text-right">Required</th>
-                        <th className="px-2 py-2 font-bold text-right">Issued</th>
-                        <th className="px-2 py-2 font-bold text-right">Stock</th>
+                        <th className="px-3 py-2.5 font-bold text-left">Material Description</th>
+                        <th className="px-2 py-2.5 font-bold text-right">Required</th>
+                        <th className="px-2 py-2.5 font-bold text-right">Issued</th>
+                        <th className="px-2 py-2.5 font-bold text-right">Stock</th>
                         {['Pending', 'In Progress'].includes(detailWO.status) && (
-                          <th className="px-2 py-2 font-bold text-center">Issue Qty</th>
+                          <th className="px-2 py-2.5 font-bold text-center">Issue Qty</th>
                         )}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-color/50 bg-bg-secondary">
+                    <tbody className="divide-y divide-border-color">
                       {detailPlan.map((m) => (
                         <InlineMaterialIssueRow
                           key={m.item_id}
@@ -443,34 +562,95 @@ const WorkOrdersPage = () => {
             )}
 
             {activeTab === 'consumption' && (
-              <Table
-                columns={[
-                  { key: 'material_name', label: 'Material Description', render: i => <div><div className="font-mono font-bold text-text-primary">{i.material_name}</div><div className="text-[10px] font-mono text-text-muted">{i.item_code}</div></div> },
-                  { key: 'qty_issued', label: 'Issued Qty', isNumeric: true, render: i => <span className="text-accent-danger font-mono font-bold">-{parseFloat(i.qty_issued)} {i.unit}</span> },
-                  { key: 'issued_by', label: 'Issued By', render: i => <span className="font-mono text-xs">{i.issued_by || 'N/A'}</span> },
-                  { key: 'issued_at', label: 'Issued Timestamp', render: i => <span className="font-mono text-xs text-text-muted">{formatDate(i.issued_at)}</span> }
-                ]}
-                data={detailConsumption}
-                emptyMessage="No material issues recorded for this WO."
-              />
-            )}
-
-            {activeTab === 'costing' && (
-              <div className="space-y-3 font-sans">
-                <div className="grid grid-cols-2 gap-3 p-3 bg-bg-card rounded-xs border border-border-color">
-                  <div><p className="text-[10px] font-mono text-text-muted uppercase">Material Cost</p><p className="text-lg font-mono font-bold text-text-primary mt-0.5">{formatINR(detailCosting?.material_cost || 0)}</p><p className="text-[9px] font-mono text-text-muted">Auto-calculated from consumption</p></div>
-                  <div><p className="text-[10px] font-mono text-text-muted uppercase">Total Assembly Run Cost</p><p className="text-lg font-mono font-bold text-accent-primary mt-0.5">{formatINR(detailCosting?.total_cost || 0)}</p></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Labor Cost (INR)</label><input type="number" min="0" step="0.01" value={laborCost} onChange={e => setLaborCost(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" /></div>
-                  <div><label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Overhead Cost (INR)</label><input type="number" min="0" step="0.01" value={overheadCost} onChange={e => setOverheadCost(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" /></div>
-                </div>
-                <button onClick={handleSaveCosting} className="rounded-xs bg-accent-primary px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-accent-secondary shadow-2xs">Save Assembly Costing</button>
+              <div className="sheet">
+                <Table
+                  columns={[
+                    {
+                      key: 'material_name',
+                      label: 'Material Description',
+                      render: i => (
+                        <div>
+                          <div className="font-medium text-text-primary">{i.material_name}</div>
+                          <div className="font-mono text-[10px] text-text-muted">{i.item_code}</div>
+                        </div>
+                      )
+                    },
+                    {
+                      key: 'qty_issued',
+                      label: 'Issued Qty',
+                      isNumeric: true,
+                      render: i => <span className="text-accent-danger font-mono text-xs font-bold">-{parseFloat(i.qty_issued)} {i.unit}</span>
+                    },
+                    {
+                      key: 'issued_by',
+                      label: 'Issued By',
+                      render: i => <span className="font-mono text-xs text-text-secondary">{i.issued_by || 'N/A'}</span>
+                    },
+                    {
+                      key: 'issued_at',
+                      label: 'Issued Timestamp',
+                      render: i => <span className="font-mono text-xs text-text-muted">{formatDate(i.issued_at)}</span>
+                    }
+                  ]}
+                  data={detailConsumption}
+                  emptyMessage="No material issues recorded for this WO."
+                />
               </div>
             )}
 
-            <div className="flex justify-end pt-3 border-t border-border-color">
-              <button onClick={() => setIsDetailOpen(false)} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Close</button>
+            {activeTab === 'costing' && (
+              <div className="space-y-4 font-sans">
+                <div className="grid grid-cols-2 gap-4 p-4 sheet bg-bg-secondary">
+                  <div>
+                    <p className="text-[10px] font-mono text-text-muted uppercase tracking-wider">Material Cost</p>
+                    <p className="text-xl font-mono font-bold text-text-primary mt-1">{formatINR(detailCosting?.material_cost || 0)}</p>
+                    <p className="text-[10px] font-mono text-text-muted mt-0.5">Auto-calculated from consumption</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono text-text-muted uppercase tracking-wider">Total Assembly Run Cost</p>
+                    <p className="text-xl font-mono font-bold text-accent-primary mt-1">{formatINR(detailCosting?.total_cost || 0)}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Labor Cost (INR)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={laborCost}
+                      onChange={e => setLaborCost(e.target.value)}
+                      className="field font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Overhead Cost (INR)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={overheadCost}
+                      onChange={e => setOverheadCost(e.target.value)}
+                      className="field font-mono"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleSaveCosting}
+                  className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+                >
+                  Save Assembly Costing
+                </button>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
@@ -480,12 +660,26 @@ const WorkOrdersPage = () => {
       <Modal isOpen={isCompleteOpen} onClose={() => setIsCompleteOpen(false)} title="Complete Assembly Work Order Run">
         <div className="space-y-4 font-sans">
           <div>
-            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Produced Qty (Finished Goods) *</label>
-            <input type="number" min="0.0001" step="any" value={completeQty} onChange={e => setCompleteQty(e.target.value)} className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary" />
-            <p className="text-[10px] font-mono text-text-muted mt-1">This quantity will be held for Final QC Inspection before entering available stock.</p>
+            <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Produced Qty (Finished Goods) *</label>
+            <input
+              type="number"
+              min="0.0001"
+              step="any"
+              value={completeQty}
+              onChange={e => setCompleteQty(e.target.value)}
+              className="field font-mono"
+            />
+            <p className="text-[11px] font-mono text-text-muted mt-1">This quantity will be held for Final QC Inspection before entering available stock.</p>
           </div>
-          <div className="flex justify-end gap-2 pt-3 border-t border-border-color">
-            <button type="button" onClick={() => setIsCompleteOpen(false)} disabled={completing} className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover">Cancel</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsCompleteOpen(false)}
+              disabled={completing}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              Cancel
+            </button>
             <button
               type="button"
               disabled={completing}
@@ -505,7 +699,7 @@ const WorkOrdersPage = () => {
                   setCompleting(false);
                 }
               }}
-              className="rounded-xs bg-accent-success px-4 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-accent-success/90 disabled:opacity-50 shadow-2xs"
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider bg-accent-success hover:brightness-110 disabled:opacity-50"
             >
               {completing ? 'Completing...' : 'Confirm Run Completion'}
             </button>

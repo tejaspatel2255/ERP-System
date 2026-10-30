@@ -12,21 +12,22 @@
 
 **ERP Nexus** is a production-grade, modular Enterprise Resource Planning (ERP) system purpose-built for discrete manufacturing enterprises. It manages the complete operational lifecycle — from customer quotations and sales orders, through BOM engineering, production work orders, and rigorous multi-stage quality control (Raw Material QC, In-Process QC, Final QC), to warehouse inventory, delivery challans, and final tax invoicing.
 
-### Design System: "Drawing Sheet + Andon"
-The frontend features a distinctive industrial manufacturing design system:
-- **Blueprint Paper Grid & Drawing Sheets (`.sheet`)**: Engineering drafting paper aesthetic with registration corner marks, technical title blocks (SHEET / REV / DATE), and dimension lines.
-- **Andon Board Status System (`.lamp`, `.andon-tag`)**: Physical stack-light indicators (green / amber / red) showing equipment, inspection, and process state at a glance.
+### Design System: "Drawing Sheet + Andon" (23/23 Phases Completed)
+The entire user interface is designed on a dedicated industrial manufacturing design system:
+- **Blueprint Paper Grid & Drawing Sheets (`.sheet`)**: Technical drafting paper aesthetic with crisp engineering borders, grid background paper, and structured title blocks.
+- **Andon Board Status System (`<StatusBadge>`, `.lamp`, `.andon-tag`)**: Physical stack-light indicators (green / amber / red) showing equipment, inspection, and process state at a glance.
 - **Hazard Tape Accent Stripes (`.hazard-strip`)**: High-visibility safety markings for critical alerts, NCR quarantine records, and error boundaries.
-- **Mechanical Push-Buttons (`.btn`, `.btn-primary`)**: Tactile, industrial push-button controls with drop-press feedback.
+- **Mechanical Push-Buttons (`.btn`, `.btn-primary`, `.btn-secondary`, `.btn-success`, `.btn-danger`, `.btn-warning`)**: Tactile, industrial push-button controls with drop-press feedback and monospace tracking.
 - **Dual Visual Palettes**:
   - **Vellum (Light Mode)**: Cream drafting paper canvas (`#E8E3D3`), ink-navy lines (`#14213D`), and safety orange accents (`#CF4A0C`).
   - **Cyanotype (Dark Mode)**: Night-shift blueprint navy canvas (`#07111F`), crisp technical readouts (`#E3EEFB`), and glowing orange accents (`#FF7A2F`).
+- **Precision Typography Scale**: Space Grotesk for hierarchy and JetBrains Mono for all numeric metrics, currency amounts, codes, and IDs.
 
 ---
 
 ## 🎯 Key Features Implemented
 
-- ✅ **Drawing Sheet & Andon Interface** — Specialized manufacturing UI with BOM-style numbered tables, technical title blocks, and Andon lamps.
+- ✅ **Drawing Sheet & Andon Interface** — Specialized manufacturing UI with BOM-style numbered tables, technical title blocks, and Andon lamps across 35+ operational pages.
 - ✅ **Operations Command Center** — Live MTD revenue gauge plates, MoM trend arrows, closed-loop lifecycle assembly line, and Recharts operational distributions.
 - ✅ **JWT Authentication & Gate Clearance** — Access token with `httpOnly` refresh cookie, role-based access control (RBAC), and operator approval workflow.
 - ✅ **13 Operational Modules** covering the entire closed-loop manufacturing cycle.
@@ -35,6 +36,7 @@ The frontend features a distinctive industrial manufacturing design system:
 - ✅ **Transactional Integrity** — PostgreSQL transactions (`BEGIN / COMMIT / ROLLBACK`) on all multi-table business updates.
 - ✅ **Indian Rupee (₹ INR)** formatting throughout using standardized financial formatters.
 - ✅ **Comprehensive Activity Audit Logs** capturing operator telemetry across all system actions.
+- ✅ **Industrial Document Printing** — Printable Invoices, Quotations, Purchase Orders, Delivery Challans, and Packing Slips formatted for high-contrast letterheads.
 
 ---
 

@@ -106,7 +106,11 @@ export default function Navbar({ onMenuClick }) {
           <Menu size={18} />
         </button>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <Cpu size={16} className="text-accent-primary hidden sm:block shrink-0" />
+          <img
+            src="/logo.svg"
+            alt="ERP Nexus"
+            className="w-4 h-4 object-contain hidden sm:block shrink-0"
+          />
           {getBreadcrumbs().map((crumb, idx, arr) => (
             <React.Fragment key={idx}>
               {idx > 0 && <span className="text-accent-primary font-bold text-xs select-none">/</span>}

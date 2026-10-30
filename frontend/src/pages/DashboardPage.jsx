@@ -83,7 +83,11 @@ export default function DashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Cpu size={16} className="text-accent-primary" />
+              <img
+                src="/logo.svg"
+                alt="ERP Nexus"
+                className="w-4 h-4 object-contain shrink-0"
+              />
               <span className="sheet-tag text-accent-primary font-bold">
                 ERP NEXUS // OPERATIONAL CONSOLE
               </span>

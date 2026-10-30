@@ -5,6 +5,7 @@ import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import SearchBar from '../../components/SearchBar';
 import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, getCustomerById } from '../../api/salesApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -151,10 +152,19 @@ const CustomersPage = () => {
 
   // Columns Configuration
   const columns = [
-    { key: 'name', label: 'Company / Client Name', render: (item) => <span className="font-mono font-bold text-text-primary">{item.name}</span> },
+    {
+      key: 'name',
+      label: 'Company / Client Name',
+      render: (item) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-bold text-text-primary">{item.name}</span>
+          {item.gstin && <span className="stamp text-[10px]">{item.gstin}</span>}
+        </div>
+      )
+    },
     { key: 'email', label: 'Email', render: (item) => <span className="font-mono text-xs text-text-secondary">{item.email || 'N/A'}</span> },
     { key: 'phone', label: 'Phone', render: (item) => <span className="font-mono text-xs text-text-secondary">{item.phone || 'N/A'}</span> },
-    { key: 'gstin', label: 'GSTIN', render: (item) => <span className="font-mono text-xs text-accent-primary font-bold">{item.gstin || 'N/A'}</span> },
+    { key: 'gstin', label: 'GSTIN Registration', render: (item) => <span className="font-mono text-xs text-accent-primary font-bold">{item.gstin || 'N/A'}</span> },
     {
       key: 'credit_limit',
       label: 'Credit Limit',
@@ -166,7 +176,7 @@ const CustomersPage = () => {
       label: 'Trade Outstanding',
       isNumeric: true,
       render: (item) => (
-        <span className={`font-mono font-bold ${parseFloat(item.balance) > 0 ? 'text-accent-danger' : 'text-text-primary'}`}>
+        <span className={`font-mono font-bold ${parseFloat(item.balance) > 0 ? 'text-[var(--accent-danger)]' : 'text-text-primary'}`}>
           {formatINR(item.balance)}
         </span>
       )
@@ -178,14 +188,14 @@ const CustomersPage = () => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleViewCustomer(item)}
-            className="text-text-secondary hover:text-text-primary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase"
+            className="btn btn-ghost btn-sm text-[11px]"
           >
             View
           </button>
           {hasPermission('sales', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-accent-primary hover:text-accent-secondary font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-bg-hover px-2 py-1 rounded-xs transition-colors uppercase"
+              className="btn btn-ghost btn-sm text-[11px] text-accent-primary"
             >
               Edit
             </button>
@@ -193,7 +203,7 @@ const CustomersPage = () => {
           {hasPermission('sales', 'delete') && (
             <button
               onClick={() => handleDelete(item)}
-              className="text-accent-danger hover:text-accent-danger/80 font-mono font-bold text-[10px] bg-bg-card border border-border-color hover:bg-accent-danger/10 px-2 py-1 rounded-xs transition-colors uppercase"
+              className="btn btn-danger btn-sm text-[11px]"
             >
               Delete
             </button>
@@ -204,7 +214,7 @@ const CustomersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl animate-fadeIn">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       {/* Header section */}
       <PageHeader
         title="Commercial Customer CRM"
@@ -213,7 +223,7 @@ const CustomersPage = () => {
           hasPermission('sales', 'create') && (
             <button
               onClick={handleOpenCreate}
-              className="inline-flex items-center justify-center rounded-xs bg-accent-primary px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-accent-secondary transition-all"
+              className="btn btn-primary btn-sm"
             >
               + Add Customer Account
             </button>
@@ -221,10 +231,14 @@ const CustomersPage = () => {
         }
       />
 
-      {/* Filter and search bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-5">
-        <div className="flex-1">
-          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Filter clients by commercial name, email, or telephone..." />
+      {/* Filter and search bar rail */}
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[240px]">
+          <span className="field-label">Search Client Directory</span>
+          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Filter clients by commercial name, email, or phone..." />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="sheet-tag text-text-muted">ZONE // Z01</span>
         </div>
       </div>
 
@@ -238,89 +252,95 @@ const CustomersPage = () => {
 
       {/* CREATE & EDIT FORM MODAL */}
       <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={editingCustomer ? 'Edit Customer Account' : 'Create Customer Account Record'}>
-        <form onSubmit={handleFormSubmit} className="space-y-4 font-sans">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Company / Customer Name *</label>
+              <label className="field-label">Company / Customer Name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field"
                 value={formData.name}
                 onChange={handleInputChange}
+                placeholder="Apex Industrial Corp"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">GSTIN (Optional)</label>
+              <label className="field-label">GSTIN (Optional)</label>
               <input
                 type="text"
                 name="gstin"
                 placeholder="15-digit Alpha-numeric"
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field font-mono"
                 value={formData.gstin}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Email Address</label>
+              <label className="field-label">Email Address</label>
               <input
                 type="email"
                 name="email"
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field"
                 value={formData.email}
                 onChange={handleInputChange}
+                placeholder="procurement@client.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Contact Phone</label>
+              <label className="field-label">Contact Phone</label>
               <input
                 type="text"
                 name="phone"
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field font-mono"
                 value={formData.phone}
                 onChange={handleInputChange}
+                placeholder="+91 98765 43210"
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Billing / Shipping Address</label>
+            <div className="sm:col-span-2">
+              <label className="field-label">Billing / Shipping Address</label>
               <textarea
                 name="address"
                 rows={2}
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field"
                 value={formData.address}
                 onChange={handleInputChange}
+                placeholder="Plot 42, Industrial Area, Sector 5..."
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-wider text-text-secondary mb-1">Credit Limit (INR)</label>
+              <label className="field-label">Credit Limit (INR)</label>
               <input
                 type="number"
                 step="0.01"
                 name="credit_limit"
-                className="block w-full rounded-xs border border-border-color bg-bg-card py-2 px-3 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-primary"
+                className="field font-mono"
                 value={formData.credit_limit}
                 onChange={handleInputChange}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+          <div className="dim-line my-4" />
+
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xs bg-accent-primary px-4 py-1.5 text-xs font-mono font-bold uppercase text-white shadow-2xs hover:bg-accent-secondary"
+              className="btn btn-primary"
             >
               Save Customer Account
             </button>
@@ -331,26 +351,28 @@ const CustomersPage = () => {
       {/* PROFILE DETAILS VIEW MODAL */}
       <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Profile & Ledger Details" size="lg">
         {viewingDetails && (
-          <div className="space-y-5 font-sans">
-            {/* Summary Telemetry Panel */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xs bg-bg-card border border-border-color">
+          <div className="space-y-5">
+            {/* Summary Telemetry Panel (Party record style) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 sheet bg-bg-card">
               <div>
-                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Company Identity</h4>
-                <p className="mt-0.5 text-sm font-bold text-text-primary font-mono">{viewingDetails.name}</p>
-                <p className="text-xs text-text-secondary">{viewingDetails.email || 'No email'}</p>
+                <span className="sheet-tag text-text-muted block mb-1">RECORD IDENTITY</span>
+                <p className="text-base font-bold text-text-primary font-mono">{viewingDetails.name}</p>
+                <p className="text-xs text-text-secondary mt-0.5">{viewingDetails.email || 'No email'}</p>
                 <p className="text-xs text-text-secondary font-mono">{viewingDetails.phone || 'No phone'}</p>
               </div>
               <div>
-                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Tax & Address</h4>
-                <p className="mt-0.5 text-xs font-mono font-bold text-accent-primary">GSTIN: {viewingDetails.gstin || 'Unspecified'}</p>
-                <p className="text-xs text-text-secondary max-w-[200px] truncate">{viewingDetails.address || 'No address registered'}</p>
+                <span className="sheet-tag text-text-muted block mb-1">TAX & LOCATION</span>
+                <p className="text-xs font-mono font-bold text-accent-primary">
+                  GSTIN: {viewingDetails.gstin ? <span className="stamp">{viewingDetails.gstin}</span> : 'Unspecified'}
+                </p>
+                <p className="text-xs text-text-secondary mt-1 max-w-[200px] truncate">{viewingDetails.address || 'No address registered'}</p>
               </div>
               <div>
-                <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">Credit Boundary</h4>
-                <p className="mt-0.5 text-xs text-text-secondary">Limit: <span className="font-mono font-bold text-text-primary">{formatINR(viewingDetails.credit_limit)}</span></p>
-                <p className="text-xs text-text-secondary">
+                <span className="sheet-tag text-text-muted block mb-1">CREDIT BOUNDARY</span>
+                <p className="text-xs text-text-secondary">Limit: <span className="font-mono font-bold text-text-primary">{formatINR(viewingDetails.credit_limit)}</span></p>
+                <p className="text-xs text-text-secondary mt-1">
                   Outstanding:{' '}
-                  <span className={`font-mono font-bold ${parseFloat(viewingDetails.balance) > 0 ? 'text-accent-danger' : 'text-accent-success'}`}>
+                  <span className={`font-mono font-bold ${parseFloat(viewingDetails.balance) > 0 ? 'text-[var(--accent-danger)]' : 'text-[var(--accent-success)]'}`}>
                     {formatINR(viewingDetails.balance)}
                   </span>
                 </p>
@@ -359,25 +381,29 @@ const CustomersPage = () => {
 
             {/* Sub-ledgers */}
             <div className="space-y-4">
-              <h3 className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider border-b border-border-color pb-1">
-                Transaction History Sub-Ledgers
-              </h3>
+              <div className="flex items-center justify-between border-b border-border-color pb-1.5">
+                <span className="font-display uppercase tracking-wider text-base text-text-primary font-bold">
+                  Transaction History Sub-Ledgers
+                </span>
+                <span className="sheet-tag text-text-muted">CLOSED LOOP AUDIT</span>
+              </div>
               
               {historyLoading ? (
-                <div className="py-10 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-primary" />
+                <div className="py-10 flex items-center justify-center font-mono text-xs text-text-muted gap-2">
+                  <div className="animate-spin h-5 w-5 border-2 border-border-color border-t-accent-primary" />
+                  <span>LOADING SUB-LEDGERS...</span>
                 </div>
               ) : (
                 <div className="space-y-5">
                   {/* Quotations Sub-ledger */}
-                  <div>
-                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Commercial Quotations</h4>
+                  <div className="space-y-1.5">
+                    <span className="sheet-tag text-text-muted block font-bold">// COMMERCIAL QUOTATIONS</span>
                     <Table
                       columns={[
                         { key: 'quotation_no', label: 'Quotation Ref' },
                         { key: 'date', label: 'Date', render: (item) => formatDate(item.date) },
                         { key: 'valid_until', label: 'Valid Until', render: (item) => formatDate(item.valid_until) },
-                        { key: 'status', label: 'Status' },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
                         { key: 'total_amount', label: 'Total Value', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.quotations}
@@ -386,13 +412,13 @@ const CustomersPage = () => {
                   </div>
 
                   {/* Orders Sub-ledger */}
-                  <div>
-                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Sales Orders</h4>
+                  <div className="space-y-1.5">
+                    <span className="sheet-tag text-text-muted block font-bold">// SALES ORDERS</span>
                     <Table
                       columns={[
                         { key: 'order_no', label: 'Order Ref' },
                         { key: 'order_date', label: 'Order Date', render: (item) => formatDate(item.order_date) },
-                        { key: 'status', label: 'Status' },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
                         { key: 'total_amount', label: 'Order Value', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.orders}
@@ -401,14 +427,14 @@ const CustomersPage = () => {
                   </div>
 
                   {/* Invoices Sub-ledger */}
-                  <div>
-                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Billing Invoices</h4>
+                  <div className="space-y-1.5">
+                    <span className="sheet-tag text-text-muted block font-bold">// BILLING INVOICES</span>
                     <Table
                       columns={[
                         { key: 'invoice_no', label: 'Invoice Ref' },
                         { key: 'invoice_date', label: 'Billing Date', render: (item) => formatDate(item.invoice_date) },
                         { key: 'due_date', label: 'Due Date', render: (item) => formatDate(item.due_date) },
-                        { key: 'status', label: 'Status' },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
                         { key: 'total_amount', label: 'Billed Value', isNumeric: true, render: (item) => formatINR(item.total_amount) },
                         { key: 'paid_amount', label: 'Collected Value', isNumeric: true, render: (item) => formatINR(item.paid_amount) }
                       ]}
@@ -418,14 +444,14 @@ const CustomersPage = () => {
                   </div>
 
                   {/* Payments Sub-ledger */}
-                  <div>
-                    <h4 className="text-[10px] font-mono font-bold text-text-muted uppercase mb-1.5">Collected Receipts</h4>
+                  <div className="space-y-1.5">
+                    <span className="sheet-tag text-text-muted block font-bold">// COLLECTED RECEIPTS</span>
                     <Table
                       columns={[
                         { key: 'payment_date', label: 'Receipt Date', render: (item) => formatDate(item.payment_date) },
                         { key: 'invoice_no', label: 'Invoice Ref' },
-                        { key: 'payment_mode', label: 'Instrument Mode' },
-                        { key: 'reference_no', label: 'Transaction Ref', render: (item) => item.reference_no || 'N/A' },
+                        { key: 'payment_mode', label: 'Instrument Mode', render: (item) => <span className="font-mono text-xs">{item.payment_mode}</span> },
+                        { key: 'reference_no', label: 'Transaction Ref', render: (item) => item.reference_no ? <span className="font-mono text-xs">{item.reference_no}</span> : 'N/A' },
                         { key: 'amount', label: 'Amount Collected', isNumeric: true, render: (item) => formatINR(item.amount) }
                       ]}
                       data={viewingHistory.payments}
@@ -436,11 +462,13 @@ const CustomersPage = () => {
               )}
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-border-color">
+            <div className="dim-line my-4" />
+
+            <div className="flex justify-end pt-2">
               <button
                 type="button"
                 onClick={() => setIsViewModalOpen(false)}
-                className="rounded-xs border border-border-color bg-bg-card px-3.5 py-1.5 text-xs font-mono font-bold uppercase text-text-secondary hover:bg-bg-hover"
+                className="btn btn-ghost"
               >
                 Close
               </button>

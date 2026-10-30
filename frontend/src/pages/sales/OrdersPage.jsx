@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import axiosInstance from '../../api/axiosInstance';
 import { getOrders, getOrderById, updateOrderStatus, createInvoiceFromOrder } from '../../api/salesApi';
@@ -111,30 +113,30 @@ const OrdersPage = () => {
   // Columns for main list
   const columns = [
     { key: 'order_no', label: 'Order No' },
-    { key: 'customer_name', label: 'Customer' },
+    {
+      key: 'customer_name',
+      label: 'Customer',
+      render: (item) => <span className="font-mono font-bold text-text-primary">{item.customer_name}</span>
+    },
     { key: 'order_date', label: 'Order Date', render: (item) => formatDate(item.order_date) },
     {
       key: 'status',
       label: 'Status',
-      render: (item) => (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-          item.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-          item.status === 'Processing' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-          item.status === 'Completed' ? 'bg-green-100 text-green-800 border border-green-200' :
-          'bg-red-100 text-red-800 border border-red-200'
-        }`}>
-          {item.status}
-        </span>
-      )
+      render: (item) => <StatusBadge status={item.status} />
     },
-    { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) },
+    {
+      key: 'total_amount',
+      label: 'Total Amount',
+      isNumeric: true,
+      render: (item) => formatINR(item.total_amount)
+    },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
         <button
           onClick={() => handleViewOrder(item)}
-          className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2.5 py-1 rounded-md"
+          className="btn btn-ghost btn-sm text-[11px]"
         >
           View Order
         </button>
@@ -143,28 +145,27 @@ const OrdersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Sales Orders</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track purchase confirmations, dispatch processing states, and create invoices.</p>
-        </div>
-
-        <div>
-          <select
-            value={selectedStatus}
-            onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
-          >
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Processing">Processing</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-      </div>
+      <PageHeader
+        title="Sales Orders"
+        description="Track purchase confirmations, dispatch processing states, and create invoices."
+        actions={
+          <div className="w-full sm:w-auto">
+            <select
+              value={selectedStatus}
+              onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
+              className="field w-auto min-w-[180px] font-mono text-xs uppercase"
+            >
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        }
+      />
 
       {/* Main Table */}
       <Table columns={columns} data={orders} loading={loading} emptyMessage="No sales orders found." />
@@ -179,30 +180,32 @@ const OrdersPage = () => {
         {viewingOrder && (
           <div className="space-y-6">
             {/* Header info bar */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 sheet bg-bg-card">
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer Details</h4>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{viewingOrder.customer_name}</p>
-                <p className="text-xs text-slate-500">{viewingOrder.customer_address}</p>
-                <p className="text-xs text-slate-500">Phone: {viewingOrder.customer_phone}</p>
+                <span className="sheet-tag text-text-muted block mb-1">CLIENT REQUISITION</span>
+                <p className="text-base font-bold text-text-primary font-mono">{viewingOrder.customer_name}</p>
+                <p className="text-xs text-text-secondary">{viewingOrder.customer_address}</p>
+                <p className="text-xs font-mono text-text-secondary">Phone: {viewingOrder.customer_phone}</p>
               </div>
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Order Timeline & Status</h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Date: {formatDate(viewingOrder.order_date)}</span>
+                <span className="sheet-tag text-text-muted block mb-1">ORDER TIMELINE & STAGE</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-mono text-text-secondary">Date: {formatDate(viewingOrder.order_date)}</span>
                   {viewingOrder.quotation_no && (
-                    <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600">Quotation: {viewingOrder.quotation_no}</span>
+                    <span className="text-xs font-mono text-text-secondary">
+                      Quotation: <span className="stamp">{viewingOrder.quotation_no}</span>
+                    </span>
                   )}
                 </div>
                 
                 {/* Status selector */}
                 <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Order Stage:</span>
+                  <span className="field-label mb-0">Order Stage:</span>
                   <select
                     disabled={updatingStatus || !hasPermission('sales', 'edit')}
                     value={viewingOrder.status}
                     onChange={handleStatusChange}
-                    className="block rounded border border-slate-350 bg-white dark:bg-slate-900 text-xs px-2 py-1 focus:outline-none"
+                    className="field w-auto py-1 text-xs font-mono uppercase"
                   >
                     <option value="Pending">Pending</option>
                     <option value="Processing">Processing</option>
@@ -215,22 +218,27 @@ const OrdersPage = () => {
 
             {/* Line Items Table */}
             <div className="space-y-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Ordered Items</h4>
+              <div className="flex items-center justify-between border-b border-border-color pb-1.5">
+                <span className="font-display uppercase tracking-wider text-base text-text-primary font-bold">
+                  Ordered Line Items
+                </span>
+                <span className="sheet-tag text-text-muted">BOM LINE SPECIFICATION</span>
+              </div>
               <Table
                 columns={[
                   {
                     key: 'item_name',
-                    label: 'Item',
+                    label: 'Item Description',
                     render: (item) => (
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                        <div className="font-bold text-text-primary">{item.item_name}</div>
+                        <div className="text-[10px] font-mono text-text-muted">{item.item_code}</div>
                       </div>
                     )
                   },
-                  { key: 'qty', label: 'Qty', render: (item) => parseFloat(item.qty) },
-                  { key: 'unit_price', label: 'Unit Price', render: (item) => formatINR(item.unit_price) },
-                  { key: 'line_total', label: 'Total Price', render: (item) => formatINR(item.line_total) }
+                  { key: 'qty', label: 'Qty', isNumeric: true, render: (item) => parseFloat(item.qty) },
+                  { key: 'unit_price', label: 'Unit Price', isNumeric: true, render: (item) => formatINR(item.unit_price) },
+                  { key: 'line_total', label: 'Total Price', isNumeric: true, render: (item) => formatINR(item.line_total) }
                 ]}
                 data={viewingItems}
                 emptyMessage="No items listed for this order."
@@ -238,35 +246,31 @@ const OrdersPage = () => {
             </div>
 
             {/* Billing Invoice Info */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+            <div className="p-4 sheet bg-bg-card space-y-3">
               <div className="flex justify-between items-center">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Linked Invoice</h4>
+                <span className="sheet-tag text-text-muted block font-bold">// LINKED INVOICE</span>
                 {linkedInvoice ? (
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    linkedInvoice.status === 'Paid' ? 'bg-green-100 text-green-800 border border-green-200' :
-                    linkedInvoice.status === 'Partially Paid' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                    'bg-red-100 text-red-800 border border-red-200'
-                  }`}>
-                    Invoice Status: {linkedInvoice.status}
-                  </span>
+                  <StatusBadge status={linkedInvoice.status} />
                 ) : (
-                  <span className="text-xs text-red-500 font-semibold">No Invoice Generated</span>
+                  <span className="sheet border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)] text-[10px] font-mono font-bold px-2 py-0.5">
+                    NO INVOICE GENERATED
+                  </span>
                 )}
               </div>
 
               {linkedInvoice ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                  <p>Invoice No: <span className="font-bold text-slate-900 dark:text-white">{linkedInvoice.invoice_no}</span></p>
-                  <p>Due Date: <span className="font-semibold">{formatDate(linkedInvoice.due_date)}</span></p>
-                  <p>Outstanding: <span className="font-bold text-red-600">{formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}</span></p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs font-mono text-text-secondary">
+                  <p>Invoice No: <span className="stamp">{linkedInvoice.invoice_no}</span></p>
+                  <p>Due Date: <span className="font-semibold text-text-primary">{formatDate(linkedInvoice.due_date)}</span></p>
+                  <p>Outstanding: <span className="font-bold text-[var(--danger-text)]">{formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}</span></p>
                 </div>
               ) : (
-                <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-500">Generate the billing invoice for this order to post it to the customer balance ledger.</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-bg-secondary p-3 border border-border-color">
+                  <p className="text-xs text-text-secondary font-sans">Generate the tax billing invoice for this order to post into the customer balance ledger.</p>
                   {hasPermission('sales', 'create') && (
                     <button
                       onClick={handleGenerateInvoice}
-                      className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                      className="btn btn-primary btn-sm shrink-0"
                     >
                       Generate Invoice
                     </button>
@@ -277,33 +281,35 @@ const OrdersPage = () => {
 
             {/* Stock Availability Breakdown */}
             {viewingAvailability?.length > 0 && (
-              <div className="space-y-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
+              <div className="space-y-3 p-4 sheet bg-bg-secondary">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Inventory Stock Availability</h4>
+                  <span className="sheet-tag text-text-muted block font-bold">// INVENTORY STOCK AVAILABILITY</span>
                   {viewingAvailability.some(a => a.shortfall > 0) ? (
-                    <span className="text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950/40 px-2 py-0.5 rounded border border-red-200">
-                      Stock Shortfall Detected
+                    <span className="sheet border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)] text-[10px] font-mono font-bold px-2 py-0.5 flex items-center gap-1.5">
+                      <span className="lamp lamp-pulse" style={{ '--lamp': 'var(--accent-danger)', width: '6px', height: '6px' }} />
+                      <span>STOCK SHORTFALL DETECTED</span>
                     </span>
                   ) : (
-                    <span className="text-xs font-bold text-green-600 bg-green-100 dark:bg-green-950/40 px-2 py-0.5 rounded border border-green-200">
-                      In Stock
+                    <span className="sheet border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)] text-[10px] font-mono font-bold px-2 py-0.5 flex items-center gap-1.5">
+                      <span className="lamp" style={{ '--lamp': 'var(--accent-success)', width: '6px', height: '6px' }} />
+                      <span>ALL ITEMS IN STOCK</span>
                     </span>
                   )}
                 </div>
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="divide-y divide-border-color">
                   {viewingAvailability.map((a, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-1 text-xs">
+                    <div key={idx} className="flex justify-between items-center py-2 text-xs font-mono">
                       <div>
-                        <span className="font-semibold text-slate-900 dark:text-white">{a.item_name}</span>
-                        <span className="text-[10px] text-slate-400 ml-2">({a.item_code})</span>
+                        <span className="font-semibold text-text-primary">{a.item_name}</span>
+                        <span className="text-[10px] text-text-muted ml-2">({a.item_code})</span>
                       </div>
-                      <div className="flex gap-4 text-slate-600 dark:text-slate-400">
-                        <span>Required: <strong>{a.required_qty}</strong></span>
-                        <span>Available: <strong>{a.available_qty}</strong></span>
+                      <div className="flex gap-4 text-text-secondary">
+                        <span>Required: <strong className="text-text-primary">{a.required_qty}</strong></span>
+                        <span>Available: <strong className="text-text-primary">{a.available_qty}</strong></span>
                         {a.shortfall > 0 ? (
-                          <span className="text-red-600 font-bold">Shortfall: -{a.shortfall}</span>
+                          <span className="text-[var(--danger-text)] font-bold">Shortfall: -{a.shortfall}</span>
                         ) : (
-                          <span className="text-green-600 font-bold">OK</span>
+                          <span className="text-[var(--success-text)] font-bold">OK</span>
                         )}
                       </div>
                     </div>
@@ -316,7 +322,7 @@ const OrdersPage = () => {
                         setIsViewOpen(false);
                         window.location.href = `/production/work-orders?so_id=${viewingOrder.id}`;
                       }}
-                      className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                      className="btn btn-primary btn-sm"
                     >
                       + Create Work Order for SO
                     </button>
@@ -326,14 +332,14 @@ const OrdersPage = () => {
             )}
 
             {/* Bottom summary */}
-            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
-              <div className="text-sm font-bold text-slate-900 dark:text-white">
-                Grand Total: <span className="text-blue-600 dark:text-blue-400">{formatINR(viewingOrder.total_amount)}</span>
+            <div className="flex justify-between items-center border-t border-border-color pt-4">
+              <div className="text-base font-display font-bold uppercase tracking-wider text-text-primary">
+                Grand Total: <span className="text-accent-primary font-mono ml-2">{formatINR(viewingOrder.total_amount)}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn btn-ghost"
               >
                 Close Details
               </button>

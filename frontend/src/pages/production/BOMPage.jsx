@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getBOMs, createBOM, getBOMById, activateBOM, deleteBOM, updateBOM } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
 import { formatDate } from '../../utils/formatDate';
+
+const UNITS = ['Pcs', 'Kg', 'Ltr', 'Mtr', 'Box', 'Set', 'Nos', 'Pair', 'Roll', 'Sheet'];
 
 const BOMPage = () => {
   const { hasPermission } = useRole();
@@ -113,8 +117,6 @@ const BOMPage = () => {
     }
   };
 
-  const UNITS = ['Pcs', 'Kg', 'Ltr', 'Mtr', 'Box', 'Set', 'Nos', 'Pair', 'Roll', 'Sheet'];
-
   const addLine = () => {
     const defaultMat = rawMaterials[0] || allItems[0];
     setBomLines(p => [...p, { raw_material_id: defaultMat?.id || '', qty_required: 1, unit: defaultMat?.unit || 'Pcs' }]);
@@ -126,84 +128,194 @@ const BOMPage = () => {
   };
 
   const columns = [
-    { key: 'finished_item_name', label: 'Finished Item', render: i => <div><div className="font-semibold">{i.finished_item_name}</div><div className="text-[10px] text-slate-400">{i.finished_item_code}</div></div> },
-    { key: 'version', label: 'Version', render: i => `v${i.version}` },
-    { key: 'is_active', label: 'Status', render: i => <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${i.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{i.is_active ? 'Active' : 'Draft'}</span> },
-    { key: 'updated_at', label: 'Last Updated', render: i => formatDate(i.updated_at) },
-    { key: 'actions', label: 'Actions', render: i => (
-      <div className="flex gap-2">
-        <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View</button>
-        {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
-        {!i.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(i.id)} className="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded-md hover:bg-green-100">Activate</button>}
-        {hasPermission('production', 'delete') && <button onClick={() => handleDelete(i)} className="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md hover:bg-red-100">Delete</button>}
-      </div>
-    )}
+    {
+      key: 'finished_item_name',
+      label: 'Finished Item',
+      render: i => (
+        <div>
+          <div className="font-semibold text-text-primary">{i.finished_item_name}</div>
+          <div className="font-mono text-[10px] text-text-muted">{i.finished_item_code}</div>
+        </div>
+      )
+    },
+    {
+      key: 'version',
+      label: 'Version',
+      render: i => <span className="font-mono text-xs font-bold text-accent-primary">v{i.version}</span>
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: i => <StatusBadge status={i.is_active ? 'Active' : 'Draft'} />
+    },
+    {
+      key: 'updated_at',
+      label: 'Last Updated',
+      render: i => <span className="font-mono text-xs text-text-secondary">{formatDate(i.updated_at)}</span>
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: i => (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => handleView(i)}
+            className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider"
+          >
+            View
+          </button>
+          {!i.is_active && hasPermission('production', 'edit') && (
+            <button
+              onClick={() => openEdit(i)}
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
+            >
+              Edit
+            </button>
+          )}
+          {!i.is_active && hasPermission('production', 'edit') && (
+            <button
+              onClick={() => handleActivate(i.id)}
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-success"
+            >
+              Activate
+            </button>
+          )}
+          {hasPermission('production', 'delete') && (
+            <button
+              onClick={() => handleDelete(i)}
+              className="btn btn-ghost px-2 py-1 text-xs font-mono uppercase tracking-wider text-accent-danger"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      )
+    }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Bill of Materials (BOM)</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Define raw material requirements per finished product with versioning support.</p>
-        </div>
-        {hasPermission('production', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Create BOM</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-fadeIn font-sans">
+      <PageHeader
+        title="Bill of Materials (BOM)"
+        description="Define raw material requirements per finished product with versioning support."
+        actions={
+          hasPermission('production', 'create') && (
+            <button
+              onClick={openCreate}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider"
+            >
+              + Create BOM
+            </button>
+          )
+        }
+      />
 
-      <Table columns={columns} data={boms} loading={loading} emptyMessage="No BOMs defined yet." />
+      {/* Main Table */}
+      <div className="sheet">
+        <Table columns={columns} data={boms} loading={loading} emptyMessage="No BOMs defined yet." />
+      </div>
 
       {/* Create / Edit BOM Modal */}
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingBom ? 'Edit Bill of Materials' : 'Create Bill of Materials'} size="lg">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 font-sans">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Finished / Semi-Finished Item *</label>
-              <select required value={form.finished_item_id} onChange={e => !editingBom && setForm(p => ({ ...p, finished_item_id: e.target.value }))} className={`block w-full rounded-lg border border-slate-200 dark:border-slate-800 py-2 px-3 text-sm focus:outline-none ${editingBom ? 'bg-slate-100 dark:bg-slate-900 text-slate-500 pointer-events-none' : 'bg-white dark:bg-slate-950 text-slate-900 dark:text-white'}`}>
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Finished / Semi-Finished Item *</label>
+              <select
+                required
+                value={form.finished_item_id}
+                onChange={e => !editingBom && setForm(p => ({ ...p, finished_item_id: e.target.value }))}
+                className={`field font-sans ${editingBom ? 'opacity-70 cursor-not-allowed' : ''}`}
+                disabled={!!editingBom}
+              >
                 <option value="">— Select Item —</option>
                 {finishedGoods.length > 0 ? finishedGoods.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>) : allItems.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-              <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Version remarks..." className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-mono uppercase tracking-wider text-text-secondary mb-1">Notes</label>
+              <input
+                value={form.notes}
+                onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                placeholder="Version remarks..."
+                className="field font-sans"
+              />
             </div>
-            <div className="flex items-center gap-2 pt-5">
-              <input type="checkbox" id="is_active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))} className="rounded" />
-              <label htmlFor="is_active" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Activate immediately</label>
+            <div className="flex items-center gap-2 pt-6">
+              <input
+                type="checkbox"
+                id="is_active"
+                checked={form.is_active}
+                onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
+                className="w-4 h-4 rounded-none accent-accent-primary"
+              />
+              <label htmlFor="is_active" className="text-xs font-mono uppercase tracking-wider text-text-secondary cursor-pointer">
+                Activate immediately
+              </label>
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Raw Materials Required</h4>
-              <button type="button" onClick={addLine} className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100">+ Add Material</button>
+              <h4 className="font-display text-sm font-bold uppercase tracking-wider text-text-primary">Raw Materials Required (BOM Table)</h4>
+              <button
+                type="button"
+                onClick={addLine}
+                className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
+              >
+                + Add Material
+              </button>
             </div>
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="sheet overflow-hidden">
+              <table className="w-full text-xs font-mono border-collapse">
+                <thead className="bg-bg-secondary border-b border-border-color text-[10px] uppercase tracking-wider text-text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 uppercase text-left">Material Item</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center w-28">Qty Required</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase w-24">Unit</th>
+                    <th className="px-3 py-2.5 text-left">Material Item</th>
+                    <th className="px-3 py-2.5 text-center w-32">Qty Required</th>
+                    <th className="px-3 py-2.5 text-center w-24">Unit</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color">
                   {bomLines.map((line, idx) => (
-                    <tr key={idx}>
-                      <td className="px-2 py-2">
-                        <select required value={line.raw_material_id} onChange={e => handleMaterialChange(idx, e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none">
+                    <tr key={idx} className="hover:bg-bg-hover">
+                      <td className="p-2">
+                        <select
+                          required
+                          value={line.raw_material_id}
+                          onChange={e => handleMaterialChange(idx, e.target.value)}
+                          className="field py-1 px-2 text-xs font-sans"
+                        >
                           <option value="">Select Item</option>
                           {allItems.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>)}
                         </select>
                       </td>
-                      <td className="px-2 py-2"><input type="number" min="0.0001" step="any" required value={line.qty_required} onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, qty_required: e.target.value } : l))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-center focus:outline-none" /></td>
-                      <td className="px-2 py-2 text-center">
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          min="0.0001"
+                          step="any"
+                          required
+                          value={line.qty_required}
+                          onChange={e => setBomLines(p => p.map((l, i) => i === idx ? { ...l, qty_required: e.target.value } : l))}
+                          className="field py-1 px-2 text-xs text-center font-mono"
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        <span className="font-mono text-xs text-text-secondary">
                           {line.unit || 'Pcs'}
                         </span>
                       </td>
-                      <td className="px-2 py-2 text-center"><button type="button" onClick={() => removeLine(idx)} className="text-red-500 hover:text-red-700 p-1"><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button></td>
+                      <td className="p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeLine(idx)}
+                          className="btn btn-ghost px-1.5 py-1 text-xs text-accent-danger hover:bg-accent-danger/10"
+                          title="Remove line"
+                        >
+                          ✕
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -211,12 +323,23 @@ const BOMPage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50" disabled={submitting}>Cancel</button>
-            <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn btn-primary px-4 py-2 text-xs font-mono uppercase tracking-wider flex items-center gap-2"
+            >
               {submitting ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   Saving...
                 </>
               ) : (
@@ -230,35 +353,77 @@ const BOMPage = () => {
       {/* View BOM Modal */}
       <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`BOM Detail: ${viewBom?.finished_item_name} v${viewBom?.version}`} size="lg">
         {viewBom && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="space-y-4 font-sans">
+            <div className="flex flex-wrap justify-between items-center gap-3 p-4 sheet bg-bg-secondary">
               <div>
-                <p className="text-xs text-slate-400 uppercase font-semibold">Finished Item</p>
-                <p className="font-bold text-slate-900 dark:text-white">{viewBom.finished_item_name} <span className="text-slate-400 font-normal">({viewBom.finished_item_code})</span></p>
-                <p className="text-xs text-slate-500 mt-0.5">Unit: {viewBom.finished_item_unit} · Version: v{viewBom.version}</p>
+                <p className="text-[10px] text-text-muted uppercase font-mono tracking-wider">Finished Item</p>
+                <p className="font-bold text-text-primary text-base mt-0.5">{viewBom.finished_item_name} <span className="text-text-muted font-mono font-normal">({viewBom.finished_item_code})</span></p>
+                <p className="text-xs font-mono text-text-secondary mt-0.5">Unit: {viewBom.finished_item_unit} · Version: v{viewBom.version}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${viewBom.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{viewBom.is_active ? 'Active' : 'Draft'}</span>
+                <StatusBadge status={viewBom.is_active ? 'Active' : 'Draft'} />
                 {!viewBom.is_active && hasPermission('production', 'edit') && (
-                  <button onClick={() => openEdit(viewBom)} className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500">
+                  <button
+                    onClick={() => openEdit(viewBom)}
+                    className="btn btn-ghost px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-accent-primary"
+                  >
                     Edit BOM
                   </button>
                 )}
-                {!viewBom.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(viewBom.id)} className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-500">Activate</button>}
+                {!viewBom.is_active && hasPermission('production', 'edit') && (
+                  <button
+                    onClick={() => handleActivate(viewBom.id)}
+                    className="btn btn-primary px-2.5 py-1 text-xs font-mono uppercase tracking-wider bg-accent-success hover:brightness-110"
+                  >
+                    Activate
+                  </button>
+                )}
               </div>
             </div>
-            <Table
-              columns={[
-                { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
-                { key: 'qty_required', label: 'Qty per Unit', render: i => parseFloat(i.qty_required) },
-                { key: 'unit', label: 'Unit' },
-                { key: 'current_stock', label: 'Current Stock', render: i => <span className={parseFloat(i.current_stock) > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>{parseFloat(i.current_stock)}</span> }
-              ]}
-              data={viewItems}
-              emptyMessage=""
-            />
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button onClick={() => setIsViewOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Close</button>
+            <div className="sheet">
+              <Table
+                columns={[
+                  {
+                    key: 'material_name',
+                    label: 'Material',
+                    render: i => (
+                      <div>
+                        <div className="font-medium text-text-primary">{i.material_name}</div>
+                        <div className="font-mono text-[10px] text-text-muted">{i.item_code}</div>
+                      </div>
+                    )
+                  },
+                  {
+                    key: 'qty_required',
+                    label: 'Qty per Unit',
+                    render: i => <span className="font-mono text-xs">{parseFloat(i.qty_required)}</span>
+                  },
+                  {
+                    key: 'unit',
+                    label: 'Unit',
+                    render: i => <span className="font-mono text-xs text-text-muted">{i.unit}</span>
+                  },
+                  {
+                    key: 'current_stock',
+                    label: 'Current Stock',
+                    render: i => (
+                      <span className={`font-mono text-xs font-bold ${parseFloat(i.current_stock) > 0 ? 'text-accent-success' : 'text-accent-danger'}`}>
+                        {parseFloat(i.current_stock)}
+                      </span>
+                    )
+                  }
+                ]}
+                data={viewItems}
+                emptyMessage=""
+              />
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button
+                onClick={() => setIsViewOpen(false)}
+                className="btn btn-ghost px-4 py-2 text-xs font-mono uppercase tracking-wider"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

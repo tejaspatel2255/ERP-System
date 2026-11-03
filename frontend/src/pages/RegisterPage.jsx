@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { registerUser } from '../api/authApi';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
-import { Clock, Sun, Moon } from 'lucide-react';
+import { Clock, Sun, Moon, AlertCircle, Mail, Lock, User } from 'lucide-react';
 
 import Logo from '../components/Logo';
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -45,24 +44,24 @@ export default function RegisterPage() {
 
   if (isSubmitted) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 text-text-primary transition-colors duration-200">
-        <div className="w-full max-w-md rounded-3xl border border-warning-border bg-bg-secondary p-8 text-center shadow-brand">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning-bg text-warning-text">
-            <Clock size={32} />
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 py-10 text-text-primary">
+        <div className="sheet w-full max-w-md p-6 sm:p-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--warning-bg)] text-[var(--warning-text)] border border-[var(--warning-border)]">
+            <Clock size={24} />
           </div>
-          <h1 className="text-2xl font-black text-text-primary">Registration Pending Approval</h1>
-          <p className="mt-3 text-xs text-text-secondary leading-relaxed">
+          <h1 className="text-xl font-semibold text-text-primary">Registration pending approval</h1>
+          <p className="mt-2 text-sm text-text-secondary leading-relaxed">
             Your account for <span className="font-semibold text-accent-primary">{email}</span> has been created successfully.
           </p>
-          <div className="mt-4 rounded-2xl border border-warning-border bg-warning-bg p-4 text-left text-xs text-warning-text">
+          <div className="mt-4 rounded-md border border-[var(--warning-border)] bg-[var(--warning-bg)] p-3 text-left text-xs text-[var(--warning-text)] leading-relaxed">
             An administrator must review your registration and assign a role to your account before you can access ERP modules.
           </div>
           <div className="mt-6">
             <Link
               to="/login"
-              className="inline-block w-full rounded-xl bg-accent-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 shadow-sm"
+              className="btn btn-primary w-full min-h-[38px]"
             >
-              Return to Login
+              Return to sign in
             </Link>
           </div>
         </div>
@@ -71,90 +70,126 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 text-text-primary transition-colors duration-200">
+    <div className="relative min-h-screen bg-bg-primary py-10 px-4 text-text-primary flex flex-col justify-center">
       {/* Top Right Theme Toggle */}
       <button
         onClick={toggleTheme}
         title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        className="absolute top-6 right-6 flex items-center gap-2 rounded-xl border border-border-color bg-bg-secondary px-3 py-2 text-xs font-semibold text-text-secondary hover:text-text-primary shadow-xs transition-all"
+        className="btn btn-ghost btn-icon btn-sm absolute top-6 right-6"
+        aria-label="Toggle theme"
       >
-        {isDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-accent-primary" />}
-        <span>{isDark ? 'Light' : 'Dark'} Mode</span>
+        {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
       </button>
 
-      <div className="w-full max-w-md rounded-3xl border border-border-color bg-bg-secondary p-8 shadow-brand transition-all">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <Logo size="lg" showText={false} />
-          </div>
-          <h1 className="text-2xl font-black text-text-primary">Create account</h1>
-          <p className="mt-1.5 text-xs text-text-muted">Get started with your ERP Nexus workspace.</p>
+      <div className="sheet w-full max-w-2xl mx-auto p-6 sm:p-8">
+        <div className="flex flex-col items-center text-center mb-6">
+          <Logo size="md" />
+          <h1 className="text-2xl font-semibold text-text-primary mt-4">Create your account</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Get started with your ERP Nexus workspace.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-text-secondary">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-border-color bg-bg-card px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary transition-colors"
-              placeholder="John Doe"
-              required
-            />
+        {error && (
+          <div className="mb-6 rounded-md border border-[var(--danger-border)] bg-[var(--danger-bg)] px-3.5 py-2.5 text-sm text-[var(--danger-text)] flex items-center gap-2">
+            <AlertCircle size={16} className="shrink-0" />
+            <span className="text-xs font-medium">{error}</span>
           </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Section: Personal Details */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-text-secondary">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-border-color bg-bg-card px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary transition-colors"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-text-secondary">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-border-color bg-bg-card px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary transition-colors"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-text-secondary">Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-xl border border-border-color bg-bg-card px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary transition-colors"
-              placeholder="••••••••"
-              required
-            />
+            <h3 className="text-sm font-semibold text-text-primary">Personal details</h3>
+            <div className="dim-line mt-2 mb-4" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="field-label">Full name</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+                    <User size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="field pl-9"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="field-label">Work email</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+                    <Mail size={16} />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="field pl-9"
+                    placeholder="you@company.com"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {error && (
-            <div className="rounded-xl border border-danger-border bg-danger-bg px-4 py-3 text-xs font-semibold text-danger-text">
-              {error}
+          {/* Section: Account Credentials */}
+          <div>
+            <h3 className="text-sm font-semibold text-text-primary">Account credentials</h3>
+            <div className="dim-line mt-2 mb-4" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="field-label">Password</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="field pl-9"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="field-label">Confirm password</label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="field pl-9"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-accent-primary px-4 py-3 font-semibold text-sm text-white shadow-sm hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70 transition-all"
+            className="btn btn-primary w-full min-h-[40px]"
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-text-muted">
+        <div className="mt-6 text-center text-sm text-text-muted">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-accent-primary hover:underline">
+          <Link to="/login" className="text-accent-primary hover:underline font-medium">
             Sign in
           </Link>
         </div>

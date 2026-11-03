@@ -6,39 +6,47 @@ const mapStatusTheme = (status = '') => {
   // Success / Active / Approved / Completed / Pass / Paid / Resolved / Verified
   if (['active', 'success', 'approved', 'paid', 'completed', 'pass', 'resolved', 'in stock', 'verified'].includes(value)) {
     return {
-      bg: 'bg-emerald-500/10 dark:bg-emerald-950/40',
-      text: 'text-emerald-700 dark:text-emerald-400',
-      border: 'border-emerald-200/80 dark:border-emerald-800/80',
-      dot: 'bg-emerald-500'
+      style: {
+        '--tag-bg': 'var(--success-bg)',
+        '--tag-text': 'var(--success-text)',
+        '--tag-border': 'var(--success-border)',
+        '--lamp': 'var(--accent-success)'
+      }
     };
   }
 
   // Warning / Pending / Draft / Scheduled / Open / Reorder / Low Stock
   if (['warning', 'pending', 'draft', 'scheduled', 'open', 'reorder', 'low stock', 'inspection required', 'in progress'].includes(value)) {
     return {
-      bg: 'bg-amber-500/10 dark:bg-amber-950/40',
-      text: 'text-amber-700 dark:text-amber-400',
-      border: 'border-amber-200/80 dark:border-amber-800/80',
-      dot: 'bg-amber-500'
+      style: {
+        '--tag-bg': 'var(--warning-bg)',
+        '--tag-text': 'var(--warning-text)',
+        '--tag-border': 'var(--warning-border)',
+        '--lamp': 'var(--accent-warning)'
+      }
     };
   }
 
   // Danger / Rejected / Overdue / Fail / Cancelled / Critical / Out of Stock / Void
   if (['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical', 'out of stock', 'expired', 'void'].includes(value)) {
     return {
-      bg: 'bg-rose-500/10 dark:bg-rose-950/40',
-      text: 'text-rose-700 dark:text-rose-400',
-      border: 'border-rose-200/80 dark:border-rose-800/80',
-      dot: 'bg-rose-500'
+      style: {
+        '--tag-bg': 'var(--danger-bg)',
+        '--tag-text': 'var(--danger-text)',
+        '--tag-border': 'var(--danger-border)',
+        '--lamp': 'var(--accent-danger)'
+      }
     };
   }
 
   // Info / Processing / Issued / Shipped / En-Route / New
   return {
-    bg: 'bg-blue-500/10 dark:bg-blue-950/40',
-    text: 'text-blue-700 dark:text-blue-400',
-    border: 'border-blue-200/80 dark:border-blue-800/80',
-    dot: 'bg-blue-500'
+    style: {
+      '--tag-bg': 'var(--info-bg)',
+      '--tag-text': 'var(--info-text)',
+      '--tag-border': 'var(--info-border)',
+      '--lamp': 'var(--accent-info)'
+    }
   };
 };
 
@@ -47,10 +55,11 @@ export default function StatusBadge({ status, className = '' }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold   font-mono-tabular border transition-colors shadow-2xs ${theme.bg} ${theme.text} ${theme.border} ${className}`}
+      style={theme.style}
+      className={`andon-tag font-mono-tabular ${className}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${theme.dot}`} />
-      <span>{status || 'UNKNOWN'}</span>
+      <span className="lamp" />
+      <span>{status || 'Unknown'}</span>
     </span>
   );
 }

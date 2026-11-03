@@ -42,7 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop Overlay */}
       <div 
-        className="fixed inset-0 bg-slate-950/70 dark:bg-black/80 backdrop-blur-xs transition-opacity duration-200"
+        className="fixed inset-0 bg-black/50 transition-opacity duration-200"
         onClick={onClose}
       />
 
@@ -50,27 +50,27 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
         {/* Modal Dialog Box */}
         <div 
-          className={`pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-2xl border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn overflow-hidden`}
+          className={`pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] ${sizeClasses} max-h-[90vh] flex flex-col transform rounded-lg border border-border-color bg-bg-modal shadow-modal text-left align-middle transition-all duration-200 animate-fadeIn overflow-hidden`}
           role="dialog"
           aria-modal="true"
         >
           {/* Integrated Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border-color bg-slate-50/50 dark:bg-slate-900/50 shrink-0 select-none">
-            <h3 className="text-lg font-semibold text-text-primary truncate mr-3">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border-color shrink-0 select-none">
+            <h3 className="text-base font-semibold text-text-primary truncate mr-3">
               {title}
             </h3>
             <button
               type="button"
-              className="rounded-lg p-1.5 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="btn btn-ghost btn-icon btn-sm shrink-0"
               onClick={onClose}
             >
               <span className="sr-only">Close modal</span>
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
           {/* Scrollable Content Body Area */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-5 bg-bg-modal text-text-primary">
+          <div className="flex-1 overflow-y-auto p-5 text-text-primary">
             {children}
           </div>
         </div>

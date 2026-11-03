@@ -1,26 +1,37 @@
 import React from 'react';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
 import Modal from './Modal';
 
 export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Confirm', danger = false }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <p className="text-sm text-text-secondary leading-relaxed">{message}</p>
-      <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-border-color">
+      <div className="flex items-start gap-3">
+        <div 
+          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center"
+          style={{
+            backgroundColor: danger ? 'var(--danger-bg)' : 'var(--warning-bg)',
+            color: danger ? 'var(--danger-text)' : 'var(--warning-text)',
+            border: `1px solid ${danger ? 'var(--danger-border)' : 'var(--warning-border)'}`
+          }}
+        >
+          {danger ? <AlertCircle size={18} /> : <AlertTriangle size={18} />}
+        </div>
+        <div className="flex-1 min-w-0 pt-1">
+          <p className="text-sm text-text-secondary leading-relaxed">{message}</p>
+        </div>
+      </div>
+      <div className="mt-6 flex items-center justify-end gap-2 pt-4 border-t border-border-color">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-border-color px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+          className="btn"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className={`rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all ${
-            danger
-              ? 'bg-accent-danger hover:opacity-90'
-              : 'bg-accent-primary hover:opacity-90'
-          }`}
+          className={danger ? 'btn btn-danger' : 'btn btn-primary'}
         >
           {confirmLabel}
         </button>

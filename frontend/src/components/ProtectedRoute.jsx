@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
 
@@ -10,8 +11,9 @@ export default function ProtectedRoute({ module, action = 'view', children }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
-        Loading session...
+      <div className="flex min-h-screen items-center justify-center bg-bg-primary text-text-secondary gap-2">
+        <Loader2 className="animate-spin text-accent-primary" size={20} />
+        <span className="text-sm">Loading…</span>
       </div>
     );
   }
@@ -22,11 +24,11 @@ export default function ProtectedRoute({ module, action = 'view', children }) {
 
   if (module && !hasPermission(module, action)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
-        <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center">
-          <p className="text-xs text-red-400">403</p>
-          <h1 className="mt-2 text-2xl font-semibold">Access denied</h1>
-          <p className="mt-2 text-sm text-slate-400">You do not have permission to view this page.</p>
+      <div className="flex min-h-screen items-center justify-center bg-bg-primary px-4">
+        <div className="sheet p-8 text-center max-w-md w-full">
+          <p className="text-xs font-semibold text-[var(--danger-text)]">403</p>
+          <h1 className="mt-2 text-xl font-semibold text-text-primary">Access denied</h1>
+          <p className="mt-2 text-sm text-text-secondary">You do not have permission to view this page.</p>
         </div>
       </div>
     );

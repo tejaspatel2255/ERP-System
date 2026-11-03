@@ -1,38 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Logo({ size = 'md', showText = true, className = '' }) {
+export default function Logo({ size = 'md', showText = true, className = '', onDark = false }) {
   const sizeClasses = {
     sm: 'h-7 w-7',
-    md: 'h-9 w-9',
-    lg: 'h-14 w-14',
-    xl: 'h-16 w-16'
+    md: 'h-8 w-8',
+    lg: 'h-10 w-10',
+    xl: 'h-12 w-12'
   };
 
-  const textSizes = {
-    sm: 'text-base',
-    md: 'text-lg',
-    lg: 'text-2xl',
-    xl: 'text-3xl'
-  };
+  const textPrimaryColor = onDark ? 'text-white' : 'text-text-primary';
+  const sublabelColor = onDark ? 'text-[#7F93AD]' : 'text-text-muted';
 
   return (
-    <Link to="/dashboard" className={`group flex items-center gap-2.5 transition-transform hover:scale-[1.02] ${className}`}>
-      <div className={`relative flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-md shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all duration-300 ${sizeClasses[size]}`}>
+    <Link to="/dashboard" className={`group flex items-center gap-2.5 transition-opacity hover:opacity-95 ${className}`}>
+      <div className={`relative flex items-center justify-center rounded shrink-0 overflow-hidden ${sizeClasses[size] || sizeClasses.md}`}>
         <img
-          src="/logo.png"
+          src="/logo.svg"
           alt="ERP Nexus Logo"
-          className="h-full w-full rounded-[10px] object-cover"
+          className="h-full w-full object-contain"
           onError={(e) => {
-            // Fallback if image load fails
-            e.target.style.display = 'none';
+            // Fallback if svg fails
+            e.currentTarget.src = '/logo.png';
           }}
         />
       </div>
       {showText && (
-        <span className={`font-black  text-text-primary ${textSizes[size]}`}>
-          ERP <span className="bg-gradient-to-r from-accent-primary via-purple-400 to-accent-secondary bg-clip-text text-transparent">Nexus</span>
-        </span>
+        <div className="flex flex-col leading-none">
+          <span className={`font-semibold text-base ${textPrimaryColor}`}>
+            ERP Nexus
+          </span>
+          <span className={`text-[11px] font-normal mt-0.5 ${sublabelColor}`}>
+            Enterprise Suite
+          </span>
+        </div>
       )}
     </Link>
   );

@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
 import { useRole } from '../../context/RoleContext';
 import { issueStock, getIssues, getItems } from '../../api/storeApi';
-import { formatDate, formatDateTime } from '../../utils/formatDate';
+import { formatDate } from '../../utils/formatDate';
 
 const StockIssuePage = () => {
-  const { hasPermission, user } = useRole();
+  const { hasPermission } = useRole();
   const [issues, setIssues] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -72,32 +73,32 @@ const StockIssuePage = () => {
   const columns = [
     { key: 'date', label: 'Date', render: i => formatDate(i.date) },
     { key: 'reference_type', label: 'Issued To' },
-    { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
-    { key: 'qty', label: 'Qty Issued', render: i => <span className="text-red-600 font-semibold">-{parseFloat(i.qty)} {i.unit}</span> },
+    { key: 'item_name', label: 'Item', render: i => <div><div className="font-medium text-text-primary">{i.item_name}</div><div className="text-xs text-text-muted"><span className="stamp">{i.item_code}</span></div></div> },
+    { key: 'qty', label: 'Qty Issued', render: i => <span className="text-[var(--danger-text)] font-semibold tabular-nums">-{parseFloat(i.qty)} {i.unit}</span> },
     { key: 'issued_by', label: 'Issued By', render: i => i.issued_by || 'N/A' },
     { key: 'notes', label: 'Notes / Ref', render: i => i.notes || '—' }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Stock Issues</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Issue materials to production work orders or sales fulfilment.</p>
-        </div>
-        {hasPermission('store', 'create') && <button onClick={openForm} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-500">Issue Stock</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Stock Issues"
+        subtitle="Issue materials to production work orders or sales fulfilment."
+        actions={
+          hasPermission('store', 'create') && <button onClick={openForm} className="btn-primary">Issue Stock</button>
+        }
+      />
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <select value={refType} onChange={e => setRefType(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none">
+      <div className="sheet p-3 flex flex-wrap gap-3 items-center">
+        <select value={refType} onChange={e => setRefType(e.target.value)} className="field md:w-44">
           <option value="">All Types</option>
           <option value="WorkOrder">Work Order</option>
           <option value="SalesOrder">Sales Order</option>
           <option value="Manual">Manual</option>
         </select>
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
+        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="field md:w-40" />
+        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="field md:w-40" />
       </div>
 
       <Table columns={columns} data={issues} loading={loading} emptyMessage="No stock issues recorded." />
@@ -107,57 +108,57 @@ const StockIssuePage = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue To *</label>
-              <select value={form.reference_type} onChange={e => setForm(p => ({ ...p, reference_type: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Issue To *</label>
+              <select value={form.reference_type} onChange={e => setForm(p => ({ ...p, reference_type: e.target.value }))} className="field">
                 <option value="WorkOrder">Production / Work Order</option>
                 <option value="SalesOrder">Sales / Dispatch</option>
                 <option value="Manual">Manual / Internal</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue Date</label>
-              <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Issue Date</label>
+              <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="field" />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Reference No</label>
-              <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. WO-202406-0012 or dispatch note..." className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Notes / Reference No</label>
+              <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. WO-202406-0012 or dispatch note..." className="field" />
             </div>
           </div>
 
           {/* Line Items */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Items to Issue</h4>
-              <button type="button" onClick={addRow} className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100">+ Add Item</button>
+              <h4 className="text-sm font-semibold text-text-primary">Items to Issue</h4>
+              <button type="button" onClick={addRow} className="btn-secondary btn-xs">+ Add Item</button>
             </div>
 
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="sheet overflow-hidden">
               <table className="w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-bg-subtle border-b border-border-color">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 text-left">Item (Current Stock)</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 text-center w-28">Qty to Issue</th>
+                    <th className="px-4 py-2.5 font-semibold text-text-secondary text-left">Item (Current Stock)</th>
+                    <th className="px-3 py-2.5 font-semibold text-text-secondary text-center w-32">Qty to Issue</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color">
                   {issueItems.map((row, idx) => {
                     const itemDetail = getItemDetails(row.item_id);
                     const warn = rowHasStockWarning(row);
                     return (
-                      <tr key={idx} className={warn ? 'bg-red-50 dark:bg-red-950/20' : ''}>
+                      <tr key={idx} className={warn ? 'bg-[var(--danger-bg)]' : ''}>
                         <td className="px-2 py-2">
-                          <select required value={row.item_id} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, item_id: e.target.value } : r))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-2 text-sm text-slate-900 dark:text-white focus:outline-none">
+                          <select required value={row.item_id} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, item_id: e.target.value } : r))} className="field py-1.5 px-2 text-sm">
                             <option value="" disabled>Select Item</option>
                             {allItems.map(it => <option key={it.id} value={it.id}>{it.name} ({it.item_code}) · Stock: {parseFloat(it.current_stock)} {it.unit}</option>)}
                           </select>
-                          {warn && <p className="text-xs text-red-600 mt-0.5">⚠ Exceeds available stock ({parseFloat(itemDetail?.current_stock)} {itemDetail?.unit})</p>}
+                          {warn && <p className="text-xs text-[var(--danger-text)] mt-1 font-medium">⚠ Exceeds available stock ({parseFloat(itemDetail?.current_stock)} {itemDetail?.unit})</p>}
                         </td>
                         <td className="px-2 py-2">
-                          <input type="number" min="0.0001" step="any" required value={row.qty} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, qty: e.target.value } : r))} className={`block w-full rounded border py-1.5 px-2 text-sm text-center focus:outline-none ${warn ? 'border-red-400' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-950`} />
+                          <input type="number" min="0.0001" step="any" required value={row.qty} onChange={e => setIssueItems(p => p.map((r, i) => i === idx ? { ...r, qty: e.target.value } : r))} className={`field py-1.5 px-2 text-sm text-center tabular-nums ${warn ? 'border-[var(--danger-border)]' : ''}`} />
                         </td>
                         <td className="px-2 py-2 text-center">
-                          <button type="button" onClick={() => removeRow(idx)} className="text-red-500 hover:text-red-700 p-1">
+                          <button type="button" onClick={() => removeRow(idx)} className="text-[var(--danger-text)] hover:opacity-80 p-1">
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                         </td>
@@ -169,9 +170,9 @@ const StockIssuePage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">Confirm Issue</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className="btn-primary">Confirm Issue</button>
           </div>
         </form>
       </Modal>

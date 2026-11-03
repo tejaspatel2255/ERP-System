@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
 import { useRole } from '../../context/RoleContext';
 import { getGRNs, createGRN, getGRNById } from '../../api/storeApi';
 import { getPurchaseOrders } from '../../api/purchaseApi';
 import axiosInstance from '../../api/axiosInstance';
+import { formatDate } from '../../utils/formatDate';
 
 const GRNPage = () => {
   const { hasPermission } = useRole();
@@ -93,24 +95,24 @@ const GRNPage = () => {
   };
 
   const columns = [
-    { key: 'grn_no', label: 'GRN No' },
-    { key: 'po_no', label: 'PO Reference' },
-    { key: 'vendor_name', label: 'Supplier' },
+    { key: 'grn_no', label: 'GRN No', render: i => <span className="stamp">{i.grn_no}</span> },
+    { key: 'po_no', label: 'PO Reference', render: i => <span className="stamp">{i.po_no}</span> },
+    { key: 'vendor_name', label: 'Supplier', render: i => <span className="font-medium text-text-primary">{i.vendor_name}</span> },
     { key: 'received_date', label: 'Received Date', render: i => formatDate(i.received_date) },
     { key: 'item_count', label: 'Items', render: i => `${i.item_count} item(s)` },
     { key: 'received_by_name', label: 'Received By', render: i => i.received_by_name || 'N/A' },
-    { key: 'actions', label: 'Actions', render: i => <button onClick={() => handleView(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View GRN</button> }
+    { key: 'actions', label: 'Actions', render: i => <button onClick={() => handleView(i)} className="btn-secondary btn-xs">View GRN</button> }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Goods Receipt Notes (GRN)</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Record supplier deliveries against approved POs and update warehouse stock.</p>
-        </div>
-        {hasPermission('store', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Create GRN</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Goods Receipt Notes (GRN)"
+        subtitle="Record supplier deliveries against approved POs and update warehouse stock."
+        actions={
+          hasPermission('store', 'create') && <button onClick={openCreate} className="btn-primary">+ Create GRN</button>
+        }
+      />
 
       <Table columns={columns} data={grns} loading={loading} emptyMessage="No GRNs recorded." />
 
@@ -119,46 +121,46 @@ const GRNPage = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Purchase Order *</label>
-              <select required onChange={e => handlePOSelect(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Select Purchase Order *</label>
+              <select required onChange={e => handlePOSelect(e.target.value)} className="field">
                 <option value="">— Select Approved PO —</option>
                 {approvedPOs.map(po => <option key={po.id} value={po.id}>{po.po_no} · {po.vendor_name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Received Date</label>
-              <input type="date" value={receivedDate} onChange={e => setReceivedDate(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Received Date</label>
+              <input type="date" value={receivedDate} onChange={e => setReceivedDate(e.target.value)} className="field" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Quality remarks, carrier details..." className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Notes</label>
+              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Quality remarks, carrier details..." className="field" />
             </div>
           </div>
 
           {poItems.length > 0 && (
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            <div className="sheet overflow-hidden">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-bg-subtle border-b border-border-color">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500">Item</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Ordered</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Received *</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Rejected</th>
+                    <th className="px-4 py-2.5 font-semibold text-text-secondary">Item</th>
+                    <th className="px-3 py-2.5 font-semibold text-text-secondary text-center">Ordered</th>
+                    <th className="px-3 py-2.5 font-semibold text-text-secondary text-center">Received *</th>
+                    <th className="px-3 py-2.5 font-semibold text-text-secondary text-center">Rejected</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border-color">
                   {poItems.map(it => (
                     <tr key={it.item_id}>
                       <td className="px-4 py-2">
-                        <div className="font-semibold text-slate-900 dark:text-white">{it.item_name}</div>
-                        <div className="text-xs text-slate-400">{it.item_code} · {it.unit || '—'}</div>
+                        <div className="font-semibold text-text-primary">{it.item_name}</div>
+                        <div className="text-xs text-text-muted"><span className="stamp">{it.item_code}</span> · {it.unit || '—'}</div>
                       </td>
-                      <td className="px-3 py-2 text-center font-medium">{parseFloat(it.qty)}</td>
+                      <td className="px-3 py-2 text-center font-medium tabular-nums">{parseFloat(it.qty)}</td>
                       <td className="px-3 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={receivedQtys[it.item_id] ?? ''} onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-sm text-center focus:outline-none focus:border-blue-500" />
+                        <input type="number" min="0" step="any" placeholder="0" value={receivedQtys[it.item_id] ?? ''} onChange={e => setReceivedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="field py-1 px-2 text-sm text-center tabular-nums" />
                       </td>
                       <td className="px-3 py-2">
-                        <input type="number" min="0" step="any" placeholder="0" value={rejectedQtys[it.item_id] ?? '0'} onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="block w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 py-1 px-2 text-sm text-center focus:outline-none focus:border-red-400" />
+                        <input type="number" min="0" step="any" placeholder="0" value={rejectedQtys[it.item_id] ?? '0'} onChange={e => setRejectedQtys(p => ({ ...p, [it.item_id]: e.target.value }))} className="field py-1 px-2 text-sm text-center tabular-nums text-[var(--danger-text)] border-[var(--danger-border)]" />
                       </td>
                     </tr>
                   ))}
@@ -167,9 +169,9 @@ const GRNPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">Confirm Receipt & Update Stock</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className="btn-primary">Confirm Receipt & Update Stock</button>
           </div>
         </form>
       </Modal>
@@ -178,23 +180,23 @@ const GRNPage = () => {
       <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`GRN Detail: ${viewingGrn?.grn_no}`} size="lg">
         {viewingGrn && (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs">
-              <div><p className="text-slate-400 font-semibold">Supplier</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{viewingGrn.vendor_name}</p></div>
-              <div><p className="text-slate-400 font-semibold">PO Reference</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{viewingGrn.po_no}</p></div>
-              <div><p className="text-slate-400 font-semibold">Received Date</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{formatDate(viewingGrn.received_date)}</p></div>
+            <div className="grid grid-cols-3 gap-4 p-4 sheet text-xs">
+              <div><p className="text-text-muted font-medium">Supplier</p><p className="font-semibold text-text-primary mt-1">{viewingGrn.vendor_name}</p></div>
+              <div><p className="text-text-muted font-medium">PO Reference</p><p className="font-semibold text-text-primary mt-1"><span className="stamp">{viewingGrn.po_no}</span></p></div>
+              <div><p className="text-text-muted font-medium">Received Date</p><p className="font-semibold text-text-primary mt-1">{formatDate(viewingGrn.received_date)}</p></div>
             </div>
             <Table
               columns={[
-                { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
-                { key: 'ordered_qty', label: 'Ordered', render: i => parseFloat(i.ordered_qty) },
-                { key: 'received_qty', label: 'Received', render: i => <span className="text-green-600 font-semibold">{parseFloat(i.received_qty)}</span> },
-                { key: 'rejected_qty', label: 'Rejected', render: i => <span className="text-red-600 font-semibold">{parseFloat(i.rejected_qty)}</span> }
+                { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold text-text-primary">{i.item_name}</div><div className="text-xs text-text-muted"><span className="stamp">{i.item_code}</span></div></div> },
+                { key: 'ordered_qty', label: 'Ordered', render: i => <span className="tabular-nums">{parseFloat(i.ordered_qty)}</span> },
+                { key: 'received_qty', label: 'Received', render: i => <span className="text-[var(--success-text)] font-semibold tabular-nums">{parseFloat(i.received_qty)}</span> },
+                { key: 'rejected_qty', label: 'Rejected', render: i => <span className="text-[var(--danger-text)] font-semibold tabular-nums">{parseFloat(i.rejected_qty)}</span> }
               ]}
               data={viewingItems}
               emptyMessage=""
             />
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button onClick={() => setIsViewOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Close</button>
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button onClick={() => setIsViewOpen(false)} className="btn-secondary">Close</button>
             </div>
           </div>
         )}

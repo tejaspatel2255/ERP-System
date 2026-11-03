@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { getStockLedger, getItems } from '../../api/storeApi';
-import { formatDate, formatDateTime } from '../../utils/formatDate';
+import PageHeader from '../../components/PageHeader';
+import { formatDate } from '../../utils/formatDate';
 import { exportToCSV } from '../../utils/exportCSV';
 
 const StockLedgerPage = () => {
@@ -44,46 +45,46 @@ const StockLedgerPage = () => {
   const selectedItemDetails = items.find(i => i.id === selectedItem);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Stock Ledger</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Full chronological transaction history with running balance for any item.</p>
-        </div>
-        <button onClick={handleExport} className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
-          ↓ Export CSV
-        </button>
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Stock Ledger"
+        subtitle="Full chronological transaction history with running balance for any item."
+        actions={
+          <button onClick={handleExport} className="btn-secondary">
+            ↓ Export CSV
+          </button>
+        }
+      />
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 mb-6 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="sheet p-3 flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-xs font-semibold text-slate-500 mb-1">Item</label>
-          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+          <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Item</label>
+          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)} className="field">
             {items.map(i => <option key={i.id} value={i.id}>{i.name} ({i.item_code})</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 mb-1">From</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+          <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">From</label>
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="field" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 mb-1">To</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+          <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">To</label>
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="field" />
         </div>
       </div>
 
       {/* Summary card */}
       {selectedItemDetails && (
-        <div className="flex gap-4 mb-6 flex-wrap">
+        <div className="flex gap-4 flex-wrap">
           {[
             { label: 'Current Stock', value: `${parseFloat(selectedItemDetails.current_stock)} ${selectedItemDetails.unit}`, highlight: true },
             { label: 'Reorder Level', value: `${parseFloat(selectedItemDetails.reorder_level)} ${selectedItemDetails.unit}` },
             { label: 'Transactions', value: ledger.length }
           ].map(card => (
-            <div key={card.label} className="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <p className="text-xs text-slate-400 font-semibold">{card.label}</p>
-              <p className={`text-xl font-semibold mt-1 ${card.highlight ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>{card.value}</p>
+            <div key={card.label} className="kpi-card min-w-[160px]">
+              <p className="kpi-label">{card.label}</p>
+              <p className={`kpi-value ${card.highlight ? 'text-[var(--accent-primary)]' : ''}`}>{card.value}</p>
             </div>
           ))}
         </div>
@@ -91,41 +92,44 @@ const StockLedgerPage = () => {
 
       {/* Ledger Table */}
       {loading ? (
-        <div className="py-16 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="py-16 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]" /></div>
       ) : ledger.length === 0 ? (
-        <div className="py-16 text-center text-slate-400">No transactions found for this item.</div>
+        <div className="sheet py-16 text-center text-text-muted">No transactions found for this item.</div>
       ) : (
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
+        <div className="sheet overflow-hidden">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+            <thead className="bg-bg-subtle border-b border-border-color">
               <tr>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Date</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Type</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-right">Qty</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-right">Running Balance</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Reference</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Notes</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Done By</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Qty</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Running Balance</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Reference</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Notes</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Done By</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {ledger.map((row, idx) => (
-                <tr key={row.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">{formatDate(row.date)}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${row.transaction_type === 'IN' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                      {row.transaction_type === 'IN' ? '▲ IN' : '▼ OUT'}
-                    </span>
-                  </td>
-                  <td className={`px-4 py-3 text-right font-semibold ${row.transaction_type === 'IN' ? 'text-green-600' : 'text-red-600'}`}>
-                    {row.transaction_type === 'IN' ? '+' : '-'}{parseFloat(row.qty)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">{parseFloat(row.running_balance)}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{row.reference_type || '—'}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500 max-w-[200px] truncate">{row.notes || '—'}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{row.done_by || 'System'}</td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-border-color">
+              {ledger.map((row, idx) => {
+                const isIn = row.transaction_type === 'IN';
+                return (
+                  <tr key={row.id || idx} className="hover:bg-bg-subtle transition-colors">
+                    <td className="px-4 py-3 text-xs text-text-muted tabular-nums">{formatDate(row.date)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold border ${isIn ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)]' : 'bg-[var(--danger-bg)] text-[var(--danger-text)] border-[var(--danger-border)]'}`}>
+                        {isIn ? '▲ IN' : '▼ OUT'}
+                      </span>
+                    </td>
+                    <td className={`px-4 py-3 text-right font-semibold tabular-nums ${isIn ? 'text-[var(--success-text)]' : 'text-[var(--danger-text)]'}`}>
+                      {isIn ? '+' : '-'}{parseFloat(row.qty)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-text-primary">{parseFloat(row.running_balance)}</td>
+                    <td className="px-4 py-3 text-xs text-text-secondary"><span className="stamp">{row.reference_type || '—'}</span></td>
+                    <td className="px-4 py-3 text-xs text-text-muted max-w-[200px] truncate">{row.notes || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-text-muted">{row.done_by || 'System'}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -12,7 +12,7 @@ export default function EmptyState({ icon: Icon, title, description, actionLabel
           )}
         </div>
       )}
-      <h3 className="text-base font-bold text-text-primary">{title}</h3>
+      <h3 className="text-base font-semibold text-text-primary">{title}</h3>
       {description && <p className="mt-1.5 max-w-md text-xs text-text-muted leading-relaxed">{description}</p>}
       {actionLabel && onAction && (
         <button

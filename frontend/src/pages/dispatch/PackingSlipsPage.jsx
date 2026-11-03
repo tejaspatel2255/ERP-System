@@ -207,7 +207,7 @@ export default function PackingSlipsPage() {
 
           {selectedOrderItems.length > 0 && (
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted border-b border-border-color pb-2">Order Line Items</h4>
+              <h4 className="text-xs font-semibold text-text-muted border-b border-border-color pb-2">Order Line Items</h4>
               <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                 {selectedOrderItems.map((item) => (
                   <div key={item.item_id} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center bg-bg-secondary/60 p-4 border border-border-color rounded-2xl">

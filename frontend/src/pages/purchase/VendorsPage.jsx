@@ -197,7 +197,7 @@ const VendorsPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Vendor Directory</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Vendor Directory</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage supplier profiles, payment terms, and monitor total spend volume.</p>
         </div>
 
@@ -329,22 +329,22 @@ const VendorsPage = () => {
             {/* Summary details card */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-800">
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vendor Info</h4>
-                <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">{viewingVendor.name}</p>
+                <h4 className="text-xs font-semibold text-slate-400">Vendor Info</h4>
+                <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">{viewingVendor.name}</p>
                 <p className="text-xs text-slate-500">{viewingVendor.email || 'No email'}</p>
                 <p className="text-xs text-slate-500">{viewingVendor.phone || 'No phone'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">GSTIN & Address</h4>
+                <h4 className="text-xs font-semibold text-slate-400">GSTIN & Address</h4>
                 <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingVendor.gstin || 'Unregistered'}</p>
                 <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingVendor.address || 'No Address'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit Terms & Balances</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Terms: <span className="font-bold">{viewingVendor.payment_terms || 'Net 30'}</span></p>
+                <h4 className="text-xs font-semibold text-slate-400">Credit Terms & Balances</h4>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Terms: <span className="font-semibold">{viewingVendor.payment_terms || 'Net 30'}</span></p>
                 <p className="text-sm text-slate-650">
                   Outstanding Due:{' '}
-                  <span className={`font-bold ${viewingHistory.outstanding > 0 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
+                  <span className={`font-semibold ${viewingHistory.outstanding > 0 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
                     {formatINR(viewingHistory.outstanding)}
                   </span>
                 </p>
@@ -353,7 +353,7 @@ const VendorsPage = () => {
 
             {/* History ledgers */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white uppercase tracking-wider">Transaction Records</h3>
+              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Transaction Records</h3>
               
               {historyLoading ? (
                 <div className="py-12 flex items-center justify-center">
@@ -363,7 +363,7 @@ const VendorsPage = () => {
                 <div className="space-y-6">
                   {/* Purchase Orders sub-table */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Purchase Orders Issued</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Purchase Orders Issued</h4>
                     <Table
                       columns={[
                         { key: 'po_no', label: 'PO No' },
@@ -372,7 +372,7 @@ const VendorsPage = () => {
                           key: 'approval_status',
                           label: 'Approval',
                           render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
                               item.approval_status === 'Approved' ? 'bg-green-155 text-green-800' :
                               item.approval_status === 'Rejected' ? 'bg-red-100 text-red-800' :
                               'bg-orange-100 text-orange-850'
@@ -391,7 +391,7 @@ const VendorsPage = () => {
 
                   {/* Vendor Invoices sub-table */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Supplier Invoices (Bills)</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Supplier Invoices (Bills)</h4>
                     <Table
                       columns={[
                         { key: 'invoice_no', label: 'Invoice Bill No' },
@@ -401,7 +401,7 @@ const VendorsPage = () => {
                           key: 'status',
                           label: 'Payment',
                           render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
                               item.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-850'
                             }`}>
                               {item.status}

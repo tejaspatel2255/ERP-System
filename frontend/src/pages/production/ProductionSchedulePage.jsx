@@ -76,7 +76,7 @@ const ProductionSchedulePage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Production Schedule</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Production Schedule</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Gantt-style timeline view of work orders by planned date range.</p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -110,12 +110,12 @@ const ProductionSchedulePage = () => {
         <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
           {/* Day header */}
           <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
-            <div className="w-56 shrink-0 px-4 py-3 text-xs font-bold text-slate-500 uppercase border-r border-slate-200 dark:border-slate-800">Work Order</div>
+            <div className="w-56 shrink-0 px-4 py-3 text-xs font-semibold text-slate-500 border-r border-slate-200 dark:border-slate-800">Work Order</div>
             <div className="flex-1 overflow-hidden relative">
               <div className="flex h-10">
                 {days.map((d, i) => (
                   <div key={i} className="flex-1 border-r border-slate-100 dark:border-slate-800 flex items-center justify-center">
-                    <span className={`text-[9px] font-semibold ${d.toDateString() === new Date().toDateString() ? 'text-blue-600' : 'text-slate-400'}`}>
+                    <span className={`text-xs font-semibold ${d.toDateString() === new Date().toDateString() ? 'text-blue-600' : 'text-slate-400'}`}>
                       {d.getDate()}<br /><span className="font-normal">{d.toLocaleString('default', { month: 'short' })}</span>
                     </span>
                   </div>
@@ -131,9 +131,9 @@ const ProductionSchedulePage = () => {
             return (
               <div key={wo.id} className="flex border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                 <div className="w-56 shrink-0 px-4 py-3 border-r border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">{wo.wo_no}</div>
-                  <div className="text-[10px] text-slate-500 truncate max-w-[180px]">{wo.finished_item_name}</div>
-                  <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-bold border mt-0.5 ${colors.badge}`}>{wo.status}</span>
+                  <div className="text-xs font-semibold text-slate-900 dark:text-white">{wo.wo_no}</div>
+                  <div className="text-xs text-slate-500 truncate max-w-[180px]">{wo.finished_item_name}</div>
+                  <span className={`inline-flex rounded-full px-1.5 py-0.5 text-xs font-semibold border mt-0.5 ${colors.badge}`}>{wo.status}</span>
                 </div>
                 <div className="flex-1 relative py-3 px-1">
                   <div className="h-7 relative">
@@ -141,7 +141,7 @@ const ProductionSchedulePage = () => {
                       className={`absolute top-0 h-7 rounded-lg flex items-center px-2 ${colors.bar} opacity-80 transition-all`}
                       style={barStyle}
                     >
-                      <span className="text-white text-[9px] font-bold truncate">{parseFloat(wo.planned_qty)} units</span>
+                      <span className="text-white text-xs font-semibold truncate">{parseFloat(wo.planned_qty)} units</span>
                     </div>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ const ProductionSchedulePage = () => {
             <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 {['WO No','Finished Item','Planned Qty','Planned Start','Planned End','Actual Start','Status'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -166,12 +166,12 @@ const ProductionSchedulePage = () => {
                 return (
                   <tr key={wo.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                     <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{wo.wo_no}</td>
-                    <td className="px-4 py-3 text-xs"><div className="font-medium text-slate-900 dark:text-white">{wo.finished_item_name}</div><div className="text-[10px] text-slate-400">{wo.finished_item_code}</div></td>
+                    <td className="px-4 py-3 text-xs"><div className="font-medium text-slate-900 dark:text-white">{wo.finished_item_name}</div><div className="text-xs text-slate-400">{wo.finished_item_code}</div></td>
                     <td className="px-4 py-3 text-xs">{parseFloat(wo.planned_qty)}</td>
                     <td className="px-4 py-3 text-xs">{formatDate(wo.planned_start)}</td>
                     <td className="px-4 py-3 text-xs">{formatDate(wo.planned_end)}</td>
                     <td className="px-4 py-3 text-xs text-blue-600">{wo.actual_start ? formatDate(wo.actual_start) : '—'}</td>
-                    <td className="px-4 py-3"><span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${colors.badge}`}>{wo.status}</span></td>
+                    <td className="px-4 py-3"><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${colors.badge}`}>{wo.status}</span></td>
                   </tr>
                 );
               })}

@@ -67,11 +67,11 @@ const RawMaterialQCPage = () => {
 
   const columns = [
     { key: 'grn_no', label: 'GRN No' },
-    { key: 'item_name', label: 'Raw Material Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
+    { key: 'item_name', label: 'Raw Material Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
     { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
     { key: 'result', label: 'Inspection Result', render: i => {
-      const cls = i.qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-amber-100 text-amber-800 border-amber-200';
+      const cls = i.qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-semibold' : 'bg-amber-100 text-amber-800 border-amber-200';
       const label = i.qc_status === 'Pending' ? 'Pending stock update' : i.result;
       return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{label}</span>;
     }},
@@ -83,7 +83,7 @@ const RawMaterialQCPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Inward Raw Material QC</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Inward Raw Material QC</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Perform quality checks on incoming store vendor shipments (GRNs) before stocking.</p>
         </div>
         {hasPermission('qc', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Log GRN QC</button>}

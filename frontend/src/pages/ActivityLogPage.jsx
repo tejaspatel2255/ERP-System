@@ -152,7 +152,7 @@ const ActivityLogPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 rounded-2xl border border-border-color bg-bg-secondary shadow-sm">
         {/* Module Filter */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
             Module Filter
           </label>
           <select
@@ -169,7 +169,7 @@ const ActivityLogPage = () => {
 
         {/* User Filter */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
             Operator User
           </label>
           <select
@@ -186,7 +186,7 @@ const ActivityLogPage = () => {
 
         {/* Start Date */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
             Start Date
           </label>
           <input
@@ -199,7 +199,7 @@ const ActivityLogPage = () => {
 
         {/* End Date */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
             End Date
           </label>
           <input

@@ -111,7 +111,7 @@ export default function SelfServicePage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-warning/20 text-accent-warning">
             <AlertCircle size={28} />
           </div>
-          <h3 className="text-xl font-bold text-text-primary">Employee Profile Not Linked</h3>
+          <h3 className="text-xl font-semibold text-text-primary">Employee Profile Not Linked</h3>
           
           {canManageHR ? (
             <>
@@ -141,7 +141,7 @@ export default function SelfServicePage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div>
-        <h2 className="text-xl font-bold text-text-primary">Employee Self-Service Portal</h2>
+        <h2 className="text-xl font-semibold text-text-primary">Employee Self-Service Portal</h2>
         <p className="text-text-secondary text-sm mt-1">Apply for leaves, view holiday quotas, and check monthly attendance logs.</p>
       </div>
 
@@ -150,11 +150,11 @@ export default function SelfServicePage() {
 
       {/* Leave Quota Cards */}
       <div>
-        <h3 className="text-md font-bold text-text-primary mb-3">My Leave Quotas</h3>
+        <h3 className="text-md font-semibold text-text-primary mb-3">My Leave Quotas</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {balances.map(b => (
             <div key={b.id} className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-brand">
-              <p className="text-xs text-text-muted font-bold uppercase tracking-wider">{b.leave_type_name}</p>
+              <p className="text-xs text-text-muted font-semibold">{b.leave_type_name}</p>
               <p className="text-3xl font-black text-text-primary mt-2">
                 {b.remaining_days} <span className="text-xs font-normal text-text-muted">/ {b.total_days} days left</span>
               </p>
@@ -176,7 +176,7 @@ export default function SelfServicePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Apply Form */}
         <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-4">
-          <h3 className="text-md font-bold text-text-primary flex items-center gap-2">
+          <h3 className="text-md font-semibold text-text-primary flex items-center gap-2">
             <Calendar size={18} className="text-accent-primary" />
             Apply for Leave
           </h3>
@@ -232,7 +232,7 @@ export default function SelfServicePage() {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-bold rounded-xl text-xs transition-all shadow-sm"
+              className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-semibold rounded-xl text-xs transition-all shadow-sm"
             >
               Submit Leave Request
             </button>
@@ -241,7 +241,7 @@ export default function SelfServicePage() {
 
         {/* Applications List */}
         <div className="lg:col-span-2 bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand space-y-4">
-          <h3 className="text-md font-bold text-text-primary flex items-center gap-2">
+          <h3 className="text-md font-semibold text-text-primary flex items-center gap-2">
             <Clock size={18} className="text-accent-primary" />
             My Leave Application History
           </h3>
@@ -252,14 +252,14 @@ export default function SelfServicePage() {
               applications.map(app => (
                 <div key={app.id} className="p-3.5 bg-bg-secondary border border-border-color rounded-xl flex justify-between items-center text-xs">
                   <div>
-                    <p className="font-bold text-text-primary">{app.leave_type_name}</p>
+                    <p className="font-semibold text-text-primary">{app.leave_type_name}</p>
                     <p className="text-text-secondary mt-0.5 font-mono">
                       {new Date(app.from_date).toLocaleDateString()} to {new Date(app.to_date).toLocaleDateString()}
                     </p>
-                    <p className="text-text-muted text-[11px] italic mt-1">{app.reason}</p>
+                    <p className="text-text-muted text-xs italic mt-1">{app.reason}</p>
                   </div>
                   <div className="text-right">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                       app.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
                       app.status === 'Rejected' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
                       'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
@@ -267,7 +267,7 @@ export default function SelfServicePage() {
                       {app.status}
                     </span>
                     {app.approver_name && (
-                      <p className="text-[10px] text-text-muted mt-1">Reviewer: {app.approver_name}</p>
+                      <p className="text-xs text-text-muted mt-1">Reviewer: {app.approver_name}</p>
                     )}
                   </div>
                 </div>
@@ -279,19 +279,19 @@ export default function SelfServicePage() {
 
       {/* Attendance logs list */}
       <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand space-y-4">
-        <h3 className="text-md font-bold text-text-primary">Clock Logs (Current Month)</h3>
+        <h3 className="text-md font-semibold text-text-primary">Clock Logs (Current Month)</h3>
         {attendance.length === 0 ? (
           <p className="text-text-muted text-xs italic text-center py-6">No attendance logs found for this month.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
             {attendance.map(att => (
               <div key={att.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl text-center space-y-1">
-                <p className="text-[10px] text-text-muted">{new Date(att.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${statusColors[att.status]}`}>
+                <p className="text-xs text-text-muted">{new Date(att.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[att.status]}`}>
                   {att.status}
                 </span>
                 {(att.check_in || att.check_out) && (
-                  <p className="text-[9px] font-mono text-text-muted mt-1">
+                  <p className="text-xs font-mono text-text-muted mt-1">
                     {att.check_in?.slice(0, 5) || '—'} - {att.check_out?.slice(0, 5) || '—'}
                   </p>
                 )}

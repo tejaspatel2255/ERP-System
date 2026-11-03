@@ -192,7 +192,7 @@ export default function EmployeesPage() {
       {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
 
       <div className="mb-6 flex gap-4 items-center bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
-        <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Department Filter:</label>
+        <label className="text-xs font-semibold text-text-muted">Department Filter:</label>
         <select
           value={selectedDeptFilter}
           onChange={(e) => setSelectedDeptFilter(e.target.value)}
@@ -299,7 +299,7 @@ export default function EmployeesPage() {
 
           {/* User Account Linkage Selection */}
           <div className="rounded-2xl border border-border-color bg-bg-secondary/60 p-4 space-y-2">
-            <label className="block text-text-primary font-bold text-xs uppercase tracking-wider">
+            <label className="block text-text-primary font-semibold text-xs">
               Link User Account
             </label>
             <select
@@ -314,7 +314,7 @@ export default function EmployeesPage() {
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-text-muted leading-tight">
+            <p className="text-xs text-text-muted leading-tight">
               Linking a User Account grants this employee access to Self-Service features (leave applications & clock logs).
             </p>
           </div>

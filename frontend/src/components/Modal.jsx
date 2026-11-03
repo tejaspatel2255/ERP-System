@@ -56,7 +56,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         >
           {/* Integrated Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-color bg-slate-50/50 dark:bg-slate-900/50 shrink-0 select-none">
-            <h3 className="text-lg font-bold text-text-primary tracking-tight truncate mr-3">
+            <h3 className="text-lg font-semibold text-text-primary truncate mr-3">
               {title}
             </h3>
             <button

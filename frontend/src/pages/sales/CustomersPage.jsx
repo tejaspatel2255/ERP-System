@@ -205,7 +205,7 @@ const CustomersPage = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Customers CRM</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Customers CRM</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage client profiles, credit parameters, and view total trade balance ledger.</p>
         </div>
 
@@ -333,22 +333,22 @@ const CustomersPage = () => {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Company Name</h4>
-                <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">{viewingDetails.name}</p>
+                <h4 className="text-xs font-semibold text-slate-400">Company Name</h4>
+                <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">{viewingDetails.name}</p>
                 <p className="text-xs text-slate-500">{viewingDetails.email || 'No email'}</p>
                 <p className="text-xs text-slate-500">{viewingDetails.phone || 'No phone'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">GSTIN & Address</h4>
+                <h4 className="text-xs font-semibold text-slate-400">GSTIN & Address</h4>
                 <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingDetails.gstin || 'Unspecified'}</p>
                 <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingDetails.address || 'No address details'}</p>
               </div>
               <div>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit & Balance Status</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Limit: <span className="font-bold">{formatINR(viewingDetails.credit_limit)}</span></p>
+                <h4 className="text-xs font-semibold text-slate-400">Credit & Balance Status</h4>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Limit: <span className="font-semibold">{formatINR(viewingDetails.credit_limit)}</span></p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Outstanding:{' '}
-                  <span className={`font-bold ${parseFloat(viewingDetails.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
+                  <span className={`font-semibold ${parseFloat(viewingDetails.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
                     {formatINR(viewingDetails.balance)}
                   </span>
                 </p>
@@ -357,7 +357,7 @@ const CustomersPage = () => {
 
             {/* Tabs for Transaction History */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-950 dark:text-white uppercase tracking-wider">Transaction Records</h3>
+              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Transaction Records</h3>
               
               {historyLoading ? (
                 <div className="py-12 flex items-center justify-center">
@@ -367,7 +367,7 @@ const CustomersPage = () => {
                 <div className="space-y-6">
                   {/* Quotations Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Quotations</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Quotations</h4>
                     <Table
                       columns={[
                         { key: 'quotation_no', label: 'Quotation No' },
@@ -383,7 +383,7 @@ const CustomersPage = () => {
 
                   {/* Orders Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Sales Orders</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Sales Orders</h4>
                     <Table
                       columns={[
                         { key: 'order_no', label: 'Order No' },
@@ -398,7 +398,7 @@ const CustomersPage = () => {
 
                   {/* Invoices Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Linked Invoices</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Invoices</h4>
                     <Table
                       columns={[
                         { key: 'invoice_no', label: 'Invoice No' },
@@ -415,7 +415,7 @@ const CustomersPage = () => {
 
                   {/* Payments Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Received Payments</h4>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Received Payments</h4>
                     <Table
                       columns={[
                         { key: 'payment_date', label: 'Payment Date', render: (item) => formatDate(item.payment_date) },

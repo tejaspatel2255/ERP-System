@@ -184,7 +184,7 @@ export default function AttendancePage() {
           <div className="overflow-x-auto max-h-[60vh]">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold sticky top-0 z-10 uppercase tracking-wider">
+                <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold sticky top-0 z-10">
                   <th className="p-3 bg-bg-secondary min-w-[160px] sticky left-0 z-20">Employee</th>
                   <th className="p-3 bg-bg-secondary min-w-[80px] border-r border-border-color">Code</th>
                   {daysArray.map(day => (
@@ -198,7 +198,7 @@ export default function AttendancePage() {
                     <td className="p-3 font-semibold text-text-primary sticky left-0 bg-bg-card shadow-sm">
                       <button
                         onClick={() => handleViewSummary(emp)}
-                        className="text-left hover:text-accent-primary transition-colors font-bold"
+                        className="text-left hover:text-accent-primary transition-colors font-semibold"
                       >
                         {emp.name}
                       </button>
@@ -214,7 +214,7 @@ export default function AttendancePage() {
                           className="p-1 text-center border-r border-border-color cursor-pointer hover:bg-bg-hover transition-colors"
                         >
                           {status ? (
-                            <span className={`w-6 h-6 inline-flex items-center justify-center rounded-md text-[10px] font-extrabold ${statusColors[status]}`}>
+                            <span className={`w-6 h-6 inline-flex items-center justify-center rounded-md text-xs font-extrabold ${statusColors[status]}`}>
                               {statusInitials[status]}
                             </span>
                           ) : (
@@ -235,32 +235,32 @@ export default function AttendancePage() {
       {summaryEmployee && (
         <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand space-y-4">
           <div className="flex justify-between items-center border-b border-border-color pb-3">
-            <h3 className="text-base font-bold text-text-primary">
+            <h3 className="text-base font-semibold text-text-primary">
               Monthly Attendance Summary: <span className="text-accent-primary">{summaryEmployee.name}</span>
             </h3>
-            <button onClick={() => setSummaryEmployee(null)} className="text-text-muted hover:text-text-primary font-bold text-sm">✕ Close</button>
+            <button onClick={() => setSummaryEmployee(null)} className="text-text-muted hover:text-text-primary font-semibold text-sm">✕ Close</button>
           </div>
           {employeeSummaryData ? (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-bg-secondary p-4 rounded-xl border border-border-color">
                 <p className="text-xs text-text-muted">Total Working Days</p>
-                <p className="text-2xl font-bold text-text-primary mt-1">{daysCount}</p>
+                <p className="text-2xl font-semibold text-text-primary mt-1">{daysCount}</p>
               </div>
               <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-success">
                 <p className="text-xs text-text-muted">Presents (P)</p>
-                <p className="text-2xl font-bold text-accent-success mt-1">{employeeSummaryData.present_count}</p>
+                <p className="text-2xl font-semibold text-accent-success mt-1">{employeeSummaryData.present_count}</p>
               </div>
               <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-danger">
                 <p className="text-xs text-text-muted">Absents (A)</p>
-                <p className="text-2xl font-bold text-accent-danger mt-1">{employeeSummaryData.absent_count}</p>
+                <p className="text-2xl font-semibold text-accent-danger mt-1">{employeeSummaryData.absent_count}</p>
               </div>
               <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-warning">
                 <p className="text-xs text-text-muted">Half Days (H)</p>
-                <p className="text-2xl font-bold text-accent-warning mt-1">{employeeSummaryData.half_day_count}</p>
+                <p className="text-2xl font-semibold text-accent-warning mt-1">{employeeSummaryData.half_day_count}</p>
               </div>
               <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-info">
                 <p className="text-xs text-text-muted">Leaves / Holidays (L)</p>
-                <p className="text-2xl font-bold text-accent-info mt-1">{employeeSummaryData.leave_count}</p>
+                <p className="text-2xl font-semibold text-accent-info mt-1">{employeeSummaryData.leave_count}</p>
               </div>
             </div>
           ) : (
@@ -279,7 +279,7 @@ export default function AttendancePage() {
         {activeEmployee && (
           <form onSubmit={handleSaveAttendance} className="space-y-4">
             <div className="p-3 bg-bg-secondary border border-border-color rounded-xl text-xs text-text-secondary">
-              <span className="font-bold text-text-primary">{activeEmployee.name}</span> | Date: <span className="font-mono">{activeDate}</span>
+              <span className="font-semibold text-text-primary">{activeEmployee.name}</span> | Date: <span className="font-mono">{activeDate}</span>
             </div>
 
             <div>
@@ -290,7 +290,7 @@ export default function AttendancePage() {
                     key={st}
                     type="button"
                     onClick={() => setMarkStatus(st)}
-                    className={`py-2 rounded-xl font-bold transition-all text-xs border ${
+                    className={`py-2 rounded-xl font-semibold transition-all text-xs border ${
                       markStatus === st 
                         ? 'bg-accent-primary text-white border-accent-primary shadow-sm' 
                         : 'bg-bg-secondary text-text-secondary border-border-color hover:bg-bg-hover'

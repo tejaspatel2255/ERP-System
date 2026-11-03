@@ -181,7 +181,7 @@ export default function DeliveryChallansPage() {
       key: 'status',
       label: 'Status',
       render: (dc) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
           dc.status === 'Delivered' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
           dc.status === 'Dispatched' ? 'bg-accent-info/15 text-accent-info border border-accent-info/30' :
           'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
@@ -455,21 +455,21 @@ export default function DeliveryChallansPage() {
                   <p className="text-xs text-slate-500">GSTIN: 27AAAAA0000A1Z5</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-bold text-slate-700">DELIVERY CHALLAN</h3>
-                  <p className="text-sm font-mono font-bold text-blue-600 mt-0.5">{selectedChallanDetails.challan.challan_no}</p>
+                  <h3 className="text-lg font-semibold text-slate-700">DELIVERY CHALLAN</h3>
+                  <p className="text-sm font-mono font-semibold text-blue-600 mt-0.5">{selectedChallanDetails.challan.challan_no}</p>
                   <p className="text-xs text-slate-500 mt-0.5">Date: {new Date(selectedChallanDetails.challan.challan_date).toLocaleDateString()}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Consignee (Deliver To)</h4>
-                  <p className="font-bold text-slate-800 text-sm mt-1">{selectedChallanDetails.challan.customer_name}</p>
+                  <h4 className="text-xs font-semibold text-slate-500">Consignee (Deliver To)</h4>
+                  <p className="font-semibold text-slate-800 text-sm mt-1">{selectedChallanDetails.challan.customer_name}</p>
                   <p className="text-xs text-slate-600 whitespace-pre-wrap mt-0.5">{selectedChallanDetails.challan.customer_address}</p>
                   <p className="text-xs text-slate-500 font-mono mt-1">GSTIN: {selectedChallanDetails.challan.customer_gstin || 'N/A'}</p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transport & Dispatch Details</h4>
+                  <h4 className="text-xs font-semibold text-slate-500">Transport & Dispatch Details</h4>
                   {selectedChallanDetails.transport ? (
                     <div className="text-xs text-slate-600 mt-1 space-y-0.5">
                       <p><span className="font-semibold text-slate-700">Transporter:</span> {selectedChallanDetails.transport.transporter_name}</p>
@@ -508,10 +508,10 @@ export default function DeliveryChallansPage() {
 
               <div className="flex justify-between items-end pt-8">
                 <div className="w-1/2">
-                  <p className="text-[11px] text-slate-500 italic">Declaration: Material received in good condition and order requirements satisfied.</p>
+                  <p className="text-xs text-slate-500 italic">Declaration: Material received in good condition and order requirements satisfied.</p>
                 </div>
                 <div className="text-center w-1/3 border-t border-slate-400 pt-2">
-                  <p className="text-xs font-bold text-slate-600">Authorized Signatory</p>
+                  <p className="text-xs font-semibold text-slate-600">Authorized Signatory</p>
                 </div>
               </div>
             </div>

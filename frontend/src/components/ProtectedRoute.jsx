@@ -24,8 +24,8 @@ export default function ProtectedRoute({ module, action = 'view', children }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
         <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-red-400">403</p>
-          <h1 className="mt-2 text-2xl font-bold">Access denied</h1>
+          <p className="text-xs text-red-400">403</p>
+          <h1 className="mt-2 text-2xl font-semibold">Access denied</h1>
           <p className="mt-2 text-sm text-slate-400">You do not have permission to view this page.</p>
         </div>
       </div>

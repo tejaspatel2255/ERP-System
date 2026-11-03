@@ -71,7 +71,7 @@ const BOMPage = () => {
   const removeLine = (i) => { if (bomLines.length === 1) return; setBomLines(p => p.filter((_, idx) => idx !== i)); };
 
   const columns = [
-    { key: 'finished_item_name', label: 'Finished Item', render: i => <div><div className="font-semibold">{i.finished_item_name}</div><div className="text-[10px] text-slate-400">{i.finished_item_code}</div></div> },
+    { key: 'finished_item_name', label: 'Finished Item', render: i => <div><div className="font-semibold">{i.finished_item_name}</div><div className="text-xs text-slate-400">{i.finished_item_code}</div></div> },
     { key: 'version', label: 'Version', render: i => `v${i.version}` },
     { key: 'is_active', label: 'Status', render: i => <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${i.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{i.is_active ? 'Active' : 'Draft'}</span> },
     { key: 'updated_at', label: 'Last Updated', render: i => formatDate(i.updated_at) },
@@ -87,7 +87,7 @@ const BOMPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Bill of Materials (BOM)</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Bill of Materials (BOM)</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Define raw material requirements per finished product with versioning support.</p>
         </div>
         {hasPermission('production', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Create BOM</button>}
@@ -118,16 +118,16 @@ const BOMPage = () => {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Raw Materials Required</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Raw Materials Required</h4>
               <button type="button" onClick={addLine} className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100">+ Add Material</button>
             </div>
             <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
               <table className="w-full text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 uppercase text-left">Material Item</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center w-28">Qty Required</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase w-24">Unit</th>
+                    <th className="px-4 py-3 font-semibold text-slate-500 text-left">Material Item</th>
+                    <th className="px-3 py-3 font-semibold text-slate-500 text-center w-28">Qty Required</th>
+                    <th className="px-3 py-3 font-semibold text-slate-500 w-24">Unit</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
@@ -163,18 +163,18 @@ const BOMPage = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
               <div>
-                <p className="text-xs text-slate-400 uppercase font-semibold">Finished Item</p>
-                <p className="font-bold text-slate-900 dark:text-white">{viewBom.finished_item_name} <span className="text-slate-400 font-normal">({viewBom.finished_item_code})</span></p>
+                <p className="text-xs text-slate-400 font-semibold">Finished Item</p>
+                <p className="font-semibold text-slate-900 dark:text-white">{viewBom.finished_item_name} <span className="text-slate-400 font-normal">({viewBom.finished_item_code})</span></p>
                 <p className="text-xs text-slate-500 mt-0.5">Unit: {viewBom.finished_item_unit} · Version: v{viewBom.version}</p>
               </div>
               <div className="flex gap-2">
                 <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${viewBom.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{viewBom.is_active ? 'Active' : 'Draft'}</span>
-                {!viewBom.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(viewBom.id)} className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-lg hover:bg-green-500">Activate</button>}
+                {!viewBom.is_active && hasPermission('production', 'edit') && <button onClick={() => handleActivate(viewBom.id)} className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-green-500">Activate</button>}
               </div>
             </div>
             <Table
               columns={[
-                { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
+                { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
                 { key: 'qty_required', label: 'Qty per Unit', render: i => parseFloat(i.qty_required) },
                 { key: 'unit', label: 'Unit' },
                 { key: 'current_stock', label: 'Current Stock', render: i => <span className={parseFloat(i.current_stock) > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>{parseFloat(i.current_stock)}</span> }

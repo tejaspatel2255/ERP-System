@@ -176,7 +176,7 @@ export default function LeavePage() {
       key: 'status',
       label: 'Status',
       render: (app) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
           app.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
           app.status === 'Rejected' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
           'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
@@ -227,7 +227,7 @@ export default function LeavePage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`py-2.5 px-5 font-bold text-sm border-b-2 capitalize transition-all rounded-t-xl ${
+            className={`py-2.5 px-5 font-semibold text-sm border-b-2 capitalize transition-all rounded-t-xl ${
               activeTab === tab 
                 ? 'border-accent-primary text-accent-primary bg-accent-primary/10' 
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -280,7 +280,7 @@ export default function LeavePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
+                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
                       <th className="p-4">Leave Type Name</th>
                       <th className="p-4 text-right">Days Allowed Per Year</th>
                     </tr>
@@ -299,7 +299,7 @@ export default function LeavePage() {
           </div>
 
           <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-4">
-            <h3 className="text-base font-bold text-text-primary">Create Leave Type</h3>
+            <h3 className="text-base font-semibold text-text-primary">Create Leave Type</h3>
             <form onSubmit={handleCreateType} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">Type Name *</label>
@@ -325,7 +325,7 @@ export default function LeavePage() {
               </div>
               <button
                 type="submit"
-                className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-bold rounded-xl text-xs transition-all shadow-sm"
+                className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-semibold rounded-xl text-xs transition-all shadow-sm"
               >
                 Create Type
               </button>
@@ -337,7 +337,7 @@ export default function LeavePage() {
       {activeTab === 'balances' && (
         <div className="space-y-4">
           <div className="flex items-center gap-4 bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
-            <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Select Employee:</label>
+            <label className="text-xs font-semibold text-text-muted">Select Employee:</label>
             <select
               value={selectedEmpForBalance}
               onChange={(e) => handleEmpBalanceChange(e.target.value)}
@@ -361,7 +361,7 @@ export default function LeavePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
+                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
                       <th className="p-4">Leave Type</th>
                       <th className="p-4 text-center">Year</th>
                       <th className="p-4 text-center">Allocated Days</th>
@@ -376,7 +376,7 @@ export default function LeavePage() {
                         <td className="p-4 text-center font-mono">{b.year}</td>
                         <td className="p-4 text-center font-mono">{b.total_days}</td>
                         <td className="p-4 text-center font-mono text-accent-warning font-semibold">{b.used_days}</td>
-                        <td className="p-4 text-center font-mono text-accent-success font-bold">{b.remaining_days}</td>
+                        <td className="p-4 text-center font-mono text-accent-success font-semibold">{b.remaining_days}</td>
                       </tr>
                     ))}
                   </tbody>

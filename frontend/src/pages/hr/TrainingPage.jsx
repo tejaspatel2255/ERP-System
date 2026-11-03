@@ -155,7 +155,7 @@ export default function TrainingPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
                     <th className="p-4">Session Details</th>
                     <th className="p-4">Trainer</th>
                     <th className="p-4">Date & Time</th>
@@ -173,13 +173,13 @@ export default function TrainingPage() {
                       }`}
                     >
                       <td className="p-4">
-                        <p className="font-bold text-text-primary">{sess.title}</p>
+                        <p className="font-semibold text-text-primary">{sess.title}</p>
                         <p className="text-xs text-text-muted max-w-[12rem] truncate">{sess.description || 'No description'}</p>
                       </td>
                       <td className="p-4 font-medium text-text-primary">{sess.trainer}</td>
                       <td className="p-4 text-xs text-text-secondary">{new Date(sess.scheduled_date).toLocaleString()}</td>
                       <td className="p-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           sess.status === 'Completed' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
                           sess.status === 'Ongoing' ? 'bg-accent-info/15 text-accent-info border border-accent-info/30' :
                           'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
@@ -203,7 +203,7 @@ export default function TrainingPage() {
           {selectedSession ? (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-bold text-text-primary">{selectedSession.title}</h3>
+                <h3 className="text-lg font-semibold text-text-primary">{selectedSession.title}</h3>
                 <p className="text-xs text-text-secondary mt-1 leading-relaxed">{selectedSession.description}</p>
                 <div className="mt-4 text-xs space-y-2 text-text-secondary border-t border-border-color pt-4">
                   <p><span className="text-text-muted font-medium">Instructor:</span> {selectedSession.trainer}</p>
@@ -212,16 +212,16 @@ export default function TrainingPage() {
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">Assigned Employees</h4>
+                <h4 className="text-xs font-semibold text-text-muted mb-3">Assigned Employees</h4>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                   {attendees.map(att => (
                     <div key={att.employee_id} className="bg-bg-secondary border border-border-color rounded-xl p-3 flex justify-between items-center text-xs">
                       <div className="truncate pr-2">
-                        <p className="font-bold text-text-primary truncate">{att.employee_name}</p>
-                        <p className="text-text-muted text-[11px] truncate">{att.designation}</p>
+                        <p className="font-semibold text-text-primary truncate">{att.employee_name}</p>
+                        <p className="text-text-muted text-xs truncate">{att.designation}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                           att.status === 'Completed' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
                           att.status === 'Absent' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
                           'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'

@@ -114,7 +114,7 @@ const PurchaseAnalyticsPage = () => {
   const overdueColumns = [
     { key: 'po_no', label: 'PO No' },
     { key: 'vendor_name', label: 'Supplier' },
-    { key: 'expected_date', label: 'Expected Date', render: (item) => <span className="text-red-650 font-bold">{formatDate(item.expected_date)}</span> },
+    { key: 'expected_date', label: 'Expected Date', render: (item) => <span className="text-red-650 font-semibold">{formatDate(item.expected_date)}</span> },
     { key: 'total_amount', label: 'Value', render: (item) => formatINR(item.total_amount) }
   ];
 
@@ -123,7 +123,7 @@ const PurchaseAnalyticsPage = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Purchase Analytics</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Purchase Analytics</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track purchase ordering volume, spend by vendor, monthly trends, and overdue vendor requests.</p>
         </div>
 
@@ -167,21 +167,21 @@ const PurchaseAnalyticsPage = () => {
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Purchase Orders Raised</h3>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{summary.totalPOsCount}</p>
-              <span className="text-[10px] text-slate-400">POs issued in date range</span>
+              <h3 className="text-xs font-semibold text-slate-400">Purchase Orders Raised</h3>
+              <p className="text-2xl font-semibold text-slate-900 dark:text-white">{summary.totalPOsCount}</p>
+              <span className="text-xs text-slate-400">POs issued in date range</span>
             </div>
 
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved Purchase Spend</h3>
-              <p className="text-2xl font-bold text-blue-650 dark:text-blue-450">{formatINR(summary.totalSpend)}</p>
-              <span className="text-[10px] text-slate-400">Gross total of Approved POs</span>
+              <h3 className="text-xs font-semibold text-slate-400">Approved Purchase Spend</h3>
+              <p className="text-2xl font-semibold text-blue-650 dark:text-blue-450">{formatINR(summary.totalSpend)}</p>
+              <span className="text-xs text-slate-400">Gross total of Approved POs</span>
             </div>
 
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Vendor Invoices</h3>
-              <p className="text-2xl font-bold text-red-650 dark:text-red-405">{formatINR(summary.pendingInvoicesValue)}</p>
-              <span className="text-[10px] text-slate-400">Total Unpaid bills currently due</span>
+              <h3 className="text-xs font-semibold text-slate-400">Pending Vendor Invoices</h3>
+              <p className="text-2xl font-semibold text-red-650 dark:text-red-405">{formatINR(summary.pendingInvoicesValue)}</p>
+              <span className="text-xs text-slate-400">Total Unpaid bills currently due</span>
             </div>
           </div>
 
@@ -190,7 +190,7 @@ const PurchaseAnalyticsPage = () => {
             {/* Pie Chart Spend by Vendor */}
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Spend distribution by Vendor</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Spend distribution by Vendor</h3>
                 <p className="text-xs text-slate-400">Analysis showing top 5 suppliers and combined other aggregates</p>
               </div>
 
@@ -225,7 +225,7 @@ const PurchaseAnalyticsPage = () => {
             {/* Bar Chart Monthly Spend */}
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Monthly Purchase Trend</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Monthly Purchase Trend</h3>
                 <p className="text-xs text-slate-400">Monthly spend aggregates compared over rolling 12 months</p>
               </div>
 
@@ -252,7 +252,7 @@ const PurchaseAnalyticsPage = () => {
             {/* Top Items Table */}
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Most ordered Raw Materials</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Most ordered Raw Materials</h3>
                 <p className="text-xs text-slate-400">Top items by spend volume</p>
               </div>
               <Table columns={itemColumns} data={spendByItem} emptyMessage="No item spend recorded yet." />
@@ -261,7 +261,7 @@ const PurchaseAnalyticsPage = () => {
             {/* Overdue POs Table */}
             <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Overdue Purchase Deliveries</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Overdue Purchase Deliveries</h3>
                 <p className="text-xs text-slate-400">Open orders exceeding expected delivery date</p>
               </div>
               <Table columns={overdueColumns} data={overduePOs} emptyMessage="No overdue purchase orders. Great job!" />

@@ -175,7 +175,7 @@ const WorkOrdersPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Work Orders</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Work Orders</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Schedule production runs, track material consumption, and manage WO lifecycle.</p>
         </div>
         {hasPermission('production', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ New Work Order</button>}
@@ -239,19 +239,19 @@ const WorkOrdersPage = () => {
               <table className="w-full text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="px-4 py-2 font-semibold text-slate-500 uppercase text-left">Material</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-right">Required</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-right">Available</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 uppercase text-center">Status</th>
+                    <th className="px-4 py-2 font-semibold text-slate-500 text-left">Material</th>
+                    <th className="px-3 py-2 font-semibold text-slate-500 text-right">Required</th>
+                    <th className="px-3 py-2 font-semibold text-slate-500 text-right">Available</th>
+                    <th className="px-3 py-2 font-semibold text-slate-500 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {materialPlan.map((m, i) => (
                     <tr key={i} className={m.status === 'Shortage' ? 'bg-red-50 dark:bg-red-950/20' : ''}>
-                      <td className="px-4 py-2"><div className="font-semibold">{m.material_name}</div><div className="text-[10px] text-slate-400">{m.item_code}</div></td>
+                      <td className="px-4 py-2"><div className="font-semibold">{m.material_name}</div><div className="text-xs text-slate-400">{m.item_code}</div></td>
                       <td className="px-3 py-2 text-right">{m.required_qty.toFixed(2)} {m.unit}</td>
                       <td className="px-3 py-2 text-right">{m.available_qty.toFixed(2)}</td>
-                      <td className="px-3 py-2 text-center"><span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold border ${m.status === 'OK' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>{m.status}</span></td>
+                      <td className="px-3 py-2 text-center"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${m.status === 'OK' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>{m.status}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -273,15 +273,15 @@ const WorkOrdersPage = () => {
             {/* Header + Actions */}
             <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="text-xs space-y-0.5">
-                <p className="font-bold text-slate-900 dark:text-white">{detailWO.finished_item_name} <span className="text-slate-400 font-normal">· Qty: {parseFloat(detailWO.planned_qty)}</span></p>
+                <p className="font-semibold text-slate-900 dark:text-white">{detailWO.finished_item_name} <span className="text-slate-400 font-normal">· Qty: {parseFloat(detailWO.planned_qty)}</span></p>
                 <p className="text-slate-500">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
                 {detailWO.asset_name && <p className={['Under Repair', 'Maintenance'].includes(detailWO.asset_status) ? 'text-orange-600 font-semibold' : 'text-slate-500'}>Machine: {detailWO.asset_name} ({detailWO.asset_status})</p>}
                 {detailWO.actual_start && <p className="text-blue-600">Started: {formatDate(detailWO.actual_start)}</p>}
               </div>
               <div className="flex gap-2 flex-wrap">
                 <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${STATUS_BADGE[detailWO.status] || ''}`}>{detailWO.status}</span>
-                {detailWO.status === 'Pending' && <button onClick={handleStart} className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-lg hover:bg-blue-500">▶ Start</button>}
-                {detailWO.status === 'In Progress' && <button onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }} className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-lg hover:bg-green-500">✓ Complete</button>}
+                {detailWO.status === 'Pending' && <button onClick={handleStart} className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-blue-500">▶ Start</button>}
+                {detailWO.status === 'In Progress' && <button onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }} className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-green-500">✓ Complete</button>}
                 {!['Completed','Cancelled'].includes(detailWO.status) && <button onClick={handleCancel} className="bg-red-50 text-red-600 border border-red-200 text-xs font-semibold px-3 py-1 rounded-lg hover:bg-red-100">✕ Cancel</button>}
               </div>
             </div>
@@ -297,9 +297,9 @@ const WorkOrdersPage = () => {
               <div className="space-y-3">
                 <Table
                   columns={[
-                    { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
+                    { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
                     { key: 'total_required', label: 'Required', render: i => `${parseFloat(i.total_required).toFixed(4)} ${i.unit}` },
-                    { key: 'total_issued', label: 'Issued', render: i => <span className={parseFloat(i.total_issued) >= parseFloat(i.total_required) ? 'text-green-600 font-bold' : 'text-orange-600 font-bold'}>{parseFloat(i.total_issued).toFixed(4)}</span> },
+                    { key: 'total_issued', label: 'Issued', render: i => <span className={parseFloat(i.total_issued) >= parseFloat(i.total_required) ? 'text-green-600 font-semibold' : 'text-orange-600 font-semibold'}>{parseFloat(i.total_issued).toFixed(4)}</span> },
                     { key: 'current_stock', label: 'Stock', render: i => parseFloat(i.current_stock).toFixed(2) }
                   ]}
                   data={detailPlan}
@@ -313,7 +313,7 @@ const WorkOrdersPage = () => {
                       {detailPlan.map(m => <option key={m.item_id} value={m.item_id}>{m.material_name} (need: {parseFloat(m.total_required - m.total_issued).toFixed(2)})</option>)}
                     </select>
                     <input type="number" min="0.0001" step="any" required placeholder="Qty" value={issueForm.qty_issued} onChange={e => setIssueForm(p => ({ ...p, qty_issued: e.target.value }))} className="w-28 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" />
-                    <button type="submit" className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-500">Issue</button>
+                    <button type="submit" className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-semibold text-white hover:bg-orange-500">Issue</button>
                   </form>
                 )}
               </div>
@@ -322,8 +322,8 @@ const WorkOrdersPage = () => {
             {activeTab === 'consumption' && (
               <Table
                 columns={[
-                  { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
-                  { key: 'qty_issued', label: 'Qty Issued', render: i => <span className="text-red-600 font-bold">-{parseFloat(i.qty_issued)} {i.unit}</span> },
+                  { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
+                  { key: 'qty_issued', label: 'Qty Issued', render: i => <span className="text-red-600 font-semibold">-{parseFloat(i.qty_issued)} {i.unit}</span> },
                   { key: 'issued_by', label: 'Issued By', render: i => i.issued_by || 'N/A' },
                   { key: 'issued_at', label: 'Issued At', render: i => formatDate(i.issued_at) }
                 ]}
@@ -335,8 +335,8 @@ const WorkOrdersPage = () => {
             {activeTab === 'costing' && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div><p className="text-xs text-slate-400 uppercase font-semibold">Material Cost</p><p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{formatINR(detailCosting?.material_cost || 0)}</p><p className="text-[10px] text-slate-400">Auto-calculated from consumption</p></div>
-                  <div><p className="text-xs text-slate-400 uppercase font-semibold">Total Cost</p><p className="text-xl font-bold text-blue-600 mt-1">{formatINR(detailCosting?.total_cost || 0)}</p></div>
+                  <div><p className="text-xs text-slate-400 font-semibold">Material Cost</p><p className="text-xl font-semibold text-slate-900 dark:text-white mt-1">{formatINR(detailCosting?.material_cost || 0)}</p><p className="text-xs text-slate-400">Auto-calculated from consumption</p></div>
+                  <div><p className="text-xs text-slate-400 font-semibold">Total Cost</p><p className="text-xl font-semibold text-blue-600 mt-1">{formatINR(detailCosting?.total_cost || 0)}</p></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Labor Cost (INR)</label><input type="number" min="0" step="0.01" value={laborCost} onChange={e => setLaborCost(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" /></div>

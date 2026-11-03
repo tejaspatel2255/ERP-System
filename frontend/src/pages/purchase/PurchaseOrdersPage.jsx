@@ -346,7 +346,7 @@ const PurchaseOrdersPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Purchase Orders Ledger</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Purchase Orders Ledger</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Raise supplier requests, submit for approval validation, and manage expected intakes.</p>
         </div>
 
@@ -449,7 +449,7 @@ const PurchaseOrdersPage = () => {
           {/* PO items row details */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Line Items</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Line Items</h4>
               <button
                 type="button"
                 onClick={handleAddRow}
@@ -463,10 +463,10 @@ const PurchaseOrdersPage = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-1/2">Item Code / Description</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-center w-20">Quantity</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-36">Unit Price (INR)</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-right w-36">Line Total</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 w-1/2">Item Code / Description</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-center w-20">Quantity</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 w-36">Unit Price (INR)</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-right w-36">Line Total</th>
                     <th className="px-4 py-3 text-center w-10"></th>
                   </tr>
                 </thead>
@@ -547,7 +547,7 @@ const PurchaseOrdersPage = () => {
 
             <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800 w-64 text-right">
               <span className="text-xs text-slate-500">Order Grand Total:</span>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-450">{formatINR(grandTotal)}</p>
+              <p className="text-xl font-semibold text-blue-600 dark:text-blue-450">{formatINR(grandTotal)}</p>
             </div>
           </div>
 
@@ -589,13 +589,13 @@ const PurchaseOrdersPage = () => {
                   <>
                     <button
                       onClick={() => handleApprove(viewingPO.id)}
-                      className="bg-green-600 hover:bg-green-550 text-white text-xs font-bold px-3 py-1.5 rounded"
+                      className="bg-green-600 hover:bg-green-550 text-white text-xs font-semibold px-3 py-1.5 rounded"
                     >
                       Approve Order
                     </button>
                     <button
                       onClick={handleOpenRejectModal}
-                      className="bg-red-650 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded"
+                      className="bg-red-650 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded"
                     >
                       Reject Order
                     </button>
@@ -631,7 +631,7 @@ const PurchaseOrdersPage = () => {
             {/* Rejection comment flag */}
             {viewingPO.approval_status === 'Rejected' && viewingPO.rejection_reason && (
               <div className="p-3.5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 text-xs text-red-650 dark:text-red-400">
-                <span className="font-bold uppercase block mb-1">Rejection Remarks:</span>
+                <span className="font-semibold block mb-1">Rejection Remarks:</span>
                 <p>{viewingPO.rejection_reason}</p>
               </div>
             )}
@@ -641,11 +641,11 @@ const PurchaseOrdersPage = () => {
               {/* Header */}
               <div className="flex justify-between items-start border-b border-slate-150 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
+                  <h2 className="text-xl font-semibold text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
                   <p className="text-xs text-slate-400">123 Industrial Area, Phase II, New Delhi, India</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-bold text-blue-600 uppercase">Purchase Order</h3>
+                  <h3 className="text-lg font-semibold text-blue-600">Purchase Order</h3>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingPO.po_no}</p>
                   <p className="text-xs text-slate-400">Date: {formatDate(viewingPO.po_date)}</p>
                   <p className="text-xs text-blue-600 font-semibold">Delivery Expected: {formatDate(viewingPO.expected_date)}</p>
@@ -655,16 +655,16 @@ const PurchaseOrdersPage = () => {
               {/* Vendor & Intake details */}
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Supplier Info:</h4>
-                  <p className="font-bold text-slate-900 dark:text-white">{viewingPO.vendor_name}</p>
+                  <h4 className="font-semibold text-slate-500 mb-1">Supplier Info:</h4>
+                  <p className="font-semibold text-slate-900 dark:text-white">{viewingPO.vendor_name}</p>
                   <p className="text-slate-500">{viewingPO.vendor_address}</p>
                   <p className="text-slate-500">GSTIN: {viewingPO.vendor_gstin || 'N/A'}</p>
                   <p className="text-slate-500">Email: {viewingPO.vendor_email || 'N/A'}</p>
                 </div>
                 <div className="text-right text-xs">
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Warehouse Intake:</h4>
+                  <h4 className="font-semibold text-slate-500 mb-1">Warehouse Intake:</h4>
                   <p className="text-slate-500">Central Storage Warehouse</p>
-                  <p className="text-slate-500">GRN Status: <span className="font-bold text-slate-900 dark:text-white">{grnStatus}</span></p>
+                  <p className="text-slate-500">GRN Status: <span className="font-semibold text-slate-900 dark:text-white">{grnStatus}</span></p>
                 </div>
               </div>
 
@@ -672,22 +672,22 @@ const PurchaseOrdersPage = () => {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Item Code / Description</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-center">Quantity</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Unit Rate (INR)</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-right">Line Total</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500">Item Code / Description</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500 text-center">Quantity</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500">Unit Rate (INR)</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500 text-right">Line Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {viewingItems.map((item, idx) => (
                     <tr key={idx}>
                       <td className="py-2 px-2">
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-xs text-slate-400">{item.item_code}</div>
                       </td>
                       <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
                       <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
-                      <td className="py-2 px-2 text-right font-bold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -696,16 +696,16 @@ const PurchaseOrdersPage = () => {
               {/* Summary notes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-150">
                 <div className="text-xs text-slate-500">
-                  <h4 className="font-bold uppercase mb-1">Important Specifications</h4>
+                  <h4 className="font-semibold mb-1">Important Specifications</h4>
                   <p>{viewingPO.notes || 'Goods subject to warehouse quality inspections.'}</p>
                 </div>
                 <div className="text-right text-xs space-y-1.5 self-end">
-                  <div className="flex justify-between font-bold text-sm text-slate-950 dark:text-white">
+                  <div className="flex justify-between font-semibold text-sm text-slate-950 dark:text-white">
                     <span>Order Value (Gross):</span>
                     <span className="text-blue-600 dark:text-blue-450">{formatINR(viewingPO.total_amount)}</span>
                   </div>
                   {viewingPO.approver_name && (
-                    <div className="text-[10px] text-slate-400">Approved by manager: {viewingPO.approver_name}</div>
+                    <div className="text-xs text-slate-400">Approved by manager: {viewingPO.approver_name}</div>
                   )}
                 </div>
               </div>

@@ -232,7 +232,7 @@ export default function Sidebar({ open, onClose }) {
         className={({ isActive }) =>
           `group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
             isActive
-              ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
+              ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary shadow-2xs'
               : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
           }`
         }
@@ -242,7 +242,7 @@ export default function Sidebar({ open, onClose }) {
           <span className="flex-1 truncate transition-opacity duration-200">{item.label}</span>
         )}
         {item.alertBadge && alertCount > 0 && (
-          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-xs font-semibold text-white shadow-xs">
             {alertCount}
           </span>
         )}
@@ -269,7 +269,7 @@ export default function Sidebar({ open, onClose }) {
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
               isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary'
+                ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
             }`
           }
@@ -281,7 +281,7 @@ export default function Sidebar({ open, onClose }) {
         <div className="space-y-3">
           {visibleGroups.map((group) => (
             <div key={group.key} className="space-y-1">
-              <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted">
+              <span className="px-3 text-xs font-semibold text-text-muted">
                 {group.title}
               </span>
               <div className="space-y-0.5">
@@ -329,7 +329,7 @@ export default function Sidebar({ open, onClose }) {
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
               isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-bold border-l-[3px] border-accent-primary shadow-2xs'
+                ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary shadow-2xs'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
             } ${collapsed ? 'justify-center' : ''}`
           }
@@ -346,7 +346,7 @@ export default function Sidebar({ open, onClose }) {
               <div key={group.key} className="space-y-1">
                 {/* Header title or collapsed icon */}
                 {!collapsed ? (
-                  <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted block">
+                  <span className="px-3 text-xs font-semibold text-text-muted block">
                     {group.title}
                   </span>
                 ) : (

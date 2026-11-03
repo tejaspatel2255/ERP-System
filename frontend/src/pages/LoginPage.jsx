@@ -59,7 +59,7 @@ export default function LoginPage() {
 
         {pendingApproval && (
           <div className="mt-6 rounded-2xl border border-warning-border bg-warning-bg p-4 text-warning-text">
-            <div className="flex items-center gap-2.5 font-bold text-sm">
+            <div className="flex items-center gap-2.5 font-semibold text-sm">
               <Clock size={18} className="shrink-0" />
               <span>Account Pending Approval</span>
             </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Email</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Email</label>
             <input
               type="email"
               value={email}
@@ -82,7 +82,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Password</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Password</label>
             <input
               type="password"
               value={password}

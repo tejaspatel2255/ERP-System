@@ -121,7 +121,7 @@ const VendorInvoicesPage = () => {
           toast((t) => (
             <span className="text-orange-700 font-semibold text-xs flex flex-col gap-1">
               ⚠️ Warning: {res.warningMessage}
-              <button onClick={() => toast.dismiss(t.id)} className="text-right text-[10px] text-slate-500 font-bold underline">Dismiss</button>
+              <button onClick={() => toast.dismiss(t.id)} className="text-right text-xs text-slate-500 font-semibold underline">Dismiss</button>
             </span>
           ), { duration: 6000 });
         } else {
@@ -190,7 +190,7 @@ const VendorInvoicesPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Vendor Bills (Invoices)</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Vendor Bills (Invoices)</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Record incoming invoices from suppliers, map billing to POs, and manage payment states.</p>
         </div>
 
@@ -309,14 +309,14 @@ const VendorInvoicesPage = () => {
             <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-500">Linked PO Reference Value:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{formatINR(selectedPoDetails.total_amount)}</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{formatINR(selectedPoDetails.total_amount)}</span>
               </div>
               
               {formData.amount && (
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Billed Amount entered:</span>
-                    <span className="font-bold text-blue-650">{formatINR(formData.amount)}</span>
+                    <span className="font-semibold text-blue-650">{formatINR(formData.amount)}</span>
                   </div>
                   
                   {/* Variance calculations */}
@@ -327,7 +327,7 @@ const VendorInvoicesPage = () => {
                     
                     if (percent > 110) {
                       return (
-                        <div className="p-2.5 rounded bg-red-50 text-red-650 font-bold border border-red-200">
+                        <div className="p-2.5 rounded bg-red-50 text-red-650 font-semibold border border-red-200">
                           🚫 Amount exceeds PO total by { (percent - 100).toFixed(1) }%. The server will block submission (Limit: 110%).
                         </div>
                       );

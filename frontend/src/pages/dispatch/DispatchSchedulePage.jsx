@@ -83,10 +83,10 @@ export default function DispatchSchedulePage() {
                 }`}
               >
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className={`font-bold text-sm ${isToday ? 'text-accent-primary font-extrabold' : 'text-text-primary'}`}>
+                  <h3 className={`font-semibold text-sm ${isToday ? 'text-accent-primary font-extrabold' : 'text-text-primary'}`}>
                     {isToday ? 'Today' : new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </h3>
-                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
                     items.length > 0 ? 'bg-accent-primary/15 text-accent-primary border border-accent-primary/30' : 'bg-bg-secondary text-text-muted border border-border-color'
                   }`}>
                     {items.length} Shipments
@@ -102,8 +102,8 @@ export default function DispatchSchedulePage() {
                     items.map((item) => (
                       <div key={item.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl space-y-2 text-xs shadow-sm">
                         <div className="flex justify-between items-start">
-                          <span className="font-mono text-accent-primary font-bold">{item.challan_no}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          <span className="font-mono text-accent-primary font-semibold">{item.challan_no}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-semibold  ${
                             item.status === 'Delivered' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
                             item.status === 'Dispatched' ? 'bg-accent-info/15 text-accent-info border border-accent-info/30' :
                             'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
@@ -112,11 +112,11 @@ export default function DispatchSchedulePage() {
                           </span>
                         </div>
                         <div>
-                          <p className="text-text-muted font-medium text-[11px]">Customer</p>
-                          <p className="text-text-primary font-bold truncate">{item.customer_name}</p>
+                          <p className="text-text-muted font-medium text-xs">Customer</p>
+                          <p className="text-text-primary font-semibold truncate">{item.customer_name}</p>
                         </div>
                         {item.transporter_name && (
-                          <div className="pt-2 border-t border-border-color text-[11px] text-text-secondary space-y-0.5">
+                          <div className="pt-2 border-t border-border-color text-xs text-text-secondary space-y-0.5">
                             <p><span className="text-text-muted">Carrier:</span> {item.transporter_name}</p>
                             <p><span className="text-text-muted">Vehicle:</span> {item.vehicle_no}</p>
                           </div>

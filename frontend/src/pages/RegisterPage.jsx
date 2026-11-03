@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Full Name</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Full Name</label>
             <input
               type="text"
               value={name}
@@ -104,7 +104,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Email Address</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Email Address</label>
             <input
               type="email"
               value={email}
@@ -115,7 +115,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Password</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Password</label>
             <input
               type="password"
               value={password}
@@ -126,7 +126,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-text-secondary">Confirm Password</label>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}

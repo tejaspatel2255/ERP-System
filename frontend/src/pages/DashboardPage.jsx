@@ -107,7 +107,7 @@ export default function DashboardPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
                       <Icon size={18} />
                     </div>
-                    <div className={`flex items-center gap-0.5 text-xs font-bold rounded-lg px-2 py-0.5 border ${
+                    <div className={`flex items-center gap-0.5 text-xs font-semibold rounded-lg px-2 py-0.5 border ${
                       trendInfo.trendUp
                         ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-200/80 dark:border-emerald-800/80'
                         : 'text-rose-700 dark:text-rose-400 bg-rose-500/10 border-rose-200/80 dark:border-rose-800/80'
@@ -118,7 +118,7 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="mt-4">
-                    <div className="text-2xl font-bold font-mono-tabular text-text-primary tracking-tight">
+                    <div className="text-2xl font-semibold font-mono-tabular text-text-primary">
                       {displayValue}
                     </div>
                     <div className="mt-1 text-xs font-semibold text-text-secondary">
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-border-color/40 pt-2 flex items-center justify-between text-[11px] text-text-muted">
+                  <div className="mt-4 border-t border-border-color/40 pt-2 flex items-center justify-between text-xs text-text-muted">
                     <span>Active metric</span>
                     <span>Updated live</span>
                   </div>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
         <div className="rounded-2xl border border-border-color bg-bg-secondary p-6 shadow-xs">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-text-primary">Sales Trend</h2>
+              <h2 className="text-base font-semibold text-text-primary">Sales Trend</h2>
               <p className="text-xs text-text-secondary">Gross sales over the past 12 months</p>
             </div>
             <span className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-text-secondary border border-border-color/60">
@@ -177,7 +177,7 @@ export default function DashboardPage() {
         <div className="rounded-2xl border border-border-color bg-bg-secondary p-6 shadow-xs">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-text-primary">Inventory by Category</h2>
+              <h2 className="text-base font-semibold text-text-primary">Inventory by Category</h2>
               <p className="text-xs text-text-secondary">Breakdown of current item stock levels</p>
             </div>
             <span className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-text-secondary border border-border-color/60">
@@ -221,7 +221,7 @@ export default function DashboardPage() {
                       <span className="h-2 w-2 rounded-full shrink-0" style={{ background: chartColors[index % chartColors.length] }} />
                       <span className="font-semibold text-text-primary truncate">{entry.category}</span>
                     </div>
-                    <span className="font-bold font-mono-tabular text-text-primary bg-bg-secondary px-1.5 py-0.5 rounded-md border border-border-color/60 shrink-0">{entry.count}</span>
+                    <span className="font-semibold font-mono-tabular text-text-primary bg-bg-secondary px-1.5 py-0.5 rounded-md border border-border-color/60 shrink-0">{entry.count}</span>
                   </div>
                 ))}
               </div>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="xl:col-span-2 rounded-2xl border border-border-color bg-bg-secondary p-6 shadow-xs">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-bold text-text-primary">Recent Activity</h2>
+            <h2 className="text-base font-semibold text-text-primary">Recent Activity</h2>
             <Link to="/activity-logs" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
               View all logs
             </Link>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
 
         {/* Quick Links Card */}
         <div className="rounded-2xl border border-border-color bg-bg-secondary p-6 shadow-xs flex flex-col">
-          <h2 className="mb-4 text-base font-bold text-text-primary">Quick Navigation</h2>
+          <h2 className="mb-4 text-base font-semibold text-text-primary">Quick Navigation</h2>
           <div className="grid grid-cols-1 gap-2.5 flex-1">
             {quickLinks.map(([label, to]) => (
               <Link

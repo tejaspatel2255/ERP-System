@@ -119,7 +119,7 @@ const AssetsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Asset Management</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Asset Management</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track industrial assets, tooling, and machinery across locations.</p>
         </div>
         {hasPermission('maintenance', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Add Asset</button>}
@@ -172,7 +172,7 @@ const AssetsPage = () => {
         {selectedAsset && (
           <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Maintenance Schedules</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Maintenance Schedules</h4>
               <Table
                 columns={[
                   { key: 'frequency', label: 'Frequency' },
@@ -184,7 +184,7 @@ const AssetsPage = () => {
               />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Completed Runs Log</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Completed Runs Log</h4>
               <Table
                 columns={[
                   { key: 'performed_at', label: 'Date Performed', render: i => formatDate(i.performed_at) },
@@ -196,7 +196,7 @@ const AssetsPage = () => {
               />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-2">Issue Logs</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Issue Logs</h4>
               <Table
                 columns={[
                   { key: 'description', label: 'Description' },

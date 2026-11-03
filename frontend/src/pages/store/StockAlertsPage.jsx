@@ -30,7 +30,7 @@ const StockAlertsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Stock Reorder Alerts</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Stock Reorder Alerts</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Items at or below reorder level — {alerts.length} alert{alerts.length !== 1 ? 's' : ''} active. Sorted by most critical first.
           </p>
@@ -45,7 +45,7 @@ const StockAlertsPage = () => {
       ) : alerts.length === 0 ? (
         <div className="py-24 flex flex-col items-center text-center">
           <div className="text-5xl mb-4">✅</div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">All items are well-stocked</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">All items are well-stocked</h3>
           <p className="text-sm text-slate-500 mt-2">No items are currently at or below their reorder levels.</p>
         </div>
       ) : (
@@ -62,10 +62,10 @@ const StockAlertsPage = () => {
                 {/* Header */}
                 <div className="flex justify-between items-start">
                   <div className="flex-1 pr-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white leading-tight">{alert.name}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white leading-tight">{alert.name}</h3>
                     <p className="text-xs text-slate-500 mt-0.5">{alert.item_code} · {alert.category_name || 'Uncategorized'}</p>
                   </div>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${badgeCls} shrink-0`}>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${badgeCls} shrink-0`}>
                     {label}
                   </span>
                 </div>
@@ -87,26 +87,26 @@ const StockAlertsPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="rounded-xl bg-white/60 dark:bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Current</p>
-                    <p className="text-base font-bold text-slate-900 dark:text-white">{currentStock}</p>
-                    <p className="text-[10px] text-slate-400">{alert.unit}</p>
+                    <p className="text-xs text-slate-400 font-semibold">Current</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">{currentStock}</p>
+                    <p className="text-xs text-slate-400">{alert.unit}</p>
                   </div>
                   <div className="rounded-xl bg-white/60 dark:bg-slate-900/40 p-2">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Reorder At</p>
-                    <p className="text-base font-bold text-slate-900 dark:text-white">{reorderLevel}</p>
-                    <p className="text-[10px] text-slate-400">{alert.unit}</p>
+                    <p className="text-xs text-slate-400 font-semibold">Reorder At</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">{reorderLevel}</p>
+                    <p className="text-xs text-slate-400">{alert.unit}</p>
                   </div>
                   <div className="rounded-xl bg-red-100/80 dark:bg-red-950/30 p-2">
-                    <p className="text-[10px] text-red-500 uppercase font-semibold">Shortage</p>
-                    <p className="text-base font-bold text-red-600 dark:text-red-400">{shortage.toFixed(2)}</p>
-                    <p className="text-[10px] text-red-400">{alert.unit}</p>
+                    <p className="text-xs text-red-500 font-semibold">Shortage</p>
+                    <p className="text-base font-semibold text-red-600 dark:text-red-400">{shortage.toFixed(2)}</p>
+                    <p className="text-xs text-red-400">{alert.unit}</p>
                   </div>
                 </div>
 
                 {/* Quick Action */}
                 <button
                   onClick={() => navigate('/purchase/orders', { state: { prefillItem: alert } })}
-                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 transition-colors"
+                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 transition-colors"
                 >
                   + Raise Purchase Order
                 </button>

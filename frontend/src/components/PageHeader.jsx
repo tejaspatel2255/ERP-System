@@ -11,7 +11,7 @@ export default function PageHeader({ title, description, actions, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-4 border-b border-border-color/40">
       <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
+        <h1 className="text-2xl font-semibold text-text-primary sm:text-3xl">
           {title}
         </h1>
         {description && (

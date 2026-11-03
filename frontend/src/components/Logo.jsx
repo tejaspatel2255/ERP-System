@@ -30,7 +30,7 @@ export default function Logo({ size = 'md', showText = true, className = '' }) {
         />
       </div>
       {showText && (
-        <span className={`font-black tracking-wider text-text-primary ${textSizes[size]}`}>
+        <span className={`font-black  text-text-primary ${textSizes[size]}`}>
           ERP <span className="bg-gradient-to-r from-accent-primary via-purple-400 to-accent-secondary bg-clip-text text-transparent">Nexus</span>
         </span>
       )}

@@ -158,7 +158,7 @@ const OrdersPage = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Sales Orders</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Sales Orders</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track purchase confirmations, dispatch processing states, and create invoices.</p>
         </div>
 
@@ -192,13 +192,13 @@ const OrdersPage = () => {
             {/* Header info bar */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer Details</h4>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{viewingOrder.customer_name}</p>
+                <h4 className="text-xs font-semibold text-slate-400">Customer Details</h4>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingOrder.customer_name}</p>
                 <p className="text-xs text-slate-500">{viewingOrder.customer_address}</p>
                 <p className="text-xs text-slate-500">Phone: {viewingOrder.customer_phone}</p>
               </div>
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Order Timeline & Status</h4>
+                <h4 className="text-xs font-semibold text-slate-400">Order Timeline & Status</h4>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-500">Date: {formatDate(viewingOrder.order_date)}</span>
                   {viewingOrder.quotation_no && (
@@ -219,7 +219,7 @@ const OrdersPage = () => {
                 {hasPermission('production', 'create') && (
                   <button
                     onClick={handleCreateWorkOrder}
-                    className="mt-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-500"
+                    className="mt-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500"
                   >
                     Create Work Order
                   </button>
@@ -234,7 +234,7 @@ const OrdersPage = () => {
 
             {/* Line Items Table */}
             <div className="space-y-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Ordered Items</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Ordered Items</h4>
               <Table
                 columns={[
                   {
@@ -242,14 +242,14 @@ const OrdersPage = () => {
                     label: 'Item',
                     render: (item) => (
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-xs text-slate-400">{item.item_code}</div>
                       </div>
                     )
                   },
                   { key: 'qty', label: 'Qty', render: (item) => parseFloat(item.qty) },
                   { key: 'available_qty', label: 'Available', render: (item) => parseFloat(item.available_qty) },
-                  { key: 'shortfall', label: 'Shortfall', render: (item) => <span className={parseFloat(item.shortfall) > 0 ? 'font-bold text-red-600' : 'text-green-600'}>{parseFloat(item.shortfall)}</span> },
+                  { key: 'shortfall', label: 'Shortfall', render: (item) => <span className={parseFloat(item.shortfall) > 0 ? 'font-semibold text-red-600' : 'text-green-600'}>{parseFloat(item.shortfall)}</span> },
                   { key: 'unit_price', label: 'Unit Price', render: (item) => formatINR(item.unit_price) },
                   { key: 'line_total', label: 'Total Price', render: (item) => formatINR(item.line_total) }
                 ]}
@@ -261,9 +261,9 @@ const OrdersPage = () => {
             {/* Billing Invoice Info */}
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
               <div className="flex justify-between items-center">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Linked Invoice</h4>
+                <h4 className="text-xs font-semibold text-slate-500">Linked Invoice</h4>
                 {linkedInvoice ? (
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
                     linkedInvoice.status === 'Paid' ? 'bg-green-100 text-green-800 border border-green-200' :
                     linkedInvoice.status === 'Partially Paid' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
                     'bg-red-100 text-red-800 border border-red-200'
@@ -277,9 +277,9 @@ const OrdersPage = () => {
 
               {linkedInvoice ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                  <p>Invoice No: <span className="font-bold text-slate-900 dark:text-white">{linkedInvoice.invoice_no}</span></p>
+                  <p>Invoice No: <span className="font-semibold text-slate-900 dark:text-white">{linkedInvoice.invoice_no}</span></p>
                   <p>Due Date: <span className="font-semibold">{formatDate(linkedInvoice.due_date)}</span></p>
-                  <p>Outstanding: <span className="font-bold text-red-600">{formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}</span></p>
+                  <p>Outstanding: <span className="font-semibold text-red-600">{formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}</span></p>
                 </div>
               ) : (
                 <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
@@ -287,7 +287,7 @@ const OrdersPage = () => {
                   {hasPermission('sales', 'create') && (
                     <button
                       onClick={handleGenerateInvoice}
-                      className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                      className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Generate Invoice
                     </button>
@@ -298,7 +298,7 @@ const OrdersPage = () => {
 
             {/* Bottom summary */}
             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
-              <div className="text-sm font-bold text-slate-900 dark:text-white">
+              <div className="text-sm font-semibold text-slate-900 dark:text-white">
                 Grand Total: <span className="text-blue-600 dark:text-blue-400">{formatINR(viewingOrder.total_amount)}</span>
               </div>
               <button

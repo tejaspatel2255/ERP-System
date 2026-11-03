@@ -151,7 +151,7 @@ export default function DesignFilesPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
                     <th className="p-4">Design Title</th>
                     <th className="p-4">Project Ref</th>
                     <th className="p-4">Latest Version</th>
@@ -190,7 +190,7 @@ export default function DesignFilesPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-start gap-2">
                 <div className="truncate">
-                  <h3 className="text-lg font-bold text-text-primary truncate">{selectedFile.title}</h3>
+                  <h3 className="text-lg font-semibold text-text-primary truncate">{selectedFile.title}</h3>
                   <p className="text-xs text-text-muted font-mono mt-0.5">Ref: {selectedFile.project_ref || 'N/A'}</p>
                 </div>
                 <button
@@ -203,14 +203,14 @@ export default function DesignFilesPage() {
 
               {/* Versions list */}
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Version History</h4>
+                <h4 className="text-xs font-semibold text-text-muted mb-2">Version History</h4>
                 <div className="space-y-2 max-h-[180px] overflow-y-auto">
                   {versions.map(v => (
                     <div key={v.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl flex justify-between items-center text-xs">
                       <div className="truncate pr-2">
                         <span className="font-mono font-extrabold text-accent-primary mr-2">v{v.version_number}</span>
                         <span className="text-text-muted">{new Date(v.uploaded_at).toLocaleDateString()}</span>
-                        {v.notes && <p className="text-[11px] text-text-secondary mt-0.5 italic truncate">{v.notes}</p>}
+                        {v.notes && <p className="text-xs text-text-secondary mt-0.5 italic truncate">{v.notes}</p>}
                       </div>
                       <a
                         href={v.file_url}
@@ -227,7 +227,7 @@ export default function DesignFilesPage() {
 
               {/* Reviews List */}
               <div>
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Review Status</h4>
+                <h4 className="text-xs font-semibold text-text-muted mb-2">Review Status</h4>
                 <div className="space-y-2 max-h-[180px] overflow-y-auto">
                   {reviews.length === 0 ? (
                     <p className="text-text-muted text-xs italic">No reviews submitted for this file.</p>
@@ -235,15 +235,15 @@ export default function DesignFilesPage() {
                     reviews.map(r => (
                       <div key={r.id} className="p-3 bg-bg-secondary border border-border-color rounded-xl text-xs space-y-1">
                         <div className="flex justify-between items-center">
-                          <span className="font-mono text-[10px] text-text-muted">Ver: v{r.version_number}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          <span className="font-mono text-xs text-text-muted">Ver: v{r.version_number}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                             r.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' : 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30'
                           }`}>
                             {r.status}
                           </span>
                         </div>
                         <p className="text-text-primary italic">{r.remarks || 'No remarks.'}</p>
-                        <p className="text-[10px] text-text-muted text-right">By: {r.reviewer_name}</p>
+                        <p className="text-xs text-text-muted text-right">By: {r.reviewer_name}</p>
                       </div>
                     ))
                   )}

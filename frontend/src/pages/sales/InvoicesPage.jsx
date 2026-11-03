@@ -146,7 +146,7 @@ const InvoicesPage = () => {
       render: (item) => {
         const overdue = isOverdue(item);
         return (
-          <span className={overdue ? 'text-red-600 dark:text-red-400 font-bold' : ''}>
+          <span className={overdue ? 'text-red-600 dark:text-red-400 font-semibold' : ''}>
             {formatDate(item.due_date)} {overdue && '(Overdue)'}
           </span>
         );
@@ -203,7 +203,7 @@ const InvoicesPage = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Invoicing Ledger</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Invoicing Ledger</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Issue commercial invoices, track collection status, and record payments.</p>
         </div>
 
@@ -241,7 +241,7 @@ const InvoicesPage = () => {
                 {viewingInvoice.status !== 'Paid' && hasPermission('sales', 'create') && (
                   <button
                     onClick={handleOpenPayment}
-                    className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-500 transition-colors"
+                    className="bg-green-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-green-500 transition-colors"
                   >
                     Record Payment
                   </button>
@@ -268,30 +268,30 @@ const InvoicesPage = () => {
               {/* Header */}
               <div className="flex justify-between items-start border-b border-slate-150 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
+                  <h2 className="text-xl font-semibold text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
                   <p className="text-xs text-slate-400">123 Industrial Area, Phase II, New Delhi, India</p>
                   <p className="text-xs text-slate-400">GSTIN: 07AAAAA1111A1Z0</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-bold text-slate-900 uppercase">Tax Invoice</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Tax Invoice</h3>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingInvoice.invoice_no}</p>
                   <p className="text-xs text-slate-400">Issue Date: {formatDate(viewingInvoice.invoice_date)}</p>
-                  <p className="text-xs text-red-600 font-bold">Due Date: {formatDate(viewingInvoice.due_date)}</p>
+                  <p className="text-xs text-red-600 font-semibold">Due Date: {formatDate(viewingInvoice.due_date)}</p>
                 </div>
               </div>
 
               {/* Client and Order Reference */}
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Billed To:</h4>
-                  <p className="font-bold text-slate-900 dark:text-white">{viewingInvoice.customer_name}</p>
+                  <h4 className="font-semibold text-slate-500 mb-1">Billed To:</h4>
+                  <p className="font-semibold text-slate-900 dark:text-white">{viewingInvoice.customer_name}</p>
                   <p className="text-slate-500">{viewingInvoice.customer_address}</p>
                   <p className="text-slate-500">GSTIN: {viewingInvoice.customer_gstin || 'N/A'}</p>
                   <p className="text-slate-500">Phone: {viewingInvoice.customer_phone || 'N/A'}</p>
                 </div>
                 <div className="text-right">
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Reference:</h4>
-                  <p className="text-slate-650">Sales Order No: <span className="font-bold text-slate-900 dark:text-white">{viewingInvoice.order_no}</span></p>
+                  <h4 className="font-semibold text-slate-500 mb-1">Reference:</h4>
+                  <p className="text-slate-650">Sales Order No: <span className="font-semibold text-slate-900 dark:text-white">{viewingInvoice.order_no}</span></p>
                 </div>
               </div>
 
@@ -299,22 +299,22 @@ const InvoicesPage = () => {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="py-2 px-2 font-bold uppercase text-slate-500">Item</th>
-                    <th className="py-2 px-2 font-bold uppercase text-slate-500 text-center">Qty</th>
-                    <th className="py-2 px-2 font-bold uppercase text-slate-500">Unit Price</th>
-                    <th className="py-2 px-2 font-bold uppercase text-slate-500 text-right">Line Total</th>
+                    <th className="py-2 px-2 font-semibold text-slate-500">Item</th>
+                    <th className="py-2 px-2 font-semibold text-slate-500 text-center">Qty</th>
+                    <th className="py-2 px-2 font-semibold text-slate-500">Unit Price</th>
+                    <th className="py-2 px-2 font-semibold text-slate-500 text-right">Line Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {viewingItems.map((item, index) => (
                     <tr key={index}>
                       <td className="py-2 px-2">
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-xs text-slate-400">{item.item_code}</div>
                       </td>
                       <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
                       <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
-                      <td className="py-2 px-2 text-right font-bold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -331,7 +331,7 @@ const InvoicesPage = () => {
                     <span>Paid to Date:</span>
                     <span className="font-semibold text-green-600">{formatINR(viewingInvoice.paid_amount)}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-sm text-slate-950 dark:text-white pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between font-semibold text-sm text-slate-950 dark:text-white pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <span>Outstanding Due:</span>
                     <span className="text-red-650">{formatINR(parseFloat(viewingInvoice.total_amount) - parseFloat(viewingInvoice.paid_amount))}</span>
                   </div>
@@ -341,7 +341,7 @@ const InvoicesPage = () => {
               {/* Transaction Payments history subtable */}
               {viewingPayments.length > 0 && (
                 <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-550 uppercase tracking-wider">Payment History Ledger</h4>
+                  <h4 className="text-xs font-semibold text-slate-550">Payment History Ledger</h4>
                   <Table
                     columns={[
                       { key: 'payment_date', label: 'Payment Date', render: (item) => formatDate(item.payment_date) },

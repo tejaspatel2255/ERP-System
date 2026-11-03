@@ -53,8 +53,8 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-xs text-text-muted">
-            Showing page <span className="font-mono-tabular font-bold text-text-primary">{page}</span> of{' '}
-            <span className="font-mono-tabular font-bold text-text-primary">{totalPages}</span>
+            Showing page <span className="font-mono-tabular font-semibold text-text-primary">{page}</span> of{' '}
+            <span className="font-mono-tabular font-semibold text-text-primary">{totalPages}</span>
           </p>
         </div>
         <div>
@@ -79,7 +79,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
                 aria-current={p === page ? 'page' : undefined}
                 className={`relative inline-flex items-center px-3.5 py-1.5 text-xs font-semibold font-mono-tabular transition-colors ${
                   p === page
-                    ? 'bg-blue-600 text-white font-bold'
+                    ? 'bg-blue-600 text-white font-semibold'
                     : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                 }`}
               >

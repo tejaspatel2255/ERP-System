@@ -93,14 +93,14 @@ const SalesReportPage = () => {
     {
       key: 'rank',
       label: 'Rank',
-      render: (_, __, index) => <span className="font-bold text-accent-primary"># {index + 1}</span>
+      render: (_, __, index) => <span className="font-semibold text-accent-primary"># {index + 1}</span>
     },
     { key: 'name', label: 'Customer Name', render: (item) => <span className="font-semibold text-text-primary">{item.name}</span> },
     {
       key: 'revenue',
       label: 'Revenue Earned',
       render: (item) => (
-        <span className="font-bold text-text-primary font-mono">
+        <span className="font-semibold text-text-primary font-mono">
           {formatINR(item.revenue)}
         </span>
       )
@@ -123,7 +123,7 @@ const SalesReportPage = () => {
             </button>
 
             <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-xl border border-border-color bg-bg-card shadow-brand shrink-0">
-              <span className="text-xs text-text-muted font-bold uppercase tracking-wider pl-2">Range:</span>
+              <span className="text-xs text-text-muted font-semibold pl-2">Range:</span>
               <input
                 type="date"
                 value={startDate}
@@ -152,30 +152,30 @@ const SalesReportPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Invoiced */}
             <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Invoiced</h3>
-              <p className="text-2xl font-black tracking-tight text-text-primary">{formatINR(summary.totalInvoiced)}</p>
-              <div className="text-[11px] text-text-muted">Sum of billing documents in date range</div>
+              <h3 className="text-xs font-semibold text-text-muted">Total Invoiced</h3>
+              <p className="text-2xl font-black text-text-primary">{formatINR(summary.totalInvoiced)}</p>
+              <div className="text-xs text-text-muted">Sum of billing documents in date range</div>
             </div>
 
             {/* Total Collected */}
             <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2 border-l-4 border-l-accent-success">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Payments Collected</h3>
-              <p className="text-2xl font-black tracking-tight text-accent-success">{formatINR(summary.totalCollected)}</p>
-              <div className="text-[11px] text-text-muted">Sum of collection payments posted in range</div>
+              <h3 className="text-xs font-semibold text-text-muted">Payments Collected</h3>
+              <p className="text-2xl font-black text-accent-success">{formatINR(summary.totalCollected)}</p>
+              <div className="text-xs text-text-muted">Sum of collection payments posted in range</div>
             </div>
 
             {/* Outstanding */}
             <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Outstanding Credit</h3>
-              <p className="text-2xl font-black tracking-tight text-text-primary">{formatINR(summary.outstanding)}</p>
-              <div className="text-[11px] text-text-muted">Uncollected total invoices outstanding</div>
+              <h3 className="text-xs font-semibold text-text-muted">Outstanding Credit</h3>
+              <p className="text-2xl font-black text-text-primary">{formatINR(summary.outstanding)}</p>
+              <div className="text-xs text-text-muted">Uncollected total invoices outstanding</div>
             </div>
 
             {/* Overdue */}
             <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2 border-l-4 border-l-accent-danger">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Overdue Balances</h3>
-              <p className="text-2xl font-black tracking-tight text-accent-danger">{formatINR(summary.overdue)}</p>
-              <div className="text-[11px] font-semibold text-accent-danger">Invoices past payment terms</div>
+              <h3 className="text-xs font-semibold text-text-muted">Overdue Balances</h3>
+              <p className="text-2xl font-black text-accent-danger">{formatINR(summary.overdue)}</p>
+              <div className="text-xs font-semibold text-accent-danger">Invoices past payment terms</div>
             </div>
           </div>
 
@@ -184,7 +184,7 @@ const SalesReportPage = () => {
             {/* 12-Month Sales Chart */}
             <div className="lg:col-span-2 p-6 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-4 min-w-0">
               <div>
-                <h3 className="text-base font-bold text-text-primary">Monthly Sales Trends</h3>
+                <h3 className="text-base font-semibold text-text-primary">Monthly Sales Trends</h3>
                 <p className="text-xs text-text-muted">Rolling 12-month billings chart comparison</p>
               </div>
 
@@ -214,7 +214,7 @@ const SalesReportPage = () => {
             {/* Top 10 Customers Revenue Leaderboard */}
             <div className="p-6 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-4 min-w-0">
               <div>
-                <h3 className="text-base font-bold text-text-primary">Top Customers Leaderboard</h3>
+                <h3 className="text-base font-semibold text-text-primary">Top Customers Leaderboard</h3>
                 <p className="text-xs text-text-muted">Top business clients ranked by paid invoices</p>
               </div>
 

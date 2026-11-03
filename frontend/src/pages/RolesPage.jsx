@@ -401,7 +401,7 @@ const RolesPage = () => {
                 <Building2 size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization Departments</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Organization Departments</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">View and manage organizational structure departments.</p>
               </div>
             </div>
@@ -578,13 +578,13 @@ const RolesPage = () => {
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
                     Module / Feature
                   </th>
                   {ACTIONS.map(action => (
                     <th 
                       key={action.key} 
-                      className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                      className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400"
                     >
                       {action.label}
                     </th>

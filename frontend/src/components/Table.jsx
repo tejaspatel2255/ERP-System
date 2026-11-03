@@ -17,7 +17,7 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No data av
             {columns.map((col, idx) => (
               <th
                 key={col.key || idx}
-                className={`px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-text-secondary select-none ${
+                className={`px-5 py-3.5 text-xs font-semibold   text-text-secondary select-none ${
                   col.isNumeric ? 'text-right' : ''
                 }`}
               >

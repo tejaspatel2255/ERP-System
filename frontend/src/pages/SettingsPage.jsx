@@ -66,7 +66,7 @@ export default function SettingsPage() {
             key={field.key} 
             className="block rounded-2xl border border-border-color bg-bg-secondary p-5 shadow-xs transition-all hover:border-slate-300 dark:hover:border-slate-700"
           >
-            <span className="block text-xs font-bold uppercase tracking-wider text-text-secondary mb-2">
+            <span className="block text-xs font-semibold text-text-secondary mb-2">
               {field.label}
             </span>
             <textarea

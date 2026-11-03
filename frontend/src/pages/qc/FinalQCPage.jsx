@@ -54,7 +54,7 @@ const FinalQCPage = () => {
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
     { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
     { key: 'result', label: 'Final Result', render: i => {
-      const cls = i.wo_qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.wo_qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-amber-100 text-amber-800 border-amber-200';
+      const cls = i.wo_qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.wo_qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-semibold' : 'bg-amber-100 text-amber-800 border-amber-200';
       const label = i.wo_qc_status === 'Pending' ? 'Pending stock update' : i.result;
       return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{label}</span>;
     }},
@@ -65,7 +65,7 @@ const FinalQCPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Final Product Inspection (QC)</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Final Product Inspection (QC)</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Perform final inspections on completed Work Orders. Approval is required prior to dispatch release.</p>
         </div>
         {hasPermission('qc', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Log Final QC</button>}

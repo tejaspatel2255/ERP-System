@@ -82,7 +82,7 @@ export default function ReviewsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs uppercase tracking-wider">
+                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
                       <th className="p-4">File Title</th>
                       <th className="p-4">Version</th>
                       <th className="p-4">Uploaded By</th>
@@ -99,7 +99,7 @@ export default function ReviewsPage() {
                         onClick={() => openReview(review)}
                       >
                         <td className="p-4 font-semibold text-text-primary">{review.design_file_title}</td>
-                        <td className="p-4 font-mono text-accent-primary font-bold">v{review.version_number}</td>
+                        <td className="p-4 font-mono text-accent-primary font-semibold">v{review.version_number}</td>
                         <td className="p-4 text-text-secondary">{review.uploaded_by_name || 'Unknown'}</td>
                         <td className="p-4 text-text-muted text-xs">{new Date(review.uploaded_at).toLocaleDateString()}</td>
                       </tr>
@@ -115,8 +115,8 @@ export default function ReviewsPage() {
             {selectedReview ? (
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-accent-primary font-bold">Reviewing Submission</p>
-                  <h3 className="mt-1 text-lg font-bold text-text-primary truncate">{selectedReview.design_file_title}</h3>
+                  <p className="text-xs text-accent-primary font-semibold">Reviewing Submission</p>
+                  <h3 className="mt-1 text-lg font-semibold text-text-primary truncate">{selectedReview.design_file_title}</h3>
                   <p className="text-xs text-text-secondary font-mono mt-0.5">Version v{selectedReview.version_number}</p>
                 </div>
 
@@ -125,14 +125,14 @@ export default function ReviewsPage() {
                     href={selectedFile.versions.find((v) => v.id === selectedReview.id).file_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-accent-primary/10 border border-accent-primary/30 px-3.5 py-2 text-xs font-bold text-accent-primary hover:bg-accent-primary/20 transition-all"
+                    className="inline-flex items-center gap-2 rounded-xl bg-accent-primary/10 border border-accent-primary/30 px-3.5 py-2 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20 transition-all"
                   >
                     <span>📄</span> Open & Download File
                   </a>
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Review Remarks *</label>
+                  <label className="block text-xs font-semibold text-text-secondary">Review Remarks *</label>
                   <textarea
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
@@ -144,13 +144,13 @@ export default function ReviewsPage() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => handleReview('Approved')}
-                    className="flex-1 rounded-xl bg-accent-success hover:opacity-90 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all"
+                    className="flex-1 rounded-xl bg-accent-success hover:opacity-90 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all"
                   >
                     ✓ Approve
                   </button>
                   <button
                     onClick={() => handleReview('Changes Requested')}
-                    className="flex-1 rounded-xl bg-accent-warning hover:opacity-90 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all"
+                    className="flex-1 rounded-xl bg-accent-warning hover:opacity-90 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all"
                   >
                     ⚠ Request Changes
                   </button>

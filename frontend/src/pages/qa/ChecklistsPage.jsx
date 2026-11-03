@@ -81,7 +81,7 @@ const ChecklistsPage = () => {
     { key: 'product_category', label: 'Product Category', render: i => i.product_category || 'General' },
     { key: 'item_count', label: 'Verification Items', render: i => i.item_count },
     { key: 'is_active', label: 'Status', render: i => (
-      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold border ${i.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${i.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
         {i.is_active ? 'Active' : 'Inactive'}
       </span>
     )},
@@ -94,7 +94,7 @@ const ChecklistsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">QA Checklists</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">QA Checklists</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Configure checklist procedures for product category quality tests.</p>
         </div>
         {hasPermission('qa', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ New Checklist</button>}
@@ -117,11 +117,11 @@ const ChecklistsPage = () => {
           </div>
 
           <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Verification Steps</h4>
+            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Verification Steps</h4>
             <div className="flex gap-2">
               <input value={newItem.question} onChange={e => setNewItem(p => ({ ...p, question: e.target.value }))} className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" placeholder="Inspection checklist step / question..." />
               <input value={newItem.expected_value} onChange={e => setNewItem(p => ({ ...p, expected_value: e.target.value }))} className="w-40 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" placeholder="Expected Value (e.g. Yes/Pass)" />
-              <button type="button" onClick={handleAddItem} className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-500 font-bold">+</button>
+              <button type="button" onClick={handleAddItem} className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-500 font-semibold">+</button>
             </div>
 
             <div className="max-h-48 overflow-y-auto space-y-2">
@@ -130,9 +130,9 @@ const ChecklistsPage = () => {
                   <div>
                     <span className="font-semibold text-slate-400 mr-2">#{idx+1}</span>
                     <span className="text-slate-800 dark:text-slate-200 font-medium">{item.question}</span>
-                    <span className="text-[10px] text-blue-600 ml-2">(Expected: {item.expected_value})</span>
+                    <span className="text-xs text-blue-600 ml-2">(Expected: {item.expected_value})</span>
                   </div>
-                  <button type="button" onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700 font-bold text-sm px-1.5">✕</button>
+                  <button type="button" onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700 font-semibold text-sm px-1.5">✕</button>
                 </div>
               ))}
             </div>

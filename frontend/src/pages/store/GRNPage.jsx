@@ -106,7 +106,7 @@ const GRNPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Goods Receipt Notes (GRN)</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Goods Receipt Notes (GRN)</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Record supplier deliveries against approved POs and update warehouse stock.</p>
         </div>
         {hasPermission('store', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Create GRN</button>}
@@ -140,10 +140,10 @@ const GRNPage = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-slate-500 uppercase">Item</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Ordered</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Received *</th>
-                    <th className="px-3 py-3 font-semibold text-slate-500 uppercase text-center">Rejected</th>
+                    <th className="px-4 py-3 font-semibold text-slate-500">Item</th>
+                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Ordered</th>
+                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Received *</th>
+                    <th className="px-3 py-3 font-semibold text-slate-500 text-center">Rejected</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -151,7 +151,7 @@ const GRNPage = () => {
                     <tr key={it.item_id}>
                       <td className="px-4 py-2">
                         <div className="font-semibold text-slate-900 dark:text-white">{it.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{it.item_code} · {it.unit || '—'}</div>
+                        <div className="text-xs text-slate-400">{it.item_code} · {it.unit || '—'}</div>
                       </td>
                       <td className="px-3 py-2 text-center font-medium">{parseFloat(it.qty)}</td>
                       <td className="px-3 py-2">
@@ -179,16 +179,16 @@ const GRNPage = () => {
         {viewingGrn && (
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs">
-              <div><p className="text-slate-400 font-semibold uppercase">Supplier</p><p className="font-bold text-slate-900 dark:text-white mt-1">{viewingGrn.vendor_name}</p></div>
-              <div><p className="text-slate-400 font-semibold uppercase">PO Reference</p><p className="font-bold text-slate-900 dark:text-white mt-1">{viewingGrn.po_no}</p></div>
-              <div><p className="text-slate-400 font-semibold uppercase">Received Date</p><p className="font-bold text-slate-900 dark:text-white mt-1">{formatDate(viewingGrn.received_date)}</p></div>
+              <div><p className="text-slate-400 font-semibold">Supplier</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{viewingGrn.vendor_name}</p></div>
+              <div><p className="text-slate-400 font-semibold">PO Reference</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{viewingGrn.po_no}</p></div>
+              <div><p className="text-slate-400 font-semibold">Received Date</p><p className="font-semibold text-slate-900 dark:text-white mt-1">{formatDate(viewingGrn.received_date)}</p></div>
             </div>
             <Table
               columns={[
-                { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-[10px] text-slate-400">{i.item_code}</div></div> },
+                { key: 'item_name', label: 'Item', render: i => <div><div className="font-semibold">{i.item_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
                 { key: 'ordered_qty', label: 'Ordered', render: i => parseFloat(i.ordered_qty) },
-                { key: 'received_qty', label: 'Received', render: i => <span className="text-green-600 font-bold">{parseFloat(i.received_qty)}</span> },
-                { key: 'rejected_qty', label: 'Rejected', render: i => <span className="text-red-600 font-bold">{parseFloat(i.rejected_qty)}</span> }
+                { key: 'received_qty', label: 'Received', render: i => <span className="text-green-600 font-semibold">{parseFloat(i.received_qty)}</span> },
+                { key: 'rejected_qty', label: 'Rejected', render: i => <span className="text-red-600 font-semibold">{parseFloat(i.rejected_qty)}</span> }
               ]}
               data={viewingItems}
               emptyMessage=""

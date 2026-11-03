@@ -79,7 +79,7 @@ export default function Navbar({ onMenuClick }) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-text-muted hidden sm:inline font-medium">Pages</span>
           <span className="text-xs text-text-muted hidden sm:inline">/</span>
-          <h1 className="text-sm font-bold text-text-primary tracking-wide">{getBreadcrumb()}</h1>
+          <h1 className="text-sm font-semibold text-text-primary">{getBreadcrumb()}</h1>
         </div>
       </div>
 
@@ -104,7 +104,7 @@ export default function Navbar({ onMenuClick }) {
         <button className="relative rounded-lg p-2 text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors">
           <Bell size={18} />
           {totalNotifications > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-danger text-[9px] font-black text-white">
+            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-danger text-xs font-black text-white">
               {totalNotifications}
             </span>
           )}

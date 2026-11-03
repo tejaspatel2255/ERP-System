@@ -106,7 +106,7 @@ const ItemsPage = () => {
     { key: 'name', label: 'Item Name' },
     { key: 'item_type', label: 'Type', render: i => {
       const typeColors = { 'Finished Good': 'bg-purple-100 text-purple-800 border-purple-200', 'Semi-Finished': 'bg-blue-100 text-blue-800 border-blue-200', 'Consumable': 'bg-orange-100 text-orange-800 border-orange-200', 'Raw Material': 'bg-slate-100 text-slate-700 border-slate-200' };
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold border ${typeColors[i.item_type] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>{i.item_type || 'Raw Material'}</span>;
+      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${typeColors[i.item_type] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>{i.item_type || 'Raw Material'}</span>;
     }},
     { key: 'category_name', label: 'Category', render: i => i.category_name || '—' },
     { key: 'unit', label: 'Unit' },
@@ -134,7 +134,7 @@ const ItemsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Item Master</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Item Master</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage raw materials, finished goods, and consumables catalogue.</p>
         </div>
         <div className="flex gap-2">

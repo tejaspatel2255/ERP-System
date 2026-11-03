@@ -325,7 +325,7 @@ const QuotationsPage = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">Quotations Ledger</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Quotations Ledger</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Issue commercial offers, manage validity dates, and convert offers to Sales Orders.</p>
         </div>
 
@@ -443,7 +443,7 @@ const QuotationsPage = () => {
           {/* Line Items Table */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Line Items</h4>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Line Items</h4>
               <button
                 type="button"
                 onClick={handleAddRow}
@@ -457,12 +457,12 @@ const QuotationsPage = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-1/3">Item</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-center w-16">Qty</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-28">Unit Price</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase w-24">Discount</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-center w-16">Tax %</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-right w-28">Total</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 w-1/3">Item</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-center w-16">Qty</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 w-28">Unit Price</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 w-24">Discount</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-center w-16">Tax %</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 text-right w-28">Total</th>
                     <th className="px-4 py-3 text-center w-10"></th>
                   </tr>
                 </thead>
@@ -579,7 +579,7 @@ const QuotationsPage = () => {
                 <span>Integrated Taxes (+):</span>
                 <span className="font-medium">{formatINR(totals.totalTax)}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex justify-between text-base font-semibold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-800">
                 <span>Grand Total:</span>
                 <span className="text-blue-600 dark:text-blue-400">{formatINR(totals.grandTotal)}</span>
               </div>
@@ -658,12 +658,12 @@ const QuotationsPage = () => {
               {/* Company Identity */}
               <div className="flex justify-between items-start border-b border-slate-150 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
+                  <h2 className="text-xl font-semibold text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
                   <p className="text-xs text-slate-400">123 Industrial Area, Phase II, New Delhi, India</p>
                   <p className="text-xs text-slate-400">GSTIN: 07AAAAA1111A1Z0</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-bold text-blue-600 uppercase">Commercial Offer</h3>
+                  <h3 className="text-lg font-semibold text-blue-600">Commercial Offer</h3>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingQuotation.quotation_no}</p>
                   <p className="text-xs text-slate-400">Date: {formatDate(viewingQuotation.date)}</p>
                   <p className="text-xs text-red-600 font-semibold">Valid Until: {formatDate(viewingQuotation.valid_until)}</p>
@@ -673,8 +673,8 @@ const QuotationsPage = () => {
               {/* Client and Ship info */}
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-500 uppercase mb-1">Issued To:</h4>
-                  <p className="font-bold text-slate-900 dark:text-white">{viewingQuotation.customer_name}</p>
+                  <h4 className="font-semibold text-slate-500 mb-1">Issued To:</h4>
+                  <p className="font-semibold text-slate-900 dark:text-white">{viewingQuotation.customer_name}</p>
                   <p className="text-slate-500">{viewingQuotation.customer_address || 'No Address provided.'}</p>
                   <p className="text-slate-500">GSTIN: {viewingQuotation.customer_gstin || 'N/A'}</p>
                   <p className="text-slate-500">Email: {viewingQuotation.customer_email || 'N/A'}</p>
@@ -685,26 +685,26 @@ const QuotationsPage = () => {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Item Code / Description</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-center">Qty</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Unit Price</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500">Discount</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-center">Tax %</th>
-                    <th className="py-2.5 px-2 font-bold uppercase text-slate-500 text-right">Line Total</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500">Item Code / Description</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500 text-center">Qty</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500">Unit Price</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500">Discount</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500 text-center">Tax %</th>
+                    <th className="py-2.5 px-2 font-semibold text-slate-500 text-right">Line Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {viewingItems.map((item, index) => (
                     <tr key={index}>
                       <td className="py-2 px-2">
-                        <div className="font-bold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-[10px] text-slate-400">{item.item_code}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-xs text-slate-400">{item.item_code}</div>
                       </td>
                       <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
                       <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
                       <td className="py-2 px-2 text-green-600">-{formatINR(item.discount)}</td>
                       <td className="py-2 px-2 text-center">{parseFloat(item.tax_pct)}%</td>
-                      <td className="py-2 px-2 text-right font-bold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -713,11 +713,11 @@ const QuotationsPage = () => {
               {/* Summary and notes row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                 <div className="text-xs text-slate-500">
-                  <h4 className="font-bold uppercase mb-1">Terms & Conditions</h4>
+                  <h4 className="font-semibold mb-1">Terms & Conditions</h4>
                   <p className="whitespace-pre-line">{viewingQuotation.notes || 'All values in INR. Subject to standard industrial terms.'}</p>
                 </div>
                 <div className="text-right text-xs space-y-1.5 self-end">
-                  <div className="flex justify-between font-bold text-sm text-slate-950 dark:text-white">
+                  <div className="flex justify-between font-semibold text-sm text-slate-950 dark:text-white">
                     <span>Total Amount Due:</span>
                     <span className="text-blue-600 dark:text-blue-400">{formatINR(viewingQuotation.total_amount)}</span>
                   </div>

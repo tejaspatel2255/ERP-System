@@ -129,11 +129,11 @@ const QATestsPage = () => {
     { key: 'test_date', label: 'Test Date', render: i => formatDate(i.test_date) },
     { key: 'result', label: 'Test Result', render: i => {
       const cls = i.result === 'Pass' ? 'bg-green-100 text-green-800 border-green-200' : i.result === 'Fail' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold border ${cls}`}>{i.result}</span>;
+      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{i.result}</span>;
     }},
     { key: 'approval_status', label: 'Approval', render: i => {
-      const cls = i.approval_status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : i.approval_status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200 font-bold' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold border ${cls}`}>{i.approval_status}</span>;
+      const cls = i.approval_status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : i.approval_status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200 font-semibold' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${cls}`}>{i.approval_status}</span>;
     }},
     { key: 'actions', label: 'Actions', render: i => (
       <div className="flex gap-2">
@@ -147,7 +147,7 @@ const QATestsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Quality Inspection Tests</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Quality Inspection Tests</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Log quality inspection tests, document test actuals, and manage approvals.</p>
         </div>
         {hasPermission('qa', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Initialize QA Test</button>}
@@ -222,9 +222,9 @@ const QATestsPage = () => {
               {conductResults.map((item, idx) => (
                 <div key={idx} className="border border-slate-100 dark:border-slate-800 p-3 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-slate-500">Item #{idx+1}</p>
+                    <p className="text-xs font-semibold text-slate-500">Item #{idx+1}</p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.question}</p>
-                    <p className="text-[10px] text-blue-600">Expected: {item.expected_value}</p>
+                    <p className="text-xs text-blue-600">Expected: {item.expected_value}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -271,7 +271,7 @@ const QATestsPage = () => {
               <div><strong>Work Order:</strong> {approveTestObj.test.wo_no}</div>
               <div><strong>Checklist:</strong> {approveTestObj.test.checklist_name}</div>
               <div><strong>Conducted By:</strong> {approveTestObj.test.tested_by_name}</div>
-              <div><strong>Overall Result:</strong> <span className={approveTestObj.test.result === 'Pass' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{approveTestObj.test.result}</span></div>
+              <div><strong>Overall Result:</strong> <span className={approveTestObj.test.result === 'Pass' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>{approveTestObj.test.result}</span></div>
             </div>
 
             <div className="space-y-2 max-h-48 overflow-y-auto mb-4 border border-slate-100 dark:border-slate-800 p-2 rounded-lg">
@@ -283,7 +283,7 @@ const QATestsPage = () => {
                   </div>
                   <div className="flex gap-2">
                     <span className="text-slate-500">Actual: {r.actual_value}</span>
-                    <span className={r.passed ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{r.passed ? '✓ Pass' : '✕ Fail'}</span>
+                    <span className={r.passed ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>{r.passed ? '✓ Pass' : '✕ Fail'}</span>
                   </div>
                 </div>
               ))}
@@ -304,7 +304,7 @@ const QATestsPage = () => {
 
             <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button type="button" onClick={() => setIsApproveOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-              <button type="submit" className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-500 font-bold">Submit Review</button>
+              <button type="submit" className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-500 font-semibold">Submit Review</button>
             </div>
           </form>
         )}

@@ -126,7 +126,7 @@ export default function DesignTasksPage() {
             return (
               <div key={col.key} className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col min-h-[480px] shadow-brand">
                 <div className={`border-t-4 ${col.borderClass} pt-2 pb-4 flex justify-between items-center`}>
-                  <h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">{col.label}</h3>
+                  <h3 className="font-semibold text-text-primary text-xs">{col.label}</h3>
                   <span className="bg-bg-secondary text-text-secondary font-mono text-xs px-2.5 py-0.5 rounded-full border border-border-color font-semibold">
                     {colTasks.length}
                   </span>
@@ -136,18 +136,18 @@ export default function DesignTasksPage() {
                   {colTasks.map(task => (
                     <div key={task.id} className="bg-bg-secondary border border-border-color rounded-xl p-4 space-y-3 shadow-sm hover:border-text-muted transition-colors">
                       <div>
-                        <h4 className="font-bold text-text-primary text-sm">{task.title}</h4>
+                        <h4 className="font-semibold text-text-primary text-sm">{task.title}</h4>
                         <p className="text-text-muted text-xs mt-1 line-clamp-2">{task.description}</p>
                       </div>
 
                       {task.design_file_title && (
-                        <div className="bg-bg-card border border-border-color rounded-lg p-2 text-[11px] text-accent-primary font-mono flex items-center gap-1.5 min-w-0">
+                        <div className="bg-bg-card border border-border-color rounded-lg p-2 text-xs text-accent-primary font-mono flex items-center gap-1.5 min-w-0">
                           <span>📎</span> <span className="truncate">{task.design_file_title}</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className={`px-2 py-0.5 rounded-full font-bold ${priorityColors[task.priority] || priorityColors['Medium']}`}>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className={`px-2 py-0.5 rounded-full font-semibold ${priorityColors[task.priority] || priorityColors['Medium']}`}>
                           {task.priority}
                         </span>
                         {task.due_date && (
@@ -158,7 +158,7 @@ export default function DesignTasksPage() {
                       </div>
 
                       <div className="pt-2 border-t border-border-color flex justify-between items-center">
-                        <span className="text-[11px] text-text-secondary font-medium truncate max-w-[100px]">
+                        <span className="text-xs text-text-secondary font-medium truncate max-w-[100px]">
                           {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : 'Unassigned'}
                         </span>
 
@@ -169,7 +169,7 @@ export default function DesignTasksPage() {
                                 const prev = columns[columns.findIndex(c => c.key === col.key) - 1].key;
                                 handleMoveTask(task.id, prev);
                               }}
-                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-[10px] transition-all"
+                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-xs transition-all"
                               title="Move back"
                             >
                               ◀
@@ -181,7 +181,7 @@ export default function DesignTasksPage() {
                                 const next = columns[columns.findIndex(c => c.key === col.key) + 1].key;
                                 handleMoveTask(task.id, next);
                               }}
-                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-[10px] transition-all"
+                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-xs transition-all"
                               title="Move forward"
                             >
                               ▶

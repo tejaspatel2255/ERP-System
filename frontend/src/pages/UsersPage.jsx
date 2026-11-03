@@ -469,13 +469,13 @@ const UsersPage = () => {
         <div className="mb-8 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold">
                 <Clock size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   Pending Account Approvals
-                  <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-slate-950">
+                  <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-slate-950">
                     {pendingUsers.length}
                   </span>
                 </h2>
@@ -725,7 +725,7 @@ const UsersPage = () => {
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 select-none">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">User Activity History</h2>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">User Activity History</h2>
                 {drawerUser && <p className="text-sm text-slate-500 dark:text-slate-400">{drawerUser.name} ({drawerUser.email})</p>}
               </div>
               <button

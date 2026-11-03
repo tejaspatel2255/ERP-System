@@ -95,12 +95,13 @@ const SalesReportPage = () => {
       label: 'Rank',
       render: (_, __, index) => <span className="font-semibold text-accent-primary"># {index + 1}</span>
     },
-    { key: 'name', label: 'Customer Name', render: (item) => <span className="font-semibold text-text-primary">{item.name}</span> },
+    { key: 'name', label: 'Customer name', render: (item) => <span className="font-medium text-text-primary">{item.name}</span> },
     {
       key: 'revenue',
-      label: 'Revenue Earned',
+      label: 'Revenue earned',
+      isNumeric: true,
       render: (item) => (
-        <span className="font-semibold text-text-primary font-mono">
+        <span className="font-medium tabular-nums text-text-primary">
           {formatINR(item.revenue)}
         </span>
       )
@@ -108,34 +109,34 @@ const SalesReportPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
-        title="Sales Reporting & Analytics"
+        title="Sales reports"
         description="Analyze performance, track collections, monitor outstanding credit, and review customer standings."
         actions={
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportCSV}
               type="button"
-              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2.5 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="btn btn-ghost"
             >
               Export CSV
             </button>
 
-            <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-xl border border-border-color bg-bg-card shadow-brand shrink-0">
-              <span className="text-xs text-text-muted font-semibold pl-2">Range:</span>
+            <div className="flex items-center gap-1.5 p-1 rounded border border-border-input bg-bg-card">
+              <span className="text-xs text-text-muted font-medium pl-1">Range:</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="rounded-lg border border-border-color bg-bg-secondary py-1 px-2.5 text-xs text-text-primary font-mono focus:outline-none focus:border-accent-primary"
+                className="field !min-h-[28px] !py-0.5 !px-2 !text-xs !w-auto"
               />
-              <span className="text-text-muted text-xs font-semibold">to</span>
+              <span className="text-text-muted text-xs">to</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="rounded-lg border border-border-color bg-bg-secondary py-1 px-2.5 text-xs text-text-primary font-mono focus:outline-none focus:border-accent-primary"
+                className="field !min-h-[28px] !py-0.5 !px-2 !text-xs !w-auto"
               />
             </div>
           </div>
@@ -143,79 +144,90 @@ const SalesReportPage = () => {
       />
 
       {loading ? (
-        <div className="py-24 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="sheet p-4 h-24 bg-bg-hover animate-pulse rounded" />
+          ))}
         </div>
       ) : (
-        <div className="space-y-8">
-          {/* 4 Summary Cards */}
+        <div className="space-y-5">
+          {/* 4 KPI Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Invoiced */}
-            <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2">
-              <h3 className="text-xs font-semibold text-text-muted">Total Invoiced</h3>
-              <p className="text-2xl font-black text-text-primary">{formatINR(summary.totalInvoiced)}</p>
-              <div className="text-xs text-text-muted">Sum of billing documents in date range</div>
+            <div className="sheet p-4">
+              <span className="text-sm text-text-secondary">Total invoiced</span>
+              <div className="text-2xl font-semibold tabular-nums text-text-primary mt-2">
+                {formatINR(summary.totalInvoiced)}
+              </div>
+              <div className="text-xs text-text-muted mt-1">Sum of billing documents in date range</div>
             </div>
 
             {/* Total Collected */}
-            <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2 border-l-4 border-l-accent-success">
-              <h3 className="text-xs font-semibold text-text-muted">Payments Collected</h3>
-              <p className="text-2xl font-black text-accent-success">{formatINR(summary.totalCollected)}</p>
-              <div className="text-xs text-text-muted">Sum of collection payments posted in range</div>
+            <div className="sheet p-4">
+              <span className="text-sm text-text-secondary">Payments collected</span>
+              <div className="text-2xl font-semibold tabular-nums text-[var(--success-text)] mt-2">
+                {formatINR(summary.totalCollected)}
+              </div>
+              <div className="text-xs text-text-muted mt-1">Sum of collection payments posted in range</div>
             </div>
 
             {/* Outstanding */}
-            <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2">
-              <h3 className="text-xs font-semibold text-text-muted">Outstanding Credit</h3>
-              <p className="text-2xl font-black text-text-primary">{formatINR(summary.outstanding)}</p>
-              <div className="text-xs text-text-muted">Uncollected total invoices outstanding</div>
+            <div className="sheet p-4">
+              <span className="text-sm text-text-secondary">Outstanding credit</span>
+              <div className="text-2xl font-semibold tabular-nums text-text-primary mt-2">
+                {formatINR(summary.outstanding)}
+              </div>
+              <div className="text-xs text-text-muted mt-1">Uncollected total invoices outstanding</div>
             </div>
 
             {/* Overdue */}
-            <div className="p-5 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-2 border-l-4 border-l-accent-danger">
-              <h3 className="text-xs font-semibold text-text-muted">Overdue Balances</h3>
-              <p className="text-2xl font-black text-accent-danger">{formatINR(summary.overdue)}</p>
-              <div className="text-xs font-semibold text-accent-danger">Invoices past payment terms</div>
+            <div className="sheet p-4">
+              <span className="text-sm text-text-secondary">Overdue balances</span>
+              <div className="text-2xl font-semibold tabular-nums text-[var(--danger-text)] mt-2">
+                {formatINR(summary.overdue)}
+              </div>
+              <div className="text-xs font-medium text-[var(--danger-text)] mt-1">Invoices past payment terms</div>
             </div>
           </div>
 
           {/* Chart & Customers leaderboard */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
             {/* 12-Month Sales Chart */}
-            <div className="lg:col-span-2 p-6 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-4 min-w-0">
+            <div className="lg:col-span-2 sheet p-5 space-y-4 min-w-0">
               <div>
-                <h3 className="text-base font-semibold text-text-primary">Monthly Sales Trends</h3>
-                <p className="text-xs text-text-muted">Rolling 12-month billings chart comparison</p>
+                <h3 className="text-sm font-semibold text-text-primary">Monthly sales trends</h3>
+                <p className="text-xs text-text-secondary">Rolling 12-month billings chart comparison</p>
               </div>
 
               <div className="h-80 w-full text-xs">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                    <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="var(--text-secondary)" />
-                    <YAxis tickLine={false} axisLine={false} stroke="var(--text-secondary)" />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+                    <YAxis tickLine={false} axisLine={false} stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
                     <Tooltip
                       cursor={{ fill: 'var(--bg-hover)' }}
                       formatter={(value) => [formatINR(value), 'Sales']}
                       contentStyle={{
                         background: 'var(--bg-card)',
                         border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
+                        borderRadius: 6,
+                        boxShadow: 'var(--shadow)',
                         color: 'var(--text-primary)',
-                        fontSize: '11px'
+                        fontSize: 12
                       }}
                     />
-                    <Bar dataKey="sales" fill="var(--accent-primary)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="sales" fill="#0A6ED1" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Top 10 Customers Revenue Leaderboard */}
-            <div className="p-6 rounded-2xl border border-border-color bg-bg-card shadow-brand space-y-4 min-w-0">
+            {/* Top Customers Leaderboard */}
+            <div className="sheet p-5 space-y-4 min-w-0">
               <div>
-                <h3 className="text-base font-semibold text-text-primary">Top Customers Leaderboard</h3>
-                <p className="text-xs text-text-muted">Top business clients ranked by paid invoices</p>
+                <h3 className="text-sm font-semibold text-text-primary">Top customers</h3>
+                <p className="text-xs text-text-secondary">Top business clients ranked by paid invoices</p>
               </div>
 
               <Table

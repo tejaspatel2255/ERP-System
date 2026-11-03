@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getInvoices, getInvoiceById, updateInvoiceStatus, recordPayment } from '../../api/salesApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -118,8 +120,8 @@ const InvoicesPage = () => {
       if (res.success) {
         toast.success('Payment recorded successfully.');
         setIsPayOpen(false);
-        setIsViewOpen(false); // Close invoice preview
-        fetchInvoicesList();  // Refresh main table
+        setIsViewOpen(false);
+        fetchInvoicesList();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Recording payment failed.');
@@ -137,30 +139,45 @@ const InvoicesPage = () => {
 
   // Columns Configuration
   const columns = [
-    { key: 'invoice_no', label: 'Invoice No' },
+    {
+      key: 'invoice_no',
+      label: 'Invoice no',
+      render: (item) => <span className="stamp">{item.invoice_no}</span>
+    },
     { key: 'customer_name', label: 'Customer' },
-    { key: 'invoice_date', label: 'Issue Date', render: (item) => formatDate(item.invoice_date) },
+    { key: 'invoice_date', label: 'Issue date', render: (item) => formatDate(item.invoice_date) },
     {
       key: 'due_date',
-      label: 'Due Date',
+      label: 'Due date',
       render: (item) => {
         const overdue = isOverdue(item);
         return (
-          <span className={overdue ? 'text-red-600 dark:text-red-400 font-semibold' : ''}>
+          <span className={overdue ? 'text-[var(--danger-text)] font-medium' : ''}>
             {formatDate(item.due_date)} {overdue && '(Overdue)'}
           </span>
         );
       }
     },
-    { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) },
-    { key: 'paid_amount', label: 'Paid Amount', render: (item) => formatINR(item.paid_amount) },
+    {
+      key: 'total_amount',
+      label: 'Total amount',
+      isNumeric: true,
+      render: (item) => formatINR(item.total_amount)
+    },
+    {
+      key: 'paid_amount',
+      label: 'Paid amount',
+      isNumeric: true,
+      render: (item) => formatINR(item.paid_amount)
+    },
     {
       key: 'outstanding_amount',
       label: 'Outstanding',
+      isNumeric: true,
       render: (item) => {
         const outstanding = parseFloat(item.total_amount) - parseFloat(item.paid_amount);
         return (
-          <span className={`font-semibold ${outstanding > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
+          <span className={`font-medium tabular-nums ${outstanding > 0 ? 'text-[var(--danger-text)]' : 'text-text-primary'}`}>
             {formatINR(outstanding)}
           </span>
         );
@@ -172,16 +189,7 @@ const InvoicesPage = () => {
       render: (item) => {
         const overdue = isOverdue(item);
         const displayStatus = overdue ? 'Overdue' : item.status;
-        return (
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-            displayStatus === 'Paid' ? 'bg-green-100 text-green-800 border border-green-200' :
-            displayStatus === 'Partially Paid' || displayStatus === 'Partial' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-            displayStatus === 'Overdue' ? 'bg-red-100 text-red-800 border border-red-200 animate-pulse' :
-            'bg-slate-100 text-slate-800 border border-slate-200'
-          }`}>
-            {displayStatus}
-          </span>
-        );
+        return <StatusBadge status={displayStatus} />;
       }
     },
     {
@@ -190,30 +198,32 @@ const InvoicesPage = () => {
       render: (item) => (
         <button
           onClick={() => handleViewInvoice(item)}
-          className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+          className="btn btn-ghost btn-sm"
         >
-          View Invoice
+          View invoice
         </button>
       )
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Invoicing Ledger</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Issue commercial invoices, track collection status, and record payments.</p>
-        </div>
+      <PageHeader
+        title="Invoices"
+        description="Issue commercial invoices, track collection status, and record payments."
+      />
 
-        <div>
+      {/* Filter toolbar */}
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="w-48">
+          <label className="field-label">Status filter</label>
           <select
             value={selectedStatus}
             onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           >
-            <option value="">All Statuses</option>
+            <option value="">All statuses</option>
             <option value="Unpaid">Unpaid</option>
             <option value="Partially Paid">Partially Paid</option>
             <option value="Paid">Paid</option>
@@ -223,59 +233,62 @@ const InvoicesPage = () => {
       </div>
 
       {/* Main Table */}
-      <Table columns={columns} data={invoices} loading={loading} emptyMessage="No Invoices generated." />
+      <Table columns={columns} data={invoices} loading={loading} emptyMessage="No invoices found." />
 
       {/* Pagination */}
-      <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {/* VIEW PRINTABLE INVOICE MODAL */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Invoice Document" size="lg">
+      <Modal
+        isOpen={isViewOpen}
+        onClose={() => setIsViewOpen(false)}
+        title="Invoice document"
+        size="lg"
+      >
         {viewingInvoice && (
           <div className="space-y-6">
             {/* Control Bar */}
-            <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Actions:</span>
+            <div className="sheet p-3 flex flex-wrap justify-between items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-text-secondary">Actions:</span>
                 {viewingInvoice.status !== 'Paid' && hasPermission('sales', 'create') && (
                   <button
                     onClick={handleOpenPayment}
-                    className="bg-green-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-green-500 transition-colors"
+                    className="btn btn-primary btn-sm"
                   >
-                    Record Payment
+                    Record payment
                   </button>
                 )}
                 {viewingInvoice.status === 'Unpaid' && (
                   <button
                     onClick={() => handleChangeStatus(viewingInvoice.id, 'Voided')}
-                    className="bg-red-50 text-red-600 border border-red-200 text-xs font-semibold px-2.5 py-1 rounded hover:bg-red-100"
+                    className="btn btn-danger btn-sm"
                   >
-                    Void Invoice
+                    Void invoice
                   </button>
                 )}
               </div>
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 rounded hover:bg-slate-100"
+                className="btn btn-ghost btn-sm"
               >
-                Print Invoice (PDF)
+                Print PDF
               </button>
             </div>
 
-            {/* Invoice Printable View */}
-            <div className="p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-950 space-y-6">
+            {/* Invoice Printable View (Literal bg-white text-black allowed inside preview) */}
+            <div className="sheet p-6 bg-white text-black space-y-6 print:border-none print:shadow-none print:p-0">
               {/* Header */}
-              <div className="flex justify-between items-start border-b border-slate-150 pb-4">
+              <div className="flex justify-between items-start border-b border-gray-200 pb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-950 dark:text-white">ERP ENTERPRISE</h2>
-                  <p className="text-xs text-slate-400">123 Industrial Area, Phase II, New Delhi, India</p>
-                  <p className="text-xs text-slate-400">GSTIN: 07AAAAA1111A1Z0</p>
+                  <h2 className="text-xl font-semibold text-black">ERP ENTERPRISE</h2>
+                  <p className="text-xs text-gray-500">123 Industrial Area, Phase II, New Delhi, India</p>
+                  <p className="text-xs text-gray-500">GSTIN: 07AAAAA1111A1Z0</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-lg font-semibold text-slate-900">Tax Invoice</h3>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingInvoice.invoice_no}</p>
-                  <p className="text-xs text-slate-400">Issue Date: {formatDate(viewingInvoice.invoice_date)}</p>
+                  <h3 className="text-lg font-semibold text-black">Tax Invoice</h3>
+                  <p className="text-sm font-semibold text-black">{viewingInvoice.invoice_no}</p>
+                  <p className="text-xs text-gray-500">Issue Date: {formatDate(viewingInvoice.invoice_date)}</p>
                   <p className="text-xs text-red-600 font-semibold">Due Date: {formatDate(viewingInvoice.due_date)}</p>
                 </div>
               </div>
@@ -283,87 +296,87 @@ const InvoicesPage = () => {
               {/* Client and Order Reference */}
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <h4 className="font-semibold text-slate-500 mb-1">Billed To:</h4>
-                  <p className="font-semibold text-slate-900 dark:text-white">{viewingInvoice.customer_name}</p>
-                  <p className="text-slate-500">{viewingInvoice.customer_address}</p>
-                  <p className="text-slate-500">GSTIN: {viewingInvoice.customer_gstin || 'N/A'}</p>
-                  <p className="text-slate-500">Phone: {viewingInvoice.customer_phone || 'N/A'}</p>
+                  <h4 className="font-semibold text-gray-500 mb-1">Billed To:</h4>
+                  <p className="font-semibold text-black">{viewingInvoice.customer_name}</p>
+                  <p className="text-gray-500">{viewingInvoice.customer_address}</p>
+                  <p className="text-gray-500">GSTIN: {viewingInvoice.customer_gstin || 'N/A'}</p>
+                  <p className="text-gray-500">Phone: {viewingInvoice.customer_phone || 'N/A'}</p>
                 </div>
                 <div className="text-right">
-                  <h4 className="font-semibold text-slate-500 mb-1">Reference:</h4>
-                  <p className="text-slate-650">Sales Order No: <span className="font-semibold text-slate-900 dark:text-white">{viewingInvoice.order_no}</span></p>
+                  <h4 className="font-semibold text-gray-500 mb-1">Reference:</h4>
+                  <p className="text-gray-600">Sales Order No: <span className="font-semibold text-black">{viewingInvoice.order_no}</span></p>
                 </div>
               </div>
 
               {/* Itemized Table */}
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="py-2 px-2 font-semibold text-slate-500">Item</th>
-                    <th className="py-2 px-2 font-semibold text-slate-500 text-center">Qty</th>
-                    <th className="py-2 px-2 font-semibold text-slate-500">Unit Price</th>
-                    <th className="py-2 px-2 font-semibold text-slate-500 text-right">Line Total</th>
+                  <tr className="border-b-2 border-gray-200 bg-gray-50">
+                    <th className="py-2 px-2 font-semibold text-gray-600">Item</th>
+                    <th className="py-2 px-2 font-semibold text-gray-600 text-center">Qty</th>
+                    <th className="py-2 px-2 font-semibold text-gray-600">Unit Price</th>
+                    <th className="py-2 px-2 font-semibold text-gray-600 text-right">Line Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-gray-100">
                   {viewingItems.map((item, index) => (
                     <tr key={index}>
                       <td className="py-2 px-2">
-                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-xs text-slate-400">{item.item_code}</div>
+                        <div className="font-semibold text-black">{item.item_name}</div>
+                        <div className="text-xs text-gray-400">{item.item_code}</div>
                       </td>
                       <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
                       <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
-                      <td className="py-2 px-2 text-right font-semibold text-slate-900 dark:text-white">{formatINR(item.line_total)}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-black">{formatINR(item.line_total)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               {/* Totals Box */}
-              <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-end pt-4 border-t border-gray-200">
                 <div className="text-right text-xs space-y-2 w-64">
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-gray-600">
                     <span>Total Amount:</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">{formatINR(viewingInvoice.total_amount)}</span>
+                    <span className="font-semibold text-black">{formatINR(viewingInvoice.total_amount)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-500">
+                  <div className="flex justify-between text-gray-600">
                     <span>Paid to Date:</span>
                     <span className="font-semibold text-green-600">{formatINR(viewingInvoice.paid_amount)}</span>
                   </div>
-                  <div className="flex justify-between font-semibold text-sm text-slate-950 dark:text-white pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between font-semibold text-sm text-black pt-1.5 border-t border-gray-200">
                     <span>Outstanding Due:</span>
-                    <span className="text-red-650">{formatINR(parseFloat(viewingInvoice.total_amount) - parseFloat(viewingInvoice.paid_amount))}</span>
+                    <span className="text-red-600">{formatINR(parseFloat(viewingInvoice.total_amount) - parseFloat(viewingInvoice.paid_amount))}</span>
                   </div>
                 </div>
               </div>
 
               {/* Transaction Payments history subtable */}
               {viewingPayments.length > 0 && (
-                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <h4 className="text-xs font-semibold text-slate-550">Payment History Ledger</h4>
+                <div className="pt-6 border-t border-gray-200 space-y-2">
+                  <h4 className="text-xs font-semibold text-gray-600">Payment History Ledger</h4>
                   <Table
                     columns={[
-                      { key: 'payment_date', label: 'Payment Date', render: (item) => formatDate(item.payment_date) },
+                      { key: 'payment_date', label: 'Payment date', render: (item) => formatDate(item.payment_date) },
                       { key: 'payment_mode', label: 'Mode' },
-                      { key: 'reference_no', label: 'Reference No', render: (item) => item.reference_no || 'N/A' },
-                      { key: 'notes', label: 'Notes', render: (item) => item.notes || 'N/A' },
-                      { key: 'amount', label: 'Amount Paid', render: (item) => formatINR(item.amount) }
+                      { key: 'reference_no', label: 'Reference no', render: (item) => item.reference_no || '—' },
+                      { key: 'notes', label: 'Notes', render: (item) => item.notes || '—' },
+                      { key: 'amount', label: 'Amount paid', isNumeric: true, render: (item) => formatINR(item.amount) }
                     ]}
                     data={viewingPayments}
-                    emptyMessage=""
+                    emptyMessage="No payments recorded."
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn"
               >
-                Close Preview
+                Close preview
               </button>
             </div>
           </div>
@@ -371,36 +384,40 @@ const InvoicesPage = () => {
       </Modal>
 
       {/* RECORD PAYMENT INPUT MODAL */}
-      <Modal isOpen={isPayOpen} onClose={() => setIsPayOpen(false)} title="Record Collection Payment">
+      <Modal
+        isOpen={isPayOpen}
+        onClose={() => setIsPayOpen(false)}
+        title="Record payment"
+      >
         {viewingInvoice && (
           <form onSubmit={handlePaymentSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Invoice Reference</label>
+              <label className="field-label">Invoice reference</label>
               <input
                 type="text"
                 disabled
-                className="block w-full rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-900/50 py-2 px-3 text-sm text-slate-500"
+                className="field"
                 value={`${viewingInvoice.invoice_no} (${viewingInvoice.customer_name})`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Collection Amount (INR) *</label>
+              <label className="field-label">Collection amount (INR) *</label>
               <input
                 type="number"
                 step="0.01"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={paymentData.amount}
                 onChange={(e) => setPaymentData(prev => ({ ...prev, amount: e.target.value }))}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Mode *</label>
+              <label className="field-label">Payment mode *</label>
               <select
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field"
                 value={paymentData.payment_mode}
                 onChange={(e) => setPaymentData(prev => ({ ...prev, payment_mode: e.target.value }))}
               >
@@ -412,40 +429,40 @@ const InvoicesPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Reference No / Transaction ID</label>
+              <label className="field-label">Reference no / transaction ID</label>
               <input
                 type="text"
                 placeholder="e.g. TXN1234567890"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={paymentData.reference_no}
                 onChange={(e) => setPaymentData(prev => ({ ...prev, reference_no: e.target.value }))}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Collection Notes</label>
+              <label className="field-label">Collection notes</label>
               <textarea
                 rows={2}
                 placeholder="e.g. Received parts balance payment"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={paymentData.notes}
                 onChange={(e) => setPaymentData(prev => ({ ...prev, notes: e.target.value }))}
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsPayOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-550"
+                className="btn btn-primary"
               >
-                Post Payment
+                Post payment
               </button>
             </div>
           </form>

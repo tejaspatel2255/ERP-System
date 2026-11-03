@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getAssets, createAsset, updateAsset, getAssetById } from '../../api/maintenanceApi';
 import { formatDate } from '../../utils/formatDate';
@@ -98,32 +100,29 @@ const AssetsPage = () => {
   };
 
   const columns = [
-    { key: 'asset_code', label: 'Asset Code' },
-    { key: 'name', label: 'Asset Name' },
+    { key: 'asset_code', label: 'Asset Code', render: i => <span className="stamp">{i.asset_code}</span> },
+    { key: 'name', label: 'Asset Name', render: i => <span className="font-medium text-text-primary">{i.name}</span> },
     { key: 'location', label: 'Location', render: i => i.location || '—' },
-    { key: 'purchase_date', label: 'Purchase Date', render: i => i.purchase_date ? formatDate(i.purchase_date) : '—' },
-    { key: 'purchase_value', label: 'Value (INR)', render: i => i.purchase_value ? formatINR(i.purchase_value) : '—' },
-    { key: 'status', label: 'Status', render: i => {
-      const cls = i.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' : i.status === 'Maintenance' ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-slate-100 text-slate-600 border-slate-200';
-      return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{i.status}</span>;
-    }},
+    { key: 'purchase_date', label: 'Purchase Date', render: i => i.purchase_date ? <span className="tabular-nums">{formatDate(i.purchase_date)}</span> : '—' },
+    { key: 'purchase_value', label: 'Value (INR)', render: i => i.purchase_value ? <span className="tabular-nums font-semibold">{formatINR(i.purchase_value)}</span> : '—' },
+    { key: 'status', label: 'Status', render: i => <StatusBadge status={i.status} /> },
     { key: 'actions', label: 'Actions', render: i => (
-      <div className="flex gap-2">
-        <button onClick={() => handleOpenDetail(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">View History</button>
-        {hasPermission('maintenance', 'edit') && <button onClick={() => openEdit(i)} className="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-md hover:bg-blue-100">Edit</button>}
+      <div className="flex gap-1.5">
+        <button onClick={() => handleOpenDetail(i)} className="btn-secondary btn-xs">View History</button>
+        {hasPermission('maintenance', 'edit') && <button onClick={() => openEdit(i)} className="btn-secondary btn-xs">Edit</button>}
       </div>
     )}
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Asset Management</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track industrial assets, tooling, and machinery across locations.</p>
-        </div>
-        {hasPermission('maintenance', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ Add Asset</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Asset Management"
+        subtitle="Track industrial assets, tooling, and machinery across locations."
+        actions={
+          hasPermission('maintenance', 'create') && <button onClick={openCreate} className="btn-primary">+ Add Asset</button>
+        }
+      />
 
       <Table columns={columns} data={assets} loading={loading} emptyMessage="No assets registered." />
 
@@ -132,37 +131,37 @@ const AssetsPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Asset Code *</label>
-              <input required value={form.asset_code} onChange={e => setForm(p => ({ ...p, asset_code: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="e.g. CNC-01" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Asset Code *</label>
+              <input required value={form.asset_code} onChange={e => setForm(p => ({ ...p, asset_code: e.target.value }))} className="field font-mono" placeholder="e.g. CNC-01" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Asset Name *</label>
-              <input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="CNC Milling Machine" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Asset Name *</label>
+              <input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="field" placeholder="CNC Milling Machine" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Location</label>
-              <input value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" placeholder="Shopfloor A" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Location</label>
+              <input value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} className="field" placeholder="Shopfloor A" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
-              <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Status</label>
+              <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="field">
                 <option value="Active">Active</option>
                 <option value="Maintenance">Under Maintenance</option>
                 <option value="Retired">Retired</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Purchase Date</label>
-              <input type="date" value={form.purchase_date} onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Purchase Date</label>
+              <input type="date" value={form.purchase_date} onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))} className="field" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Value (INR)</label>
-              <input type="number" step="0.01" value={form.purchase_value} onChange={e => setForm(p => ({ ...p, purchase_value: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Value (INR)</label>
+              <input type="number" step="0.01" value={form.purchase_value} onChange={e => setForm(p => ({ ...p, purchase_value: e.target.value }))} className="field tabular-nums" />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Asset</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className="btn-primary">Save Asset</button>
           </div>
         </form>
       </Modal>
@@ -172,11 +171,11 @@ const AssetsPage = () => {
         {selectedAsset && (
           <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Maintenance Schedules</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-2">Maintenance Schedules</h4>
               <Table
                 columns={[
                   { key: 'frequency', label: 'Frequency' },
-                  { key: 'next_due_date', label: 'Next Due Date', render: i => formatDate(i.next_due_date) },
+                  { key: 'next_due_date', label: 'Next Due Date', render: i => <span className="tabular-nums">{formatDate(i.next_due_date)}</span> },
                   { key: 'assigned_to_name', label: 'Assigned To', render: i => i.assigned_to_name || 'Unassigned' }
                 ]}
                 data={detailSchedules}
@@ -184,10 +183,10 @@ const AssetsPage = () => {
               />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Completed Runs Log</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-2">Completed Runs Log</h4>
               <Table
                 columns={[
-                  { key: 'performed_at', label: 'Date Performed', render: i => formatDate(i.performed_at) },
+                  { key: 'performed_at', label: 'Date Performed', render: i => <span className="tabular-nums">{formatDate(i.performed_at)}</span> },
                   { key: 'performed_by_name', label: 'Performed By', render: i => i.performed_by_name || 'System' },
                   { key: 'notes', label: 'Notes' }
                 ]}
@@ -196,13 +195,13 @@ const AssetsPage = () => {
               />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Issue Logs</h4>
+              <h4 className="text-sm font-semibold text-text-primary mb-2">Issue Logs</h4>
               <Table
                 columns={[
                   { key: 'description', label: 'Description' },
-                  { key: 'priority', label: 'Priority' },
-                  { key: 'status', label: 'Status' },
-                  { key: 'reported_at', label: 'Reported At', render: i => formatDate(i.reported_at) }
+                  { key: 'priority', label: 'Priority', render: i => <StatusBadge status={i.priority} /> },
+                  { key: 'status', label: 'Status', render: i => <StatusBadge status={i.status} /> },
+                  { key: 'reported_at', label: 'Reported At', render: i => <span className="tabular-nums">{formatDate(i.reported_at)}</span> }
                 ]}
                 data={detailIssues}
                 emptyMessage="No issues logged."

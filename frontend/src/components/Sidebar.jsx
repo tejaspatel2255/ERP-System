@@ -34,7 +34,8 @@ import {
   Users2,
   Palette,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 const groups = [
@@ -230,19 +231,15 @@ export default function Sidebar({ open, onClose }) {
         onClick={isMobileView ? onClose : undefined}
         title={collapsed && !isMobileView ? item.label : ''}
         className={({ isActive }) =>
-          `group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
-            isActive
-              ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary shadow-2xs'
-              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-          }`
+          `nav-item ${isActive ? 'is-active' : ''} ${collapsed && !isMobileView ? 'justify-center px-0' : ''}`
         }
       >
-        <Icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
+        <Icon size={17} className="shrink-0" />
         {(!collapsed || isMobileView) && (
-          <span className="flex-1 truncate transition-opacity duration-200">{item.label}</span>
+          <span className="flex-1 truncate">{item.label}</span>
         )}
-        {item.alertBadge && alertCount > 0 && (
-          <span className="absolute right-2 rounded-full bg-accent-danger px-2 py-0.5 text-xs font-semibold text-white shadow-xs">
+        {item.alertBadge && alertCount > 0 && (!collapsed || isMobileView) && (
+          <span className="ml-auto rounded-full bg-[var(--accent-danger)] text-white text-[11px] font-semibold px-1.5 min-w-[18px] text-center leading-tight">
             {alertCount}
           </span>
         )}
@@ -250,124 +247,148 @@ export default function Sidebar({ open, onClose }) {
     );
   };
 
-  // 1. Mobile Sidebar Render (Always 240px width drawer slide-in)
+  // 1. Mobile Sidebar Render (256px drawer slide-in)
   const mobileSidebarContent = (
-    <div className="flex h-full w-[240px] flex-col border-r border-border-color bg-bg-secondary text-text-primary">
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-4">
-        <Logo size="sm" showText={true} />
+    <div className="flex h-full w-[256px] flex-col shell-bg border-r border-[var(--shell-border)]">
+      <div className="flex h-[60px] items-center justify-between border-b border-[var(--shell-border)] px-4">
+        <Logo size="sm" showText={true} onDark={true} />
         <button
           onClick={onClose}
-          className="rounded-lg p-1 text-text-secondary hover:bg-bg-hover hover:text-text-primary lg:hidden"
+          className="nav-item p-1.5 text-[var(--shell-text)] hover:text-[var(--shell-text-strong)] lg:hidden"
         >
           <ChevronLeft size={20} />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         <NavLink
           to="/dashboard"
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
-              isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary'
-                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-            }`
+            `nav-item ${isActive ? 'is-active' : ''}`
           }
         >
-          <LayoutDashboard size={18} />
+          <LayoutDashboard size={17} className="shrink-0" />
           <span>Dashboard</span>
         </NavLink>
 
-        <div className="space-y-3">
-          {visibleGroups.map((group) => (
-            <div key={group.key} className="space-y-1">
-              <span className="px-3 text-xs font-semibold text-text-muted">
-                {group.title}
-              </span>
-              <div className="space-y-0.5">
-                {group.items
-                  .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
-                  .map((item) => renderLink(item, true))}
+        <div className="space-y-4">
+          {visibleGroups.map((group) => {
+            const isExpanded = expandedGroups[group.key] !== false;
+            return (
+              <div key={group.key} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.key)}
+                  className="w-full flex items-center justify-between px-2 py-1 text-left"
+                >
+                  <span className="nav-group-title">{group.title}</span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-[var(--shell-muted)] transition-transform duration-150 ${
+                      isExpanded ? '' : '-rotate-90'
+                    }`}
+                  />
+                </button>
+                {isExpanded && (
+                  <div className="space-y-0.5">
+                    {group.items
+                      .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
+                      .map((item) => renderLink(item, true))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
   );
 
-  // 2. Desktop Sidebar Render (Collapsible width 64px to 240px)
+  // 2. Desktop Sidebar Render (68px collapsed to 256px expanded)
   const desktopSidebarContent = (
     <div
-      className={`relative flex h-full flex-col border-r border-border-color bg-bg-secondary text-text-primary transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-16' : 'w-60'
+      className={`relative flex h-full flex-col shell-bg border-r border-[var(--shell-border)] transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-[68px]' : 'w-[256px]'
       }`}
     >
-      {/* Top Header */}
-      <div className="flex h-[60px] items-center justify-between border-b border-border-color px-3.5">
+      {/* Top Header 60px */}
+      <div className="flex h-[60px] items-center justify-between border-b border-[var(--shell-border)] px-3.5">
         {!collapsed ? (
-          <Logo size="sm" showText={true} />
+          <Logo size="sm" showText={true} onDark={true} />
         ) : (
-          <Logo size="sm" showText={false} className="mx-auto" />
+          <Logo size="sm" showText={false} onDark={true} className="mx-auto" />
         )}
-
-        {/* Desktop Collapse Arrow Button */}
-        <button
-          onClick={toggleSidebar}
-          className="absolute -right-3 top-4 z-30 flex h-6 w-6 items-center justify-center rounded-full border border-border-color bg-bg-modal text-text-secondary shadow-md hover:bg-bg-hover hover:text-text-primary transition-colors"
-        >
-          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-        </button>
       </div>
 
       {/* Nav List */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {/* Dashboard Link */}
         <NavLink
           to="/dashboard"
           title={collapsed ? 'Dashboard' : ''}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
-              isActive
-                ? 'bg-accent-primary/15 text-accent-primary font-semibold border-l-[3px] border-accent-primary shadow-2xs'
-                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-            } ${collapsed ? 'justify-center' : ''}`
+            `nav-item ${isActive ? 'is-active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
           }
         >
-          <LayoutDashboard size={18} className="shrink-0" />
+          <LayoutDashboard size={17} className="shrink-0" />
           {!collapsed && <span>Dashboard</span>}
         </NavLink>
 
         <div className="space-y-4">
           {visibleGroups.map((group) => {
             const GroupIcon = group.icon;
-            const hasActiveChild = group.items.some((item) => location.pathname === item.to);
+            const isExpanded = expandedGroups[group.key] !== false;
             return (
               <div key={group.key} className="space-y-1">
                 {/* Header title or collapsed icon */}
                 {!collapsed ? (
-                  <span className="px-3 text-xs font-semibold text-text-muted block">
-                    {group.title}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-2 py-1 text-left"
+                  >
+                    <span className="nav-group-title">{group.title}</span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-[var(--shell-muted)] transition-transform duration-150 ${
+                        isExpanded ? '' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
                 ) : (
-                  <div className="border-t border-border-color/40 my-2 pt-2 flex justify-center">
+                  <div className="border-t border-[var(--shell-border)] my-2 pt-2 flex justify-center">
                     <GroupIcon
                       size={16}
-                      className={`text-text-muted ${hasActiveChild ? 'text-accent-primary' : ''}`}
+                      className="text-[var(--shell-muted)]"
                       title={group.title}
                     />
                   </div>
                 )}
 
-                <div className="space-y-0.5">
-                  {group.items
-                    .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
-                    .map((item) => renderLink(item, false))}
-                </div>
+                {(!collapsed ? isExpanded : true) && (
+                  <div className="space-y-0.5">
+                    {group.items
+                      .filter((item) => isAdmin || hasPermission(item.permission[0], item.permission[1]))
+                      .map((item) => renderLink(item, false))}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+      </div>
+
+      {/* Collapse button at bottom */}
+      <div className="border-t border-[var(--shell-border)] p-2">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className={`nav-item w-full ${collapsed ? 'justify-center px-0' : ''}`}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
+          {!collapsed && <span className="text-xs">Collapse sidebar</span>}
+        </button>
       </div>
     </div>
   );
@@ -377,7 +398,7 @@ export default function Sidebar({ open, onClose }) {
       {/* Mobile Drawer Overlay Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden"
           onClick={onClose}
         />
       )}

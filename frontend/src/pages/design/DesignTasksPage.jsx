@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare } from 'lucide-react';
+import { CheckSquare, Plus, ArrowLeft, ArrowRight, Paperclip, User } from 'lucide-react';
 import { getDesignTasks, createDesignTask, updateDesignTaskStatus, getDesignFiles } from '../../api/designApi';
 import { getUsers } from '../../api/userApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
 import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function DesignTasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -86,80 +87,105 @@ export default function DesignTasksPage() {
   };
 
   const columns = [
-    { key: 'Pending', label: 'To Do', borderClass: 'border-t-text-muted' },
-    { key: 'In Progress', label: 'In Progress', borderClass: 'border-t-accent-primary' },
-    { key: 'In Review', label: 'In Review', borderClass: 'border-t-accent-warning' },
-    { key: 'Completed', label: 'Done', borderClass: 'border-t-accent-success' }
+    { key: 'Pending', label: 'To Do', borderClass: 'border-t-[var(--text-muted)]' },
+    { key: 'In Progress', label: 'In Progress', borderClass: 'border-t-[var(--accent-primary)]' },
+    { key: 'In Review', label: 'In Review', borderClass: 'border-t-[var(--warning-rail)]' },
+    { key: 'Completed', label: 'Done', borderClass: 'border-t-[var(--success-rail)]' }
   ];
 
-  const priorityColors = {
-    'High': 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30',
-    'Medium': 'bg-accent-warning/15 text-accent-warning border border-accent-warning/30',
-    'Low': 'bg-accent-info/15 text-accent-info border border-accent-info/30'
+  const priorityRailColor = (p) => {
+    const val = (p || '').toLowerCase();
+    if (val === 'high' || val === 'critical') return 'border-l-[var(--danger-rail)]';
+    if (val === 'medium') return 'border-l-[var(--warning-rail)]';
+    return 'border-l-[var(--info-rail)]';
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
         title="Design Tasks Kanban"
         description="Organize CAD drawings creation workflows, track task states, and coordinate assignments."
         actions={
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn-primary"
           >
-            + Create Task
+            <Plus className="w-4 h-4 mr-1.5" /> Create Task
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && (
+        <div className="p-3 bg-[var(--danger-soft)] border border-[var(--danger-rail)] rounded text-[var(--danger-rail)] text-xs">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="p-3 bg-[var(--success-soft)] border border-[var(--success-rail)] rounded text-[var(--success-rail)] text-xs">
+          {success}
+        </div>
+      )}
 
       {loading ? (
-        <div className="p-12 text-center text-text-muted bg-bg-card border border-border-color rounded-2xl">Loading task board...</div>
+        <div className="sheet p-12 text-center text-text-muted text-sm">
+          Loading task board...
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
           {columns.map(col => {
             const colTasks = tasks.filter(t => t.status === col.key);
 
             return (
-              <div key={col.key} className="min-w-0 bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col min-h-[480px] shadow-brand">
-                <div className={`border-t-4 ${col.borderClass} pt-2 pb-4 flex justify-between items-center`}>
-                  <h3 className="font-semibold text-text-primary text-xs">{col.label}</h3>
-                  <span className="bg-bg-secondary text-text-secondary font-mono text-xs px-2.5 py-0.5 rounded-full border border-border-color font-semibold">
+              <div
+                key={col.key}
+                className="rounded-lg bg-bg-secondary border border-border-color p-3 flex flex-col min-h-[480px]"
+              >
+                <div className={`border-t-2 ${col.borderClass} pt-2 pb-3 flex justify-between items-center`}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary">
+                    {col.label}
+                  </h3>
+                  <span className="tb-cell text-[11px] px-2 py-0.5 rounded font-mono font-medium">
                     {colTasks.length}
                   </span>
                 </div>
 
-                <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+                <div className="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
                   {colTasks.map(task => (
-                    <div key={task.id} className="bg-bg-secondary border border-border-color rounded-xl p-4 space-y-3 shadow-sm hover:border-text-muted transition-colors">
+                    <div
+                      key={task.id}
+                      className={`sheet p-3 space-y-2.5 border-l-[3px] ${priorityRailColor(task.priority)} hover:border-border-color transition-colors`}
+                    >
                       <div>
-                        <h4 className="font-semibold text-text-primary text-sm">{task.title}</h4>
-                        <p className="text-text-muted text-xs mt-1 line-clamp-2">{task.description}</p>
+                        <h4 className="text-sm font-semibold text-text-primary leading-snug">
+                          {task.title}
+                        </h4>
+                        {task.description && (
+                          <p className="text-xs text-text-muted mt-1 line-clamp-2">
+                            {task.description}
+                          </p>
+                        )}
                       </div>
 
                       {task.design_file_title && (
-                        <div className="bg-bg-card border border-border-color rounded-lg p-2 text-xs text-accent-primary font-mono flex items-center gap-1.5 min-w-0">
-                          <span>📎</span> <span className="truncate">{task.design_file_title}</span>
+                        <div className="bg-bg-secondary border border-border-color rounded px-2 py-1 text-xs text-accent-primary font-mono flex items-center gap-1.5 min-w-0">
+                          <Paperclip className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{task.design_file_title}</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-xs">
-                        <span className={`px-2 py-0.5 rounded-full font-semibold ${priorityColors[task.priority] || priorityColors['Medium']}`}>
-                          {task.priority}
-                        </span>
+                      <div className="flex justify-between items-center text-xs pt-1">
+                        <StatusBadge status={task.priority} />
                         {task.due_date && (
-                          <span className="text-text-muted font-mono">
+                          <span className="text-[11px] font-mono text-text-muted">
                             Due: {new Date(task.due_date).toLocaleDateString()}
                           </span>
                         )}
                       </div>
 
                       <div className="pt-2 border-t border-border-color flex justify-between items-center">
-                        <span className="text-xs text-text-secondary font-medium truncate max-w-[100px]">
-                          {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : 'Unassigned'}
+                        <span className="text-xs text-text-secondary font-medium truncate max-w-[110px] inline-flex items-center gap-1">
+                          <User className="w-3 h-3 text-text-muted shrink-0" />
+                          <span className="truncate">{task.assigned_to_name || 'Unassigned'}</span>
                         </span>
 
                         <div className="flex gap-1 shrink-0">
@@ -169,10 +195,10 @@ export default function DesignTasksPage() {
                                 const prev = columns[columns.findIndex(c => c.key === col.key) - 1].key;
                                 handleMoveTask(task.id, prev);
                               }}
-                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-xs transition-all"
+                              className="btn-ghost btn-xs p-1"
                               title="Move back"
                             >
-                              ◀
+                              <ArrowLeft className="w-3 h-3" />
                             </button>
                           )}
                           {col.key !== 'Completed' && (
@@ -181,10 +207,10 @@ export default function DesignTasksPage() {
                                 const next = columns[columns.findIndex(c => c.key === col.key) + 1].key;
                                 handleMoveTask(task.id, next);
                               }}
-                              className="w-6 h-6 bg-bg-card hover:bg-bg-hover text-text-secondary border border-border-color rounded-lg flex items-center justify-center text-xs transition-all"
+                              className="btn-ghost btn-xs p-1"
                               title="Move forward"
                             >
-                              ▶
+                              <ArrowRight className="w-3 h-3" />
                             </button>
                           )}
                         </div>
@@ -216,34 +242,40 @@ export default function DesignTasksPage() {
       >
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Task Title *</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">
+              Task Title *
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
               placeholder="E.g., Draw electrical wiring layout"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Description</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none focus:border-accent-primary"
+              className="field h-20"
               placeholder="Task instructions..."
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">Assign To (User)</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
+                Assign To (User)
+              </label>
               <select
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field"
               >
                 <option value="">-- Select Designer --</option>
                 {users.map(u => (
@@ -252,11 +284,13 @@ export default function DesignTasksPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">Priority</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
+                Priority
+              </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -267,20 +301,24 @@ export default function DesignTasksPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">Due Date</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
+                Due Date
+              </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm font-mono focus:outline-none focus:border-accent-primary"
+                className="field font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">Link Design File</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
+                Link Design File
+              </label>
               <select
                 value={designFileId}
                 onChange={(e) => setDesignFileId(e.target.value)}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                className="field"
               >
                 <option value="">-- Choose File (Optional) --</option>
                 {designFiles.map(f => (
@@ -290,17 +328,17 @@ export default function DesignTasksPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn-primary"
             >
               Create Task
             </button>

@@ -3,8 +3,9 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
-import axiosInstance from '../../api/axiosInstance';
 import { getOrders, getOrderById, updateOrderStatus, createInvoiceFromOrder } from '../../api/salesApi';
 import { createWorkOrderFromSalesOrder } from '../../api/productionApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -121,54 +122,56 @@ const OrdersPage = () => {
 
   // Columns for main list
   const columns = [
-    { key: 'order_no', label: 'Order No' },
+    {
+      key: 'order_no',
+      label: 'Order no',
+      render: (item) => <span className="stamp">{item.order_no}</span>
+    },
     { key: 'customer_name', label: 'Customer' },
-    { key: 'order_date', label: 'Order Date', render: (item) => formatDate(item.order_date) },
+    { key: 'order_date', label: 'Order date', render: (item) => formatDate(item.order_date) },
     {
       key: 'status',
       label: 'Status',
-      render: (item) => (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-          item.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-          item.status === 'Processing' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-          item.status === 'Completed' ? 'bg-green-100 text-green-800 border border-green-200' :
-          'bg-red-100 text-red-800 border border-red-200'
-        }`}>
-          {item.status}
-        </span>
-      )
+      render: (item) => <StatusBadge status={item.status} />
     },
-    { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) },
+    {
+      key: 'total_amount',
+      label: 'Total amount',
+      isNumeric: true,
+      render: (item) => formatINR(item.total_amount)
+    },
     {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
         <button
           onClick={() => handleViewOrder(item)}
-          className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2.5 py-1 rounded-md"
+          className="btn btn-ghost btn-sm"
         >
-          View Order
+          View order
         </button>
       )
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Sales Orders</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track purchase confirmations, dispatch processing states, and create invoices.</p>
-        </div>
+      <PageHeader
+        title="Sales orders"
+        description="Track purchase confirmations, dispatch processing states, and create invoices."
+      />
 
-        <div>
+      {/* Filter toolbar */}
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="w-48">
+          <label className="field-label">Status filter</label>
           <select
             value={selectedStatus}
             onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           >
-            <option value="">All Statuses</option>
+            <option value="">All statuses</option>
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
             <option value="Completed">Completed</option>
@@ -181,60 +184,65 @@ const OrdersPage = () => {
       <Table columns={columns} data={orders} loading={loading} emptyMessage="No sales orders found." />
 
       {/* Pagination */}
-      <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {/* VIEW DETAILS MODAL */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title={`Sales Order Detail: ${viewingOrder?.order_no}`} size="lg">
+      <Modal
+        isOpen={isViewOpen}
+        onClose={() => setIsViewOpen(false)}
+        title={`Sales order: ${viewingOrder?.order_no}`}
+        size="lg"
+      >
         {viewingOrder && (
           <div className="space-y-6">
             {/* Header info bar */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-              <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-slate-400">Customer Details</h4>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingOrder.customer_name}</p>
-                <p className="text-xs text-slate-500">{viewingOrder.customer_address}</p>
-                <p className="text-xs text-slate-500">Phone: {viewingOrder.customer_phone}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="sheet p-4 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Customer details</h4>
+                <p className="text-sm font-semibold text-text-primary">{viewingOrder.customer_name}</p>
+                <p className="text-xs text-text-secondary">{viewingOrder.customer_address}</p>
+                <p className="text-xs text-text-secondary">Phone: {viewingOrder.customer_phone}</p>
               </div>
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-slate-400">Order Timeline & Status</h4>
+
+              <div className="sheet p-4 space-y-2">
+                <h4 className="text-xs font-semibold text-text-muted">Order timeline</h4>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Date: {formatDate(viewingOrder.order_date)}</span>
+                  <span className="text-xs text-text-secondary">Date: {formatDate(viewingOrder.order_date)}</span>
                   {viewingOrder.quotation_no && (
-                    <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600">Quotation: {viewingOrder.quotation_no}</span>
+                    <span className="tb-cell">Quotation: {viewingOrder.quotation_no}</span>
                   )}
                 </div>
                 
-                {/* Status selector */}
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Order Stage:</span>
+                {/* Status selector & actions */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-text-secondary">Stage:</span>
                   <select
                     disabled={updatingStatus || !hasPermission('sales', 'edit')}
                     value={viewingOrder.status}
                     onChange={handleStatusChange}
-                    className="block rounded border border-slate-350 bg-white dark:bg-slate-900 text-xs px-2 py-1 focus:outline-none"
+                    className="field !min-h-[28px] !py-1 !text-xs !w-auto"
                   >
                     <option value="Pending">Pending</option>
-                {hasPermission('production', 'create') && (
-                  <button
-                    onClick={handleCreateWorkOrder}
-                    className="mt-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500"
-                  >
-                    Create Work Order
-                  </button>
-                )}
                     <option value="Processing">Processing</option>
                     <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>
+
+                  {hasPermission('production', 'create') && (
+                    <button
+                      onClick={handleCreateWorkOrder}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Create work order
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Line Items Table */}
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Ordered Items</h4>
+              <h4 className="text-sm font-semibold text-text-primary">Line items</h4>
               <Table
                 columns={[
                   {
@@ -242,54 +250,62 @@ const OrdersPage = () => {
                     label: 'Item',
                     render: (item) => (
                       <div>
-                        <div className="font-semibold text-slate-900 dark:text-white">{item.item_name}</div>
-                        <div className="text-xs text-slate-400">{item.item_code}</div>
+                        <div className="font-medium text-text-primary">{item.item_name}</div>
+                        <div className="text-xs text-text-muted">{item.item_code}</div>
                       </div>
                     )
                   },
-                  { key: 'qty', label: 'Qty', render: (item) => parseFloat(item.qty) },
-                  { key: 'available_qty', label: 'Available', render: (item) => parseFloat(item.available_qty) },
-                  { key: 'shortfall', label: 'Shortfall', render: (item) => <span className={parseFloat(item.shortfall) > 0 ? 'font-semibold text-red-600' : 'text-green-600'}>{parseFloat(item.shortfall)}</span> },
-                  { key: 'unit_price', label: 'Unit Price', render: (item) => formatINR(item.unit_price) },
-                  { key: 'line_total', label: 'Total Price', render: (item) => formatINR(item.line_total) }
+                  { key: 'qty', label: 'Qty', isNumeric: true, render: (item) => parseFloat(item.qty) },
+                  { key: 'available_qty', label: 'Available', isNumeric: true, render: (item) => parseFloat(item.available_qty) },
+                  {
+                    key: 'shortfall',
+                    label: 'Shortfall',
+                    isNumeric: true,
+                    render: (item) => (
+                      <span className={parseFloat(item.shortfall) > 0 ? 'font-medium text-[var(--danger-text)]' : 'text-text-primary'}>
+                        {parseFloat(item.shortfall)}
+                      </span>
+                    )
+                  },
+                  { key: 'unit_price', label: 'Unit price', isNumeric: true, render: (item) => formatINR(item.unit_price) },
+                  { key: 'line_total', label: 'Total price', isNumeric: true, render: (item) => formatINR(item.line_total) }
                 ]}
                 data={viewingItems}
                 emptyMessage="No items listed for this order."
               />
             </div>
 
-            {/* Billing Invoice Info */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+            {/* Linked Invoice Info Card */}
+            <div className="sheet p-4 space-y-3">
               <div className="flex justify-between items-center">
-                <h4 className="text-xs font-semibold text-slate-500">Linked Invoice</h4>
+                <h4 className="text-xs font-semibold text-text-muted">Linked invoice</h4>
                 {linkedInvoice ? (
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    linkedInvoice.status === 'Paid' ? 'bg-green-100 text-green-800 border border-green-200' :
-                    linkedInvoice.status === 'Partially Paid' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                    'bg-red-100 text-red-800 border border-red-200'
-                  }`}>
-                    Invoice Status: {linkedInvoice.status}
-                  </span>
+                  <StatusBadge status={linkedInvoice.status} />
                 ) : (
-                  <span className="text-xs text-red-500 font-semibold">No Invoice Generated</span>
+                  <span className="text-xs text-[var(--danger-text)] font-medium">No invoice generated</span>
                 )}
               </div>
 
               {linkedInvoice ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                  <p>Invoice No: <span className="font-semibold text-slate-900 dark:text-white">{linkedInvoice.invoice_no}</span></p>
-                  <p>Due Date: <span className="font-semibold">{formatDate(linkedInvoice.due_date)}</span></p>
-                  <p>Outstanding: <span className="font-semibold text-red-600">{formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}</span></p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-text-secondary">
+                  <p>Invoice no: <span className="stamp">{linkedInvoice.invoice_no}</span></p>
+                  <p>Due date: <span className="font-medium text-text-primary">{formatDate(linkedInvoice.due_date)}</span></p>
+                  <p>
+                    Outstanding:{' '}
+                    <span className="font-semibold text-[var(--danger-text)] tabular-nums">
+                      {formatINR(parseFloat(linkedInvoice.total_amount) - parseFloat(linkedInvoice.paid_amount))}
+                    </span>
+                  </p>
                 </div>
               ) : (
-                <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-500">Generate the billing invoice for this order to post it to the customer balance ledger.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-bg-secondary p-3 rounded">
+                  <p className="text-xs text-text-secondary">Generate the billing invoice for this order to post it to the customer balance ledger.</p>
                   {hasPermission('sales', 'create') && (
                     <button
                       onClick={handleGenerateInvoice}
-                      className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      className="btn btn-primary btn-sm shrink-0"
                     >
-                      Generate Invoice
+                      Generate invoice
                     </button>
                   )}
                 </div>
@@ -297,16 +313,16 @@ const OrdersPage = () => {
             </div>
 
             {/* Bottom summary */}
-            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
-              <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                Grand Total: <span className="text-blue-600 dark:text-blue-400">{formatINR(viewingOrder.total_amount)}</span>
+            <div className="flex justify-between items-center border-t border-border-color pt-4">
+              <div className="text-sm font-semibold text-text-primary">
+                Grand total: <span className="text-accent-primary tabular-nums">{formatINR(viewingOrder.total_amount)}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn"
               >
-                Close Details
+                Close
               </button>
             </div>
           </div>

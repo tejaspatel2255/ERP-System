@@ -4,6 +4,8 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import SearchBar from '../../components/SearchBar';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, getCustomerById } from '../../api/salesApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -142,7 +144,7 @@ const CustomersPage = () => {
         setViewingHistory(data.history);
       }
     } catch (err) {
-      toast.error('Failed to load customer transaction dossier.');
+      toast.error('Failed to load customer transaction history.');
     } finally {
       setHistoryLoading(false);
     }
@@ -151,19 +153,21 @@ const CustomersPage = () => {
   // Columns Configuration
   const columns = [
     { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email', render: (item) => item.email || 'N/A' },
-    { key: 'phone', label: 'Phone', render: (item) => item.phone || 'N/A' },
-    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || 'N/A' },
+    { key: 'email', label: 'Email', render: (item) => item.email || '—' },
+    { key: 'phone', label: 'Phone', render: (item) => item.phone || '—' },
+    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || '—' },
     {
       key: 'credit_limit',
-      label: 'Credit Limit',
+      label: 'Credit limit',
+      isNumeric: true,
       render: (item) => formatINR(item.credit_limit)
     },
     {
       key: 'balance',
-      label: 'Outstanding Balance',
+      label: 'Outstanding balance',
+      isNumeric: true,
       render: (item) => (
-        <span className={`font-semibold ${parseFloat(item.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+        <span className={`font-medium tabular-nums ${parseFloat(item.balance) > 0 ? 'text-[var(--danger-text)]' : 'text-text-primary'}`}>
           {formatINR(item.balance)}
         </span>
       )
@@ -175,14 +179,14 @@ const CustomersPage = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleViewCustomer(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+            className="btn btn-ghost btn-sm"
           >
-            Profile View
+            Profile
           </button>
           {hasPermission('sales', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost btn-sm"
             >
               Edit
             </button>
@@ -190,9 +194,9 @@ const CustomersPage = () => {
           {hasPermission('sales', 'delete') && (
             <button
               onClick={() => handleDelete(item)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md"
+              className="btn btn-danger btn-sm"
             >
-              Delete
+              Deactivate
             </button>
           )}
         </div>
@@ -201,244 +205,252 @@ const CustomersPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Customers CRM</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage client profiles, credit parameters, and view total trade balance ledger.</p>
-        </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      {/* Page Header */}
+      <PageHeader
+        title="Customers"
+        description="Manage customer records, credit boundaries, and linked financial transactions."
+        actions={
+          hasPermission('sales', 'create') ? (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary"
+            >
+              Add customer
+            </button>
+          ) : null
+        }
+      />
 
-        {hasPermission('sales', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Add Customer
-          </button>
-        )}
-      </div>
-
-      {/* Filter and search bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1">
-          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Search customers by name, email, or phone..." />
+      {/* Filter and search toolbar */}
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[260px] max-w-md">
+          <SearchBar
+            value={search}
+            onChange={(val) => { setSearch(val); setPage(1); }}
+            placeholder="Search customers by name, email, or phone…"
+          />
         </div>
       </div>
 
       {/* Main Table */}
-      <Table columns={columns} data={customers} loading={loading} emptyMessage="No customers matched your search query." />
+      <Table columns={columns} data={customers} loading={loading} emptyMessage="No customers found." />
 
       {/* Pagination */}
-      <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {/* CREATE & EDIT FORM MODAL */}
-      <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={editingCustomer ? 'Edit Customer Info' : 'Create Customer Record'}>
+      <Modal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        title={editingCustomer ? 'Edit customer' : 'Add customer'}
+      >
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Company / Customer Name *</label>
+              <label className="field-label">Company / customer name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.name}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">GSTIN (Optional)</label>
+              <label className="field-label">GSTIN (Optional)</label>
               <input
                 type="text"
                 name="gstin"
-                placeholder="15-digit Alpha-numeric"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                placeholder="15-digit alphanumeric"
+                className="field"
                 value={formData.gstin}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <label className="field-label">Email address</label>
               <input
                 type="email"
                 name="email"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+              <label className="field-label">Contact phone</label>
               <input
                 type="text"
                 name="phone"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.phone}
                 onChange={handleInputChange}
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Billing / Shipping Address</label>
+            <div className="sm:col-span-2">
+              <label className="field-label">Billing / shipping address</label>
               <textarea
                 name="address"
                 rows={2}
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.address}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Credit Limit (INR)</label>
+              <label className="field-label">Credit limit (INR)</label>
               <input
                 type="number"
                 step="0.01"
                 name="credit_limit"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.credit_limit}
                 onChange={handleInputChange}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary"
             >
-              Save Customer
+              Save customer
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* PROFILE DOSSIER VIEW MODAL */}
-      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Customer Profile Dossier" size="lg">
+      {/* PROFILE DETAILS VIEW MODAL */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        title="Customer details"
+        size="lg"
+      >
         {viewingDetails && (
           <div className="space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">Company Name</h4>
-                <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">{viewingDetails.name}</p>
-                <p className="text-xs text-slate-500">{viewingDetails.email || 'No email'}</p>
-                <p className="text-xs text-slate-500">{viewingDetails.phone || 'No phone'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Record details</h4>
+                <p className="text-sm font-semibold text-text-primary">{viewingDetails.name}</p>
+                <p className="text-xs text-text-secondary">{viewingDetails.email || 'No email'}</p>
+                <p className="text-xs text-text-secondary">{viewingDetails.phone || 'No phone'}</p>
               </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">GSTIN & Address</h4>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingDetails.gstin || 'Unspecified'}</p>
-                <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingDetails.address || 'No address details'}</p>
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Tax & location</h4>
+                <p className="text-xs text-text-secondary"><span className="font-medium text-text-primary">GSTIN:</span> {viewingDetails.gstin || 'Unspecified'}</p>
+                <p className="text-xs text-text-secondary line-clamp-2">{viewingDetails.address || 'No address details'}</p>
               </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">Credit & Balance Status</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Limit: <span className="font-semibold">{formatINR(viewingDetails.credit_limit)}</span></p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Credit limit</h4>
+                <p className="text-xs text-text-secondary">Limit: <span className="font-semibold text-text-primary tabular-nums">{formatINR(viewingDetails.credit_limit)}</span></p>
+                <p className="text-xs text-text-secondary">
                   Outstanding:{' '}
-                  <span className={`font-semibold ${parseFloat(viewingDetails.balance) > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
+                  <span className={`font-semibold tabular-nums ${parseFloat(viewingDetails.balance) > 0 ? 'text-[var(--danger-text)]' : 'text-[var(--success-text)]'}`}>
                     {formatINR(viewingDetails.balance)}
                   </span>
                 </p>
               </div>
             </div>
 
-            {/* Tabs for Transaction History */}
+            {/* Sub-ledgers for Transaction History */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Transaction Records</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Transaction history</h3>
               
               {historyLoading ? (
-                <div className="py-12 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                </div>
+                <div className="h-32 bg-bg-hover animate-pulse rounded" />
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Quotations Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Quotations</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Quotations</h4>
                     <Table
                       columns={[
-                        { key: 'quotation_no', label: 'Quotation No' },
+                        { key: 'quotation_no', label: 'Quotation no', render: (item) => <span className="stamp">{item.quotation_no}</span> },
                         { key: 'date', label: 'Date', render: (item) => formatDate(item.date) },
-                        { key: 'valid_until', label: 'Valid Until', render: (item) => formatDate(item.valid_until) },
-                        { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) }
+                        { key: 'valid_until', label: 'Valid until', render: (item) => formatDate(item.valid_until) },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
+                        { key: 'total_amount', label: 'Total amount', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.quotations}
-                      emptyMessage="No quotations recorded for this client."
+                      emptyMessage="No quotations recorded for this customer."
                     />
                   </div>
 
                   {/* Orders Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Sales Orders</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Sales orders</h4>
                     <Table
                       columns={[
-                        { key: 'order_no', label: 'Order No' },
-                        { key: 'order_date', label: 'Order Date', render: (item) => formatDate(item.order_date) },
-                        { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total Amount', render: (item) => formatINR(item.total_amount) }
+                        { key: 'order_no', label: 'Order no', render: (item) => <span className="stamp">{item.order_no}</span> },
+                        { key: 'order_date', label: 'Order date', render: (item) => formatDate(item.order_date) },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
+                        { key: 'total_amount', label: 'Total amount', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.orders}
-                      emptyMessage="No sales orders recorded for this client."
+                      emptyMessage="No sales orders recorded for this customer."
                     />
                   </div>
 
                   {/* Invoices Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Linked Invoices</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Invoices</h4>
                     <Table
                       columns={[
-                        { key: 'invoice_no', label: 'Invoice No' },
-                        { key: 'invoice_date', label: 'Billing Date', render: (item) => formatDate(item.invoice_date) },
-                        { key: 'due_date', label: 'Due Date', render: (item) => formatDate(item.due_date) },
-                        { key: 'status', label: 'Status' },
-                        { key: 'total_amount', label: 'Total', render: (item) => formatINR(item.total_amount) },
-                        { key: 'paid_amount', label: 'Paid', render: (item) => formatINR(item.paid_amount) }
+                        { key: 'invoice_no', label: 'Invoice no', render: (item) => <span className="stamp">{item.invoice_no}</span> },
+                        { key: 'invoice_date', label: 'Billing date', render: (item) => formatDate(item.invoice_date) },
+                        { key: 'due_date', label: 'Due date', render: (item) => formatDate(item.due_date) },
+                        { key: 'status', label: 'Status', render: (item) => <StatusBadge status={item.status} /> },
+                        { key: 'total_amount', label: 'Total', isNumeric: true, render: (item) => formatINR(item.total_amount) },
+                        { key: 'paid_amount', label: 'Paid', isNumeric: true, render: (item) => formatINR(item.paid_amount) }
                       ]}
                       data={viewingHistory.invoices}
-                      emptyMessage="No billing invoices recorded for this client."
+                      emptyMessage="No invoices recorded for this customer."
                     />
                   </div>
 
                   {/* Payments Sub-ledger */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Received Payments</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Receipts</h4>
                     <Table
                       columns={[
-                        { key: 'payment_date', label: 'Payment Date', render: (item) => formatDate(item.payment_date) },
-                        { key: 'invoice_no', label: 'Invoice Ref' },
+                        { key: 'payment_date', label: 'Payment date', render: (item) => formatDate(item.payment_date) },
+                        { key: 'invoice_no', label: 'Invoice ref', render: (item) => <span className="stamp">{item.invoice_no}</span> },
                         { key: 'payment_mode', label: 'Mode' },
-                        { key: 'reference_no', label: 'Reference No', render: (item) => item.reference_no || 'N/A' },
-                        { key: 'amount', label: 'Amount Collected', render: (item) => formatINR(item.amount) }
+                        { key: 'reference_no', label: 'Reference no', render: (item) => item.reference_no || '—' },
+                        { key: 'amount', label: 'Amount collected', isNumeric: true, render: (item) => formatINR(item.amount) }
                       ]}
                       data={viewingHistory.payments}
-                      emptyMessage="No payments received from this client."
+                      emptyMessage="No payments received from this customer."
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewModalOpen(false)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn"
               >
-                Close Profile
+                Close
               </button>
             </div>
           </div>

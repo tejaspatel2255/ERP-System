@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getWorkOrders, createWorkOrder, getWorkOrderById, startWorkOrder, completeWorkOrder, cancelWorkOrder, issueToWorkOrder, updateCosting, getBOMs } from '../../api/productionApi';
 import { getItems } from '../../api/storeApi';
@@ -10,13 +12,7 @@ import { getAssets } from '../../api/maintenanceApi';
 import { formatINR } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 
-const STATUS_BADGE = {
-  'Pending': 'bg-slate-100 text-slate-700 border-slate-200',
-  'In Progress': 'bg-blue-100 text-blue-800 border-blue-200',
-  'Completed': 'bg-green-100 text-green-800 border-green-200',
-  'Cancelled': 'bg-red-100 text-red-800 border-red-200',
-  'QA Hold': 'bg-yellow-100 text-yellow-800 border-yellow-200'
-};
+const WO_LIFECYCLE_STEPS = ['Pending', 'In Progress', 'Completed'];
 
 const WorkOrdersPage = () => {
   const { hasPermission } = useRole();
@@ -160,34 +156,62 @@ const WorkOrdersPage = () => {
     } catch { toast.error('Update costing failed.'); }
   };
 
+  const renderStepper = (currentStatus) => {
+    const isCancelled = currentStatus === 'Cancelled';
+    const isQAHold = currentStatus === 'QA Hold';
+    const stepIdx = currentStatus === 'Pending' ? 0 : currentStatus === 'In Progress' ? 1 : currentStatus === 'Completed' ? 2 : -1;
+
+    return (
+      <div className="flex items-center justify-between max-w-md mx-auto py-2">
+        {WO_LIFECYCLE_STEPS.map((step, idx) => {
+          const isDone = !isCancelled && stepIdx > idx;
+          const isCurrent = !isCancelled && !isQAHold && stepIdx === idx;
+          return (
+            <React.Fragment key={step}>
+              <div className="flex flex-col items-center gap-1">
+                <div className={`step-dot ${isDone ? 'bg-[var(--success-rail)] text-white border-[var(--success-rail)]' : isCurrent ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]' : 'bg-bg-subtle text-text-muted border-border-color'}`}>
+                  {isDone ? '✓' : idx + 1}
+                </div>
+                <span className={`text-[11px] font-medium ${isCurrent ? 'text-accent-primary font-semibold' : isDone ? 'text-[var(--success-text)]' : 'text-text-muted'}`}>{step}</span>
+              </div>
+              {idx < WO_LIFECYCLE_STEPS.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-2 ${stepIdx > idx && !isCancelled ? 'bg-[var(--success-rail)]' : 'bg-border-color'}`} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
   const columns = [
-    { key: 'wo_no', label: 'WO No' },
-    { key: 'finished_item_name', label: 'Finished Item' },
+    { key: 'wo_no', label: 'WO No', render: i => <span className="stamp">{i.wo_no}</span> },
+    { key: 'finished_item_name', label: 'Finished Item', render: i => <span className="font-medium text-text-primary">{i.finished_item_name}</span> },
     { key: 'asset_name', label: 'Machine/Asset', render: i => i.asset_name || '—' },
-    { key: 'planned_qty', label: 'Planned Qty', render: i => parseFloat(i.planned_qty) },
+    { key: 'planned_qty', label: 'Planned Qty', render: i => <span className="tabular-nums">{parseFloat(i.planned_qty)}</span> },
     { key: 'planned_start', label: 'Planned Start', render: i => formatDate(i.planned_start) },
     { key: 'planned_end', label: 'Planned End', render: i => formatDate(i.planned_end) },
-    { key: 'status', label: 'Status', render: i => <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${STATUS_BADGE[i.status] || ''}`}>{i.status}</span> },
-    { key: 'actions', label: 'Actions', render: i => <button onClick={() => openDetail(i)} className="text-slate-600 text-xs font-semibold bg-slate-50 px-2 py-1 rounded-md hover:bg-slate-100">Open WO</button> }
+    { key: 'status', label: 'Status', render: i => <StatusBadge status={i.status} /> },
+    { key: 'actions', label: 'Actions', render: i => <button onClick={() => openDetail(i)} className="btn-secondary btn-xs">Open WO</button> }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Work Orders</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Schedule production runs, track material consumption, and manage WO lifecycle.</p>
-        </div>
-        {hasPermission('production', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">+ New Work Order</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Work Orders"
+        subtitle="Schedule production runs, track material consumption, and manage WO lifecycle."
+        actions={
+          hasPermission('production', 'create') && <button onClick={openCreate} className="btn-primary">+ New Work Order</button>
+        }
+      />
 
-      <div className="flex flex-wrap gap-3 mb-6">
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none">
+      <div className="sheet p-3 flex flex-wrap gap-3 items-center">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="field md:w-44">
           <option value="">All Statuses</option>
           {['Pending','In Progress','QA Hold','Completed','Cancelled'].map(s => <option key={s}>{s}</option>)}
         </select>
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:outline-none" />
+        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="field md:w-40" />
+        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="field md:w-40" />
       </div>
 
       <Table columns={columns} data={wos} loading={loading} emptyMessage="No work orders found." />
@@ -197,61 +221,61 @@ const WorkOrdersPage = () => {
         <form onSubmit={handleCreateWO} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Active BOM *</label>
-              <select required value={form.bom_id} onChange={e => setForm(p => ({ ...p, bom_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Active BOM *</label>
+              <select required value={form.bom_id} onChange={e => setForm(p => ({ ...p, bom_id: e.target.value }))} className="field">
                 <option value="">— Select BOM —</option>
                 {boms.map(b => <option key={b.id} value={b.id}>{b.finished_item_name} (v{b.version})</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Planned Qty *</label>
-              <input type="number" min="0.0001" step="any" required value={form.planned_qty} onChange={e => setForm(p => ({ ...p, planned_qty: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Planned Qty *</label>
+              <input type="number" min="0.0001" step="any" required value={form.planned_qty} onChange={e => setForm(p => ({ ...p, planned_qty: e.target.value }))} className="field tabular-nums" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Sales Order (optional)</label>
-              <input value={salesOrderSearch} onChange={e => setSalesOrderSearch(e.target.value)} placeholder="Search order or customer" className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none mb-2" />
-              <select value={form.sales_order_id} onChange={e => setForm(p => ({ ...p, sales_order_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Sales Order (optional)</label>
+              <input value={salesOrderSearch} onChange={e => setSalesOrderSearch(e.target.value)} placeholder="Search order or customer" className="field mb-2" />
+              <select value={form.sales_order_id} onChange={e => setForm(p => ({ ...p, sales_order_id: e.target.value }))} className="field">
                 <option value="">— No Sales Order —</option>
                 {filteredSalesOrders.map(order => <option key={order.id} value={order.id}>{order.order_no} · {order.customer_name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Machine/Asset (optional)</label>
-              <select value={form.asset_id} onChange={e => setForm(p => ({ ...p, asset_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Machine/Asset (optional)</label>
+              <select value={form.asset_id} onChange={e => setForm(p => ({ ...p, asset_id: e.target.value }))} className="field">
                 <option value="">— No Machine/Asset —</option>
                 {assets.map(asset => <option key={asset.id} value={asset.id}>{asset.name} ({asset.asset_code})</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Planned Start</label>
-              <input type="date" value={form.planned_start} onChange={e => setForm(p => ({ ...p, planned_start: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Planned Start</label>
+              <input type="date" value={form.planned_start} onChange={e => setForm(p => ({ ...p, planned_start: e.target.value }))} className="field" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Planned End</label>
-              <input type="date" value={form.planned_end} onChange={e => setForm(p => ({ ...p, planned_end: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Planned End</label>
+              <input type="date" value={form.planned_end} onChange={e => setForm(p => ({ ...p, planned_end: e.target.value }))} className="field" />
             </div>
           </div>
 
-          <button type="button" onClick={handlePreviewMaterials} className="w-full text-xs font-semibold text-blue-600 bg-blue-50 py-2 rounded-lg border border-blue-100 hover:bg-blue-100">Check Material Availability</button>
+          <button type="button" onClick={handlePreviewMaterials} className="btn-secondary w-full text-xs justify-center">Check Material Availability</button>
 
           {materialPlan.length > 0 && (
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="sheet overflow-hidden">
+              <table className="bom w-full text-xs">
+                <thead>
                   <tr>
-                    <th className="px-4 py-2 font-semibold text-slate-500 text-left">Material</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 text-right">Required</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 text-right">Available</th>
-                    <th className="px-3 py-2 font-semibold text-slate-500 text-center">Status</th>
+                    <th className="px-4 py-2 font-semibold text-left">Material</th>
+                    <th className="px-3 py-2 font-semibold text-right">Required</th>
+                    <th className="px-3 py-2 font-semibold text-right">Available</th>
+                    <th className="px-3 py-2 font-semibold text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody>
                   {materialPlan.map((m, i) => (
-                    <tr key={i} className={m.status === 'Shortage' ? 'bg-red-50 dark:bg-red-950/20' : ''}>
-                      <td className="px-4 py-2"><div className="font-semibold">{m.material_name}</div><div className="text-xs text-slate-400">{m.item_code}</div></td>
-                      <td className="px-3 py-2 text-right">{m.required_qty.toFixed(2)} {m.unit}</td>
-                      <td className="px-3 py-2 text-right">{m.available_qty.toFixed(2)}</td>
-                      <td className="px-3 py-2 text-center"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold border ${m.status === 'OK' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>{m.status}</span></td>
+                    <tr key={i} className={`bom-row ${m.status === 'Shortage' ? 'bg-[var(--danger-bg)]' : ''}`}>
+                      <td className="px-4 py-2"><div className="font-medium text-text-primary">{m.material_name}</div><div className="text-xs text-text-muted"><span className="stamp">{m.item_code}</span></div></td>
+                      <td className="px-3 py-2 text-right tabular-nums">{m.required_qty.toFixed(2)} {m.unit}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{m.available_qty.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-center"><StatusBadge status={m.status === 'OK' ? 'In Stock' : 'Critical'} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -259,9 +283,9 @@ const WorkOrdersPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Work Order</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className="btn-primary">Create Work Order</button>
           </div>
         </form>
       </Modal>
@@ -271,25 +295,32 @@ const WorkOrdersPage = () => {
         {detailWO && (
           <div className="space-y-4">
             {/* Header + Actions */}
-            <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-              <div className="text-xs space-y-0.5">
-                <p className="font-semibold text-slate-900 dark:text-white">{detailWO.finished_item_name} <span className="text-slate-400 font-normal">· Qty: {parseFloat(detailWO.planned_qty)}</span></p>
-                <p className="text-slate-500">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
-                {detailWO.asset_name && <p className={['Under Repair', 'Maintenance'].includes(detailWO.asset_status) ? 'text-orange-600 font-semibold' : 'text-slate-500'}>Machine: {detailWO.asset_name} ({detailWO.asset_status})</p>}
-                {detailWO.actual_start && <p className="text-blue-600">Started: {formatDate(detailWO.actual_start)}</p>}
+            <div className="sheet p-4 space-y-3">
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <div className="text-xs space-y-0.5">
+                  <p className="font-semibold text-text-primary text-sm">{detailWO.finished_item_name} <span className="text-text-muted font-normal">· Qty: {parseFloat(detailWO.planned_qty)}</span></p>
+                  <p className="text-text-secondary">BOM v{detailWO.bom_version} · {formatDate(detailWO.planned_start)} → {formatDate(detailWO.planned_end)}</p>
+                  {detailWO.asset_name && <p className={['Under Repair', 'Maintenance'].includes(detailWO.asset_status) ? 'text-[var(--warning-text)] font-semibold' : 'text-text-secondary'}>Machine: {detailWO.asset_name} ({detailWO.asset_status})</p>}
+                  {detailWO.actual_start && <p className="text-accent-primary font-medium">Started: {formatDate(detailWO.actual_start)}</p>}
+                </div>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <StatusBadge status={detailWO.status} />
+                  {detailWO.status === 'Pending' && <button onClick={handleStart} className="btn-primary btn-xs">▶ Start</button>}
+                  {detailWO.status === 'In Progress' && <button onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }} className="btn-secondary btn-xs text-[var(--success-text)] hover:border-[var(--success-border)]">✓ Complete</button>}
+                  {!['Completed','Cancelled'].includes(detailWO.status) && <button onClick={handleCancel} className="btn-secondary btn-xs text-[var(--danger-text)] hover:border-[var(--danger-border)]">✕ Cancel</button>}
+                </div>
               </div>
-              <div className="flex gap-2 flex-wrap">
-                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${STATUS_BADGE[detailWO.status] || ''}`}>{detailWO.status}</span>
-                {detailWO.status === 'Pending' && <button onClick={handleStart} className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-blue-500">▶ Start</button>}
-                {detailWO.status === 'In Progress' && <button onClick={() => { setCompleteQty(String(detailWO.planned_qty)); setIsCompleteOpen(true); }} className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-green-500">✓ Complete</button>}
-                {!['Completed','Cancelled'].includes(detailWO.status) && <button onClick={handleCancel} className="bg-red-50 text-red-600 border border-red-200 text-xs font-semibold px-3 py-1 rounded-lg hover:bg-red-100">✕ Cancel</button>}
+
+              {/* Status Stepper */}
+              <div className="pt-2 border-t border-border-color">
+                {renderStepper(detailWO.status)}
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex gap-1 border-b border-border-color pb-1">
               {['plan', 'consumption', 'costing'].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-xs font-semibold capitalize border-b-2 transition-colors ${activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{tab === 'plan' ? 'Materials Plan' : tab}</button>
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`btn-sm ${activeTab === tab ? 'btn-primary' : 'btn-ghost'}`}>{tab === 'plan' ? 'Materials Plan' : tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
               ))}
             </div>
 
@@ -297,23 +328,23 @@ const WorkOrdersPage = () => {
               <div className="space-y-3">
                 <Table
                   columns={[
-                    { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
-                    { key: 'total_required', label: 'Required', render: i => `${parseFloat(i.total_required).toFixed(4)} ${i.unit}` },
-                    { key: 'total_issued', label: 'Issued', render: i => <span className={parseFloat(i.total_issued) >= parseFloat(i.total_required) ? 'text-green-600 font-semibold' : 'text-orange-600 font-semibold'}>{parseFloat(i.total_issued).toFixed(4)}</span> },
-                    { key: 'current_stock', label: 'Stock', render: i => parseFloat(i.current_stock).toFixed(2) }
+                    { key: 'material_name', label: 'Material', render: i => <div><div className="font-medium text-text-primary">{i.material_name}</div><div className="text-xs text-text-muted"><span className="stamp">{i.item_code}</span></div></div> },
+                    { key: 'total_required', label: 'Required', render: i => <span className="tabular-nums">{parseFloat(i.total_required).toFixed(4)} {i.unit}</span> },
+                    { key: 'total_issued', label: 'Issued', render: i => <span className={`font-semibold tabular-nums ${parseFloat(i.total_issued) >= parseFloat(i.total_required) ? 'text-[var(--success-text)]' : 'text-[var(--warning-text)]'}`}>{parseFloat(i.total_issued).toFixed(4)}</span> },
+                    { key: 'current_stock', label: 'Stock', render: i => <span className="tabular-nums">{parseFloat(i.current_stock).toFixed(2)}</span> }
                   ]}
                   data={detailPlan}
                   emptyMessage=""
                 />
 
                 {['Pending', 'In Progress'].includes(detailWO.status) && (
-                  <form onSubmit={handleIssue} className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <select required value={issueForm.item_id} onChange={e => setIssueForm(p => ({ ...p, item_id: e.target.value }))} className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-xs text-slate-900 dark:text-white focus:outline-none">
+                  <form onSubmit={handleIssue} className="flex gap-2 pt-2 border-t border-border-color">
+                    <select required value={issueForm.item_id} onChange={e => setIssueForm(p => ({ ...p, item_id: e.target.value }))} className="field flex-1 py-1.5 px-3 text-xs">
                       <option value="">Select Material</option>
                       {detailPlan.map(m => <option key={m.item_id} value={m.item_id}>{m.material_name} (need: {parseFloat(m.total_required - m.total_issued).toFixed(2)})</option>)}
                     </select>
-                    <input type="number" min="0.0001" step="any" required placeholder="Qty" value={issueForm.qty_issued} onChange={e => setIssueForm(p => ({ ...p, qty_issued: e.target.value }))} className="w-28 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" />
-                    <button type="submit" className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-semibold text-white hover:bg-orange-500">Issue</button>
+                    <input type="number" min="0.0001" step="any" required placeholder="Qty" value={issueForm.qty_issued} onChange={e => setIssueForm(p => ({ ...p, qty_issued: e.target.value }))} className="field w-28 py-1.5 px-3 text-xs tabular-nums" />
+                    <button type="submit" className="btn-primary btn-xs">Issue</button>
                   </form>
                 )}
               </div>
@@ -322,8 +353,8 @@ const WorkOrdersPage = () => {
             {activeTab === 'consumption' && (
               <Table
                 columns={[
-                  { key: 'material_name', label: 'Material', render: i => <div><div className="font-semibold">{i.material_name}</div><div className="text-xs text-slate-400">{i.item_code}</div></div> },
-                  { key: 'qty_issued', label: 'Qty Issued', render: i => <span className="text-red-600 font-semibold">-{parseFloat(i.qty_issued)} {i.unit}</span> },
+                  { key: 'material_name', label: 'Material', render: i => <div><div className="font-medium text-text-primary">{i.material_name}</div><div className="text-xs text-text-muted"><span className="stamp">{i.item_code}</span></div></div> },
+                  { key: 'qty_issued', label: 'Qty Issued', render: i => <span className="text-[var(--danger-text)] font-semibold tabular-nums">-{parseFloat(i.qty_issued)} {i.unit}</span> },
                   { key: 'issued_by', label: 'Issued By', render: i => i.issued_by || 'N/A' },
                   { key: 'issued_at', label: 'Issued At', render: i => formatDate(i.issued_at) }
                 ]}
@@ -334,20 +365,20 @@ const WorkOrdersPage = () => {
 
             {activeTab === 'costing' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div><p className="text-xs text-slate-400 font-semibold">Material Cost</p><p className="text-xl font-semibold text-slate-900 dark:text-white mt-1">{formatINR(detailCosting?.material_cost || 0)}</p><p className="text-xs text-slate-400">Auto-calculated from consumption</p></div>
-                  <div><p className="text-xs text-slate-400 font-semibold">Total Cost</p><p className="text-xl font-semibold text-blue-600 mt-1">{formatINR(detailCosting?.total_cost || 0)}</p></div>
+                <div className="grid grid-cols-2 gap-4 p-4 sheet">
+                  <div><p className="text-xs text-text-muted font-medium">Material Cost</p><p className="text-xl font-semibold text-text-primary mt-1 tabular-nums">{formatINR(detailCosting?.material_cost || 0)}</p><p className="text-xs text-text-muted">Auto-calculated from consumption</p></div>
+                  <div><p className="text-xs text-text-muted font-medium">Total Cost</p><p className="text-xl font-semibold text-accent-primary mt-1 tabular-nums">{formatINR(detailCosting?.total_cost || 0)}</p></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Labor Cost (INR)</label><input type="number" min="0" step="0.01" value={laborCost} onChange={e => setLaborCost(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" /></div>
-                  <div><label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Overhead Cost (INR)</label><input type="number" min="0" step="0.01" value={overheadCost} onChange={e => setOverheadCost(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" /></div>
+                  <div><label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Labor Cost (INR)</label><input type="number" min="0" step="0.01" value={laborCost} onChange={e => setLaborCost(e.target.value)} className="field tabular-nums" /></div>
+                  <div><label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Overhead Cost (INR)</label><input type="number" min="0" step="0.01" value={overheadCost} onChange={e => setOverheadCost(e.target.value)} className="field tabular-nums" /></div>
                 </div>
-                <button onClick={handleSaveCosting} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Costing</button>
+                <button onClick={handleSaveCosting} className="btn-primary">Save Costing</button>
               </div>
             )}
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button onClick={() => setIsDetailOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Close</button>
+            <div className="flex justify-end pt-4 border-t border-border-color">
+              <button onClick={() => setIsDetailOpen(false)} className="btn-secondary">Close</button>
             </div>
           </div>
         )}
@@ -357,13 +388,13 @@ const WorkOrdersPage = () => {
       <Modal isOpen={isCompleteOpen} onClose={() => setIsCompleteOpen(false)} title="Complete Work Order">
         <form onSubmit={handleComplete} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Produced Qty (Finished Goods) *</label>
-            <input type="number" min="0.0001" step="any" required value={completeQty} onChange={e => setCompleteQty(e.target.value)} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" />
-            <p className="text-xs text-slate-400 mt-1">This qty will be added to finished goods stock automatically.</p>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Produced Qty (Finished Goods) *</label>
+            <input type="number" min="0.0001" step="any" required value={completeQty} onChange={e => setCompleteQty(e.target.value)} className="field tabular-nums" />
+            <p className="text-xs text-text-muted mt-1">This qty will be added to finished goods stock automatically.</p>
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsCompleteOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500">Confirm Complete</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsCompleteOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className="btn-primary">Confirm Complete</button>
           </div>
         </form>
       </Modal>

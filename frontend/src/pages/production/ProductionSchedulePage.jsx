@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { getWorkOrders } from '../../api/productionApi';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { formatDate } from '../../utils/formatDate';
-
-const STATUS_COLOR = {
-  'Pending': { bar: 'bg-slate-400', text: 'text-slate-700', badge: 'bg-slate-100 text-slate-700 border-slate-200' },
-  'In Progress': { bar: 'bg-blue-500', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-800 border-blue-200' },
-  'Completed': { bar: 'bg-green-500', text: 'text-green-700', badge: 'bg-green-100 text-green-800 border-green-200' },
-  'Cancelled': { bar: 'bg-red-400', text: 'text-red-600', badge: 'bg-red-100 text-red-800 border-red-200' },
-  'QA Hold': { bar: 'bg-yellow-500', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-800 border-yellow-200' }
-};
 
 const VIEW_OPTIONS = [
   { key: 'week', label: 'This Week' },
@@ -72,106 +66,118 @@ const ProductionSchedulePage = () => {
     days.push(d);
   }
 
+  const getBarColor = (status) => {
+    switch (status) {
+      case 'Completed': return 'bg-[var(--success-rail)]';
+      case 'In Progress': return 'bg-[var(--accent-primary)]';
+      case 'QA Hold': return 'bg-[var(--warning-rail)]';
+      case 'Cancelled': return 'bg-[var(--danger-rail)]';
+      default: return 'bg-[var(--text-muted)]';
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Production Schedule</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Gantt-style timeline view of work orders by planned date range.</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <div className="flex rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
-            <button onClick={() => setViewMode('timeline')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'timeline' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>Timeline</button>
-            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>List</button>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Production Schedule"
+        subtitle="Gantt-style timeline view of work orders by planned date range."
+        actions={
+          <div className="flex rounded-md border border-border-color overflow-hidden p-0.5 bg-bg-card">
+            <button onClick={() => setViewMode('timeline')} className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${viewMode === 'timeline' ? 'btn-primary' : 'btn-ghost'}`}>Timeline</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}>List</button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Range selector */}
-      <div className="flex flex-wrap gap-2 mb-6 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 items-center">
+      <div className="sheet p-3 flex flex-wrap gap-2 items-center">
         {VIEW_OPTIONS.map(opt => (
-          <button key={opt.key} onClick={() => setRangeKey(opt.key)} className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${rangeKey === opt.key ? 'bg-blue-600 text-white' : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'}`}>{opt.label}</button>
+          <button key={opt.key} onClick={() => setRangeKey(opt.key)} className={`btn-sm ${rangeKey === opt.key ? 'btn-primary' : 'btn-secondary'}`}>{opt.label}</button>
         ))}
         {rangeKey === 'custom' && (
-          <>
-            <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" />
-            <span className="text-slate-400 text-xs">to</span>
-            <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-1.5 px-3 text-xs text-slate-900 dark:text-white focus:outline-none" />
-          </>
+          <div className="flex items-center gap-2">
+            <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="field py-1.5 px-3 text-xs" />
+            <span className="text-text-muted text-xs">to</span>
+            <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="field py-1.5 px-3 text-xs" />
+          </div>
         )}
-        <span className="text-xs text-slate-400 ml-auto">{wos.length} work order{wos.length !== 1 ? 's' : ''} in range</span>
+        <span className="text-xs text-text-muted ml-auto">{wos.length} work order{wos.length !== 1 ? 's' : ''} in range</span>
       </div>
 
       {loading ? (
-        <div className="py-24 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="py-24 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]" /></div>
       ) : wos.length === 0 ? (
-        <div className="py-20 text-center text-slate-400">No work orders scheduled in this date range.</div>
+        <div className="sheet py-20 text-center text-text-muted">No work orders scheduled in this date range.</div>
       ) : viewMode === 'timeline' ? (
-        <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
+        <div className="sheet overflow-hidden">
           {/* Day header */}
-          <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
-            <div className="w-56 shrink-0 px-4 py-3 text-xs font-semibold text-slate-500 border-r border-slate-200 dark:border-slate-800">Work Order</div>
+          <div className="flex border-b border-border-color bg-bg-subtle">
+            <div className="w-56 shrink-0 px-4 py-3 text-xs font-semibold text-text-secondary border-r border-border-color uppercase tracking-wider">Work Order</div>
             <div className="flex-1 overflow-hidden relative">
-              <div className="flex h-10">
-                {days.map((d, i) => (
-                  <div key={i} className="flex-1 border-r border-slate-100 dark:border-slate-800 flex items-center justify-center">
-                    <span className={`text-xs font-semibold ${d.toDateString() === new Date().toDateString() ? 'text-blue-600' : 'text-slate-400'}`}>
-                      {d.getDate()}<br /><span className="font-normal">{d.toLocaleString('default', { month: 'short' })}</span>
-                    </span>
-                  </div>
-                ))}
+              <div className="flex h-12">
+                {days.map((d, i) => {
+                  const isToday = d.toDateString() === new Date().toDateString();
+                  return (
+                    <div key={i} className={`flex-1 border-r border-border-color flex items-center justify-center p-1 text-center ${isToday ? 'border-accent-primary bg-[var(--info-bg)]' : ''}`}>
+                      <span className={`text-xs font-semibold leading-tight ${isToday ? 'text-accent-primary' : 'text-text-muted'}`}>
+                        {d.getDate()}<br /><span className="font-normal text-[10px]">{d.toLocaleString('default', { month: 'short' })}</span>
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* WO Rows */}
-          {wos.map(wo => {
-            const colors = STATUS_COLOR[wo.status] || STATUS_COLOR['Pending'];
-            const barStyle = getBarStyle(wo);
-            return (
-              <div key={wo.id} className="flex border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                <div className="w-56 shrink-0 px-4 py-3 border-r border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-900 dark:text-white">{wo.wo_no}</div>
-                  <div className="text-xs text-slate-500 truncate max-w-[180px]">{wo.finished_item_name}</div>
-                  <span className={`inline-flex rounded-full px-1.5 py-0.5 text-xs font-semibold border mt-0.5 ${colors.badge}`}>{wo.status}</span>
-                </div>
-                <div className="flex-1 relative py-3 px-1">
-                  <div className="h-7 relative">
-                    <div
-                      className={`absolute top-0 h-7 rounded-lg flex items-center px-2 ${colors.bar} opacity-80 transition-all`}
-                      style={barStyle}
-                    >
-                      <span className="text-white text-xs font-semibold truncate">{parseFloat(wo.planned_qty)} units</span>
+          <div className="divide-y divide-border-color">
+            {wos.map(wo => {
+              const barStyle = getBarStyle(wo);
+              const barColor = getBarColor(wo.status);
+              return (
+                <div key={wo.id} className="flex hover:bg-bg-subtle transition-colors">
+                  <div className="w-56 shrink-0 px-4 py-3 border-r border-border-color space-y-1">
+                    <div className="text-xs font-semibold text-text-primary"><span className="stamp">{wo.wo_no}</span></div>
+                    <div className="text-xs text-text-secondary truncate max-w-[180px]">{wo.finished_item_name}</div>
+                    <StatusBadge status={wo.status} />
+                  </div>
+                  <div className="flex-1 relative py-3 px-1">
+                    <div className="h-7 relative">
+                      <div
+                        className={`absolute top-0 h-7 rounded flex items-center px-2 text-white ${barColor} opacity-90 transition-all shadow-sm`}
+                        style={barStyle}
+                      >
+                        <span className="text-white text-xs font-semibold truncate tabular-nums">{parseFloat(wo.planned_qty)} units</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       ) : (
         // List view
-        <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+        <div className="sheet overflow-hidden">
+          <table className="bom w-full text-sm">
+            <thead>
               <tr>
                 {['WO No','Finished Item','Planned Qty','Planned Start','Planned End','Actual Start','Status'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody>
               {wos.map(wo => {
-                const colors = STATUS_COLOR[wo.status] || STATUS_COLOR['Pending'];
                 return (
-                  <tr key={wo.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{wo.wo_no}</td>
-                    <td className="px-4 py-3 text-xs"><div className="font-medium text-slate-900 dark:text-white">{wo.finished_item_name}</div><div className="text-xs text-slate-400">{wo.finished_item_code}</div></td>
-                    <td className="px-4 py-3 text-xs">{parseFloat(wo.planned_qty)}</td>
-                    <td className="px-4 py-3 text-xs">{formatDate(wo.planned_start)}</td>
-                    <td className="px-4 py-3 text-xs">{formatDate(wo.planned_end)}</td>
-                    <td className="px-4 py-3 text-xs text-blue-600">{wo.actual_start ? formatDate(wo.actual_start) : '—'}</td>
-                    <td className="px-4 py-3"><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${colors.badge}`}>{wo.status}</span></td>
+                  <tr key={wo.id} className="bom-row">
+                    <td className="px-4 py-3 font-medium text-xs"><span className="stamp">{wo.wo_no}</span></td>
+                    <td className="px-4 py-3 text-xs"><div className="font-medium text-text-primary">{wo.finished_item_name}</div><div className="text-xs text-text-muted"><span className="stamp">{wo.finished_item_code}</span></div></td>
+                    <td className="px-4 py-3 text-xs tabular-nums">{parseFloat(wo.planned_qty)}</td>
+                    <td className="px-4 py-3 text-xs tabular-nums text-text-muted">{formatDate(wo.planned_start)}</td>
+                    <td className="px-4 py-3 text-xs tabular-nums text-text-muted">{formatDate(wo.planned_end)}</td>
+                    <td className="px-4 py-3 text-xs text-accent-primary tabular-nums">{wo.actual_start ? formatDate(wo.actual_start) : '—'}</td>
+                    <td className="px-4 py-3"><StatusBadge status={wo.status} /></td>
                   </tr>
                 );
               })}

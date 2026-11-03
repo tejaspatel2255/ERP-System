@@ -12,6 +12,8 @@ import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
 import Modal from '../../components/Modal';
 import Table from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
+import { formatDate } from '../../utils/formatDate';
 
 export default function DeliveryChallansPage() {
   const [challans, setChallans] = useState([]);
@@ -155,40 +157,32 @@ export default function DeliveryChallansPage() {
     {
       key: 'challan_no',
       label: 'DC No',
-      render: (dc) => <span className="font-mono text-accent-primary font-medium">{dc.challan_no || 'Pending'}</span>
+      render: (dc) => <span className="stamp">{dc.challan_no || 'Pending'}</span>
     },
     {
       key: 'packing_slip_no',
       label: 'Packing Slip',
-      render: (dc) => <span className="font-mono text-text-secondary text-xs">{dc.packing_slip_no || '—'}</span>
+      render: (dc) => <span className="stamp">{dc.packing_slip_no || '—'}</span>
     },
     {
       key: 'sales_order_no',
       label: 'Sales Order',
-      render: (dc) => <span className="font-mono text-text-secondary">{dc.sales_order_no || '—'}</span>
+      render: (dc) => <span className="stamp">{dc.sales_order_no || '—'}</span>
     },
     {
       key: 'customer_name',
       label: 'Customer',
-      render: (dc) => <span className="font-semibold text-text-primary">{dc.customer_name}</span>
+      render: (dc) => <span className="font-medium text-text-primary">{dc.customer_name}</span>
     },
     {
       key: 'challan_date',
       label: 'Challan Date',
-      render: (dc) => <span className="text-text-secondary">{new Date(dc.challan_date).toLocaleDateString()}</span>
+      render: (dc) => <span className="tabular-nums text-text-secondary">{formatDate(dc.challan_date)}</span>
     },
     {
       key: 'status',
       label: 'Status',
-      render: (dc) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-          dc.status === 'Delivered' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
-          dc.status === 'Dispatched' ? 'bg-accent-info/15 text-accent-info border border-accent-info/30' :
-          'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
-        }`}>
-          {dc.status}
-        </span>
-      )
+      render: (dc) => <StatusBadge status={dc.status} />
     },
     {
       key: 'pod',
@@ -205,17 +199,17 @@ export default function DeliveryChallansPage() {
       key: 'actions',
       label: 'Actions',
       render: (dc) => (
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-1.5 justify-center">
           <button
             onClick={() => handlePrintPreview(dc.id)}
-            className="px-2.5 py-1 bg-bg-secondary hover:bg-bg-hover border border-border-color rounded-xl text-xs font-semibold text-text-primary transition-all"
+            className="btn-secondary btn-xs"
           >
             Print
           </button>
           {dc.status === 'Draft' && (
             <button
               onClick={() => handleOpenTransport(dc)}
-              className="px-2.5 py-1 bg-accent-primary hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+              className="btn-primary btn-xs"
             >
               Dispatch
             </button>
@@ -223,7 +217,7 @@ export default function DeliveryChallansPage() {
           {dc.status === 'Dispatched' && (
             <button
               onClick={() => handleOpenPod(dc.id)}
-              className="px-2.5 py-1 bg-accent-success hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+              className="btn-secondary btn-xs text-[var(--success-text)] hover:border-[var(--success-border)]"
             >
               Confirm Del.
             </button>
@@ -234,22 +228,22 @@ export default function DeliveryChallansPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
         title="Delivery Challans"
         description="Generate challans, add transport logs, and upload POD confirmations."
         actions={
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-colors"
+            className="btn-primary"
           >
             + Create Delivery Challan
           </button>
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="rounded-md border px-3 py-2 text-sm border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)]">{error}</div>}
+      {success && <div className="rounded-md border px-3 py-2 text-sm border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]">{success}</div>}
 
       {challans.length === 0 && !loading ? (
         <EmptyState
@@ -272,11 +266,11 @@ export default function DeliveryChallansPage() {
       >
         <form onSubmit={handleCreateChallan} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1.5">Select Packing Slip *</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Select Packing Slip *</label>
             <select
               value={selectedPackingSlipId}
               onChange={(e) => setSelectedPackingSlipId(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
               required
             >
               <option value="">-- Select Packing Slip --</option>
@@ -286,17 +280,17 @@ export default function DeliveryChallansPage() {
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn-primary"
             >
               Generate DC
             </button>
@@ -313,58 +307,58 @@ export default function DeliveryChallansPage() {
       >
         <form onSubmit={handleSaveTransport} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Transporter Name *</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Transporter Name *</label>
             <input
               type="text"
               value={transporterName}
               onChange={(e) => setTransporterName(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Vehicle No *</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Vehicle No *</label>
             <input
               type="text"
               value={vehicleNo}
               onChange={(e) => setVehicleNo(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">LR / Docket Number</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">LR / Docket Number</label>
             <input
               type="text"
               value={lrNumber}
               onChange={(e) => setLrNumber(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Dispatch Date</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Dispatch Date</label>
             <input
               type="date"
               value={dispatchDate}
               onChange={(e) => setDispatchDate(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm font-mono focus:outline-none focus:border-accent-primary"
+              className="field"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowTransportModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn-primary"
             >
               Log Dispatch
             </button>
@@ -381,56 +375,58 @@ export default function DeliveryChallansPage() {
       >
         <form onSubmit={handleUploadPod} className="space-y-4" encType="multipart/form-data">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Received By (Name) *</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Received By (Name) *</label>
             <input
               type="text"
               value={receivedBy}
               onChange={(e) => setReceivedBy(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+              className="field"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Delivered At Date</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Delivered At Date</label>
             <input
               type="date"
               value={deliveredAt}
               onChange={(e) => setDeliveredAt(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm font-mono focus:outline-none focus:border-accent-primary"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Upload File (PDF/Image)</label>
-            <input
-              type="file"
-              onChange={(e) => setPodFile(e.target.files[0])}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2 text-text-primary text-xs focus:outline-none focus:border-accent-primary"
-              accept=".pdf,.png,.jpg,.jpeg"
-            />
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Upload File (PDF/Image)</label>
+            <div className="rounded-lg border border-dashed border-border-color bg-bg-secondary p-4 text-center text-sm text-text-secondary">
+              <input
+                type="file"
+                onChange={(e) => setPodFile(e.target.files[0])}
+                className="w-full text-xs text-text-primary focus:outline-none file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-bg-subtle file:text-text-primary hover:file:bg-bg-hover"
+                accept=".pdf,.png,.jpg,.jpeg"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1">Remarks</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Remarks</label>
             <textarea
               value={podNotes}
               onChange={(e) => setPodNotes(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm h-20 focus:outline-none focus:border-accent-primary"
+              className="field h-20"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowPodModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-success hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn-primary"
             >
               Submit POD
             </button>
@@ -447,7 +443,7 @@ export default function DeliveryChallansPage() {
       >
         {selectedChallanDetails && (
           <div className="space-y-6">
-            <div id="printable-challan" className="space-y-6 bg-white text-slate-900 p-6 rounded-2xl border border-slate-200">
+            <div id="printable-challan" className="space-y-6 bg-white text-slate-900 p-6 rounded-lg border border-slate-200">
               <div className="flex justify-between items-start border-b-2 border-slate-300 pb-4">
                 <div>
                   <h2 className="text-2xl font-extrabold text-slate-800">ERP ENTERPRISE</h2>
@@ -461,7 +457,7 @@ export default function DeliveryChallansPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl">
+              <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-500">Consignee (Deliver To)</h4>
                   <p className="font-semibold text-slate-800 text-sm mt-1">{selectedChallanDetails.challan.customer_name}</p>
@@ -516,17 +512,17 @@ export default function DeliveryChallansPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setShowPrintModal(false)}
-                className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+                className="btn-secondary"
               >
                 Close
               </button>
               <button
                 onClick={handleTriggerPrint}
-                className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+                className="btn-primary"
               >
                 Print Challan
               </button>

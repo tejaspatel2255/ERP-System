@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarCheck } from 'lucide-react';
 import { getEmployees, getAttendance, markAttendance, getAttendanceSummary } from '../../api/hrApi';
 import { exportToCSV } from '../../utils/exportCSV';
 import PageHeader from '../../components/PageHeader';
@@ -123,10 +122,10 @@ export default function AttendancePage() {
   };
 
   const statusColors = {
-    'Present': 'bg-accent-success/15 text-accent-success border border-accent-success/30',
-    'Absent': 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30',
-    'Half Day': 'bg-accent-warning/15 text-accent-warning border border-accent-warning/30',
-    'Leave': 'bg-accent-info/15 text-accent-info border border-accent-info/30'
+    'Present': 'bg-[var(--success-bg)] text-[var(--success-text)] border border-[var(--success-border)]',
+    'Absent': 'bg-[var(--danger-bg)] text-[var(--danger-text)] border border-[var(--danger-border)]',
+    'Half Day': 'bg-[var(--warning-bg)] text-[var(--warning-text)] border border-[var(--warning-border)]',
+    'Leave': 'bg-[var(--info-bg)] text-[var(--info-text)] border border-[var(--info-border)]'
   };
 
   const statusInitials = {
@@ -137,7 +136,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
         title="Employee Attendance"
         description="Monitor working hours, clock-in reports, and log leaves."
@@ -145,14 +144,14 @@ export default function AttendancePage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center justify-center rounded-xl bg-bg-card border border-border-color px-4 py-2 text-sm font-semibold text-text-primary shadow-brand hover:bg-bg-hover transition-colors"
+              className="btn-secondary"
             >
               Export CSV
             </button>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="bg-bg-card border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm font-semibold focus:outline-none focus:border-accent-primary"
+              className="field w-auto font-medium"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -163,7 +162,7 @@ export default function AttendancePage() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="bg-bg-card border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm font-semibold focus:outline-none focus:border-accent-primary"
+              className="field w-auto font-medium"
             >
               {[2024, 2025, 2026, 2027].map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -173,37 +172,37 @@ export default function AttendancePage() {
         }
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="rounded-md border px-3 py-2 text-sm border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)]">{error}</div>}
+      {success && <div className="rounded-md border px-3 py-2 text-sm border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]">{success}</div>}
 
       {/* Main Attendance Grid */}
-      <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand mb-6">
+      <div className="sheet overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-text-muted text-sm">Loading attendance data...</div>
         ) : (
           <div className="overflow-x-auto max-h-[60vh]">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="bom w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold sticky top-0 z-10">
-                  <th className="p-3 bg-bg-secondary min-w-[160px] sticky left-0 z-20">Employee</th>
-                  <th className="p-3 bg-bg-secondary min-w-[80px] border-r border-border-color">Code</th>
+                <tr>
+                  <th className="p-3 bg-bg-subtle min-w-[160px] sticky left-0 z-20 font-semibold">Employee</th>
+                  <th className="p-3 bg-bg-subtle min-w-[80px] border-r border-border-color font-semibold">Code</th>
                   {daysArray.map(day => (
-                    <th key={day} className="p-2 text-center min-w-[34px] border-r border-border-color">{day}</th>
+                    <th key={day} className="p-2 text-center min-w-[34px] border-r border-border-color font-semibold">{day}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-color">
                 {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-bg-hover text-text-secondary transition-colors">
+                  <tr key={emp.id} className="bom-row text-text-secondary">
                     <td className="p-3 font-semibold text-text-primary sticky left-0 bg-bg-card shadow-sm">
                       <button
                         onClick={() => handleViewSummary(emp)}
-                        className="text-left hover:text-accent-primary transition-colors font-semibold"
+                        className="text-left hover:text-accent-primary transition-colors font-medium"
                       >
                         {emp.name}
                       </button>
                     </td>
-                    <td className="p-3 font-mono text-accent-primary border-r border-border-color">{emp.emp_code}</td>
+                    <td className="p-3 border-r border-border-color"><span className="stamp">{emp.emp_code}</span></td>
                     {daysArray.map(day => {
                       const record = getRecord(emp.id, day);
                       const status = record ? record.status : '';
@@ -214,7 +213,7 @@ export default function AttendancePage() {
                           className="p-1 text-center border-r border-border-color cursor-pointer hover:bg-bg-hover transition-colors"
                         >
                           {status ? (
-                            <span className={`w-6 h-6 inline-flex items-center justify-center rounded-md text-xs font-extrabold ${statusColors[status]}`}>
+                            <span className={`w-6 h-6 inline-flex items-center justify-center rounded text-xs font-semibold ${statusColors[status]}`}>
                               {statusInitials[status]}
                             </span>
                           ) : (
@@ -233,34 +232,34 @@ export default function AttendancePage() {
 
       {/* Row Summary Panel */}
       {summaryEmployee && (
-        <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand space-y-4">
+        <div className="sheet p-5 space-y-4">
           <div className="flex justify-between items-center border-b border-border-color pb-3">
             <h3 className="text-base font-semibold text-text-primary">
               Monthly Attendance Summary: <span className="text-accent-primary">{summaryEmployee.name}</span>
             </h3>
-            <button onClick={() => setSummaryEmployee(null)} className="text-text-muted hover:text-text-primary font-semibold text-sm">✕ Close</button>
+            <button onClick={() => setSummaryEmployee(null)} className="btn-ghost btn-xs">✕ Close</button>
           </div>
           {employeeSummaryData ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-bg-secondary p-4 rounded-xl border border-border-color">
-                <p className="text-xs text-text-muted">Total Working Days</p>
-                <p className="text-2xl font-semibold text-text-primary mt-1">{daysCount}</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="kpi-card">
+                <p className="kpi-label">Total Working Days</p>
+                <p className="kpi-value text-text-primary mt-1">{daysCount}</p>
               </div>
-              <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-success">
-                <p className="text-xs text-text-muted">Presents (P)</p>
-                <p className="text-2xl font-semibold text-accent-success mt-1">{employeeSummaryData.present_count}</p>
+              <div className="kpi-card border-l-[3px] border-l-[var(--success-rail)]">
+                <p className="kpi-label">Presents (P)</p>
+                <p className="kpi-value text-[var(--success-text)] mt-1">{employeeSummaryData.present_count}</p>
               </div>
-              <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-danger">
-                <p className="text-xs text-text-muted">Absents (A)</p>
-                <p className="text-2xl font-semibold text-accent-danger mt-1">{employeeSummaryData.absent_count}</p>
+              <div className="kpi-card border-l-[3px] border-l-[var(--danger-rail)]">
+                <p className="kpi-label">Absents (A)</p>
+                <p className="kpi-value text-[var(--danger-text)] mt-1">{employeeSummaryData.absent_count}</p>
               </div>
-              <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-warning">
-                <p className="text-xs text-text-muted">Half Days (H)</p>
-                <p className="text-2xl font-semibold text-accent-warning mt-1">{employeeSummaryData.half_day_count}</p>
+              <div className="kpi-card border-l-[3px] border-l-[var(--warning-rail)]">
+                <p className="kpi-label">Half Days (H)</p>
+                <p className="kpi-value text-[var(--warning-text)] mt-1">{employeeSummaryData.half_day_count}</p>
               </div>
-              <div className="bg-bg-secondary p-4 rounded-xl border border-border-color border-l-4 border-l-accent-info">
-                <p className="text-xs text-text-muted">Leaves / Holidays (L)</p>
-                <p className="text-2xl font-semibold text-accent-info mt-1">{employeeSummaryData.leave_count}</p>
+              <div className="kpi-card border-l-[3px] border-l-[var(--info-rail)]">
+                <p className="kpi-label">Leaves / Holidays (L)</p>
+                <p className="kpi-value text-accent-primary mt-1">{employeeSummaryData.leave_count}</p>
               </div>
             </div>
           ) : (
@@ -278,22 +277,22 @@ export default function AttendancePage() {
       >
         {activeEmployee && (
           <form onSubmit={handleSaveAttendance} className="space-y-4">
-            <div className="p-3 bg-bg-secondary border border-border-color rounded-xl text-xs text-text-secondary">
-              <span className="font-semibold text-text-primary">{activeEmployee.name}</span> | Date: <span className="font-mono">{activeDate}</span>
+            <div className="p-3 sheet text-xs text-text-secondary">
+              <span className="font-semibold text-text-primary">{activeEmployee.name}</span> | Date: <span className="stamp">{activeDate}</span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-2">Status</label>
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Status</label>
               <div className="grid grid-cols-4 gap-2">
                 {['Present', 'Absent', 'Half Day', 'Leave'].map(st => (
                   <button
                     key={st}
                     type="button"
                     onClick={() => setMarkStatus(st)}
-                    className={`py-2 rounded-xl font-semibold transition-all text-xs border ${
+                    className={`py-2 rounded font-semibold transition-all text-xs border ${
                       markStatus === st 
-                        ? 'bg-accent-primary text-white border-accent-primary shadow-sm' 
-                        : 'bg-bg-secondary text-text-secondary border-border-color hover:bg-bg-hover'
+                        ? 'btn-primary' 
+                        : 'btn-secondary'
                     }`}
                   >
                     {st}
@@ -305,37 +304,37 @@ export default function AttendancePage() {
             {markStatus !== 'Absent' && markStatus !== 'Leave' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-text-secondary mb-1">Clock-In Time</label>
+                  <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Clock-In Time</label>
                   <input
                     type="time"
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-xs font-mono focus:outline-none focus:border-accent-primary"
+                    className="field tabular-nums"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-text-secondary mb-1">Clock-Out Time</label>
+                  <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Clock-Out Time</label>
                   <input
                     type="time"
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-xs font-mono focus:outline-none focus:border-accent-primary"
+                    className="field tabular-nums"
                   />
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setShowMarkModal(false)}
-                className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-accent-primary hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+                className="btn-primary"
               >
                 Save Log
               </button>

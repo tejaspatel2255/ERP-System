@@ -13,6 +13,8 @@ import PageHeader from '../../components/PageHeader';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
 import Table from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
+import { formatDate } from '../../utils/formatDate';
 
 export default function LeavePage() {
   const [activeTab, setActiveTab] = useState('applications');
@@ -155,17 +157,17 @@ export default function LeavePage() {
     {
       key: 'from_date',
       label: 'From',
-      render: (app) => <span className="text-text-secondary">{new Date(app.from_date).toLocaleDateString()}</span>
+      render: (app) => <span className="tabular-nums text-text-secondary">{formatDate(app.from_date)}</span>
     },
     {
       key: 'to_date',
       label: 'To',
-      render: (app) => <span className="text-text-secondary">{new Date(app.to_date).toLocaleDateString()}</span>
+      render: (app) => <span className="tabular-nums text-text-secondary">{formatDate(app.to_date)}</span>
     },
     {
       key: 'days',
       label: 'Days',
-      render: (app) => <span className="font-mono font-semibold text-text-primary text-center block">{calculateDays(app.from_date, app.to_date)}</span>
+      render: (app) => <span className="tabular-nums font-semibold text-text-primary text-center block">{calculateDays(app.from_date, app.to_date)}</span>
     },
     {
       key: 'reason',
@@ -175,31 +177,23 @@ export default function LeavePage() {
     {
       key: 'status',
       label: 'Status',
-      render: (app) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-          app.status === 'Approved' ? 'bg-accent-success/15 text-accent-success border border-accent-success/30' :
-          app.status === 'Rejected' ? 'bg-accent-danger/15 text-accent-danger border border-accent-danger/30' :
-          'bg-accent-warning/15 text-accent-warning border border-accent-warning/30'
-        }`}>
-          {app.status}
-        </span>
-      )
+      render: (app) => <StatusBadge status={app.status} />
     },
     {
       key: 'actions',
       label: 'Actions',
       render: (app) => (
         app.status === 'Pending' ? (
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-1.5 justify-center">
             <button
               onClick={() => handleApprove(app.id)}
-              className="px-2.5 py-1 bg-accent-success hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+              className="btn-primary btn-xs"
             >
               Approve
             </button>
             <button
               onClick={() => handleOpenReject(app.id)}
-              className="px-2.5 py-1 bg-accent-danger hover:opacity-90 rounded-xl text-xs text-white font-semibold shadow-sm transition-all"
+              className="btn-secondary btn-xs text-[var(--danger-text)] hover:border-[var(--danger-border)]"
             >
               Reject
             </button>
@@ -212,25 +206,25 @@ export default function LeavePage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
         title="Leave Management"
         description="Review leave applications, manage leave allocation rules, and check remaining balances."
       />
 
-      {error && <div className="mb-6 p-4 bg-accent-danger/10 border border-accent-danger/30 rounded-2xl text-accent-danger text-sm">{error}</div>}
-      {success && <div className="mb-6 p-4 bg-accent-success/10 border border-accent-success/30 rounded-2xl text-accent-success text-sm">{success}</div>}
+      {error && <div className="rounded-md border px-3 py-2 text-sm border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)]">{error}</div>}
+      {success && <div className="rounded-md border px-3 py-2 text-sm border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]">{success}</div>}
 
       {/* Tabs */}
-      <div className="flex border-b border-border-color mb-6 gap-2">
+      <div className="flex border-b border-border-color pb-1 gap-1">
         {['applications', 'types', 'balances'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`py-2.5 px-5 font-semibold text-sm border-b-2 capitalize transition-all rounded-t-xl ${
+            className={`btn-sm capitalize ${
               activeTab === tab 
-                ? 'border-accent-primary text-accent-primary bg-accent-primary/10' 
-                : 'border-transparent text-text-muted hover:text-text-primary'
+                ? 'btn-primary' 
+                : 'btn-ghost'
             }`}
           >
             {tab}
@@ -240,15 +234,15 @@ export default function LeavePage() {
 
       {activeTab === 'applications' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
+          <div className="sheet p-3 flex items-center gap-2">
             <input
               type="checkbox"
               id="pending-only"
               checked={pendingOnly}
               onChange={(e) => setPendingOnly(e.target.checked)}
-              className="w-4 h-4 rounded border-border-color text-accent-primary focus:ring-accent-primary"
+              className="rounded"
             />
-            <label htmlFor="pending-only" className="text-text-primary font-semibold text-xs cursor-pointer">Show Pending Applications Only</label>
+            <label htmlFor="pending-only" className="text-text-primary font-medium text-xs cursor-pointer">Show Pending Applications Only</label>
           </div>
 
           {applications.length === 0 && !loading ? (
@@ -264,8 +258,8 @@ export default function LeavePage() {
       )}
 
       {activeTab === 'types' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div className="lg:col-span-2 min-w-0 bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+          <div className="lg:col-span-2 min-w-0 sheet overflow-hidden">
             {loading ? (
               <div className="p-8 text-center text-text-muted text-sm">Loading leave types...</div>
             ) : leaveTypes.length === 0 ? (
@@ -278,18 +272,18 @@ export default function LeavePage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="bom w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
-                      <th className="p-4">Leave Type Name</th>
-                      <th className="p-4 text-right">Days Allowed Per Year</th>
+                    <tr>
+                      <th className="p-3">Leave Type Name</th>
+                      <th className="p-3 text-right">Days Allowed Per Year</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-color text-sm">
                     {leaveTypes.map((lt) => (
-                      <tr key={lt.id} className="hover:bg-bg-hover text-text-secondary transition-colors">
-                        <td className="p-4 font-semibold text-text-primary">{lt.name}</td>
-                        <td className="p-4 text-right font-mono font-semibold text-accent-primary">{lt.days_allowed_per_year} Days</td>
+                      <tr key={lt.id} className="bom-row text-text-secondary">
+                        <td className="p-3 font-semibold text-text-primary">{lt.name}</td>
+                        <td className="p-3 text-right tabular-nums font-semibold text-accent-primary">{lt.days_allowed_per_year} Days</td>
                       </tr>
                     ))}
                   </tbody>
@@ -298,34 +292,34 @@ export default function LeavePage() {
             )}
           </div>
 
-          <div className="bg-bg-card border border-border-color rounded-2xl p-6 shadow-brand h-fit space-y-4">
-            <h3 className="text-base font-semibold text-text-primary">Create Leave Type</h3>
+          <div className="sheet p-5 h-fit space-y-4">
+            <h3 className="text-sm font-semibold text-text-primary">Create Leave Type</h3>
             <form onSubmit={handleCreateType} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">Type Name *</label>
+                <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Type Name *</label>
                 <input
                   type="text"
                   value={typeName}
                   onChange={(e) => setTypeName(e.target.value)}
-                  className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary text-sm focus:outline-none focus:border-accent-primary"
+                  className="field"
                   placeholder="E.g., Sick Leave, Casual Leave"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">Days Allowed Per Year *</label>
+                <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Days Allowed Per Year *</label>
                 <input
                   type="number"
                   value={daysAllowed}
                   onChange={(e) => setDaysAllowed(e.target.value)}
-                  className="w-full bg-bg-secondary border border-border-color rounded-xl p-2.5 text-text-primary font-mono text-sm focus:outline-none focus:border-accent-primary"
+                  className="field tabular-nums"
                   placeholder="E.g., 12"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-2.5 bg-accent-primary hover:opacity-90 text-white font-semibold rounded-xl text-xs transition-all shadow-sm"
+                className="btn-primary w-full justify-center"
               >
                 Create Type
               </button>
@@ -336,12 +330,12 @@ export default function LeavePage() {
 
       {activeTab === 'balances' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-4 bg-bg-card border border-border-color rounded-2xl p-4 shadow-brand">
-            <label className="text-xs font-semibold text-text-muted">Select Employee:</label>
+          <div className="sheet p-3 flex items-center gap-3">
+            <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Employee:</label>
             <select
               value={selectedEmpForBalance}
               onChange={(e) => handleEmpBalanceChange(e.target.value)}
-              className="bg-bg-secondary border border-border-color rounded-xl py-2 px-3 text-text-primary text-sm font-semibold focus:outline-none focus:border-accent-primary"
+              className="field md:w-64"
             >
               <option value="">-- Choose Employee --</option>
               {employees.map(e => (
@@ -350,7 +344,7 @@ export default function LeavePage() {
             </select>
           </div>
 
-          <div className="bg-bg-card border border-border-color rounded-2xl overflow-hidden shadow-brand">
+          <div className="sheet overflow-hidden">
             {!selectedEmpForBalance ? (
               <div className="p-8 text-center text-text-muted italic text-sm">Select an employee from the dropdown above to view leave balances.</div>
             ) : loading ? (
@@ -359,24 +353,24 @@ export default function LeavePage() {
               <div className="p-8 text-center text-text-muted text-sm">No leave balances found.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="bom w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border-color bg-bg-secondary text-text-muted font-semibold text-xs">
-                      <th className="p-4">Leave Type</th>
-                      <th className="p-4 text-center">Year</th>
-                      <th className="p-4 text-center">Allocated Days</th>
-                      <th className="p-4 text-center">Used Days</th>
-                      <th className="p-4 text-center">Remaining Days</th>
+                    <tr>
+                      <th className="p-3">Leave Type</th>
+                      <th className="p-3 text-center">Year</th>
+                      <th className="p-3 text-center">Allocated Days</th>
+                      <th className="p-3 text-center">Used Days</th>
+                      <th className="p-3 text-center">Remaining Days</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-color text-sm">
                     {balances.map((b) => (
-                      <tr key={b.id} className="hover:bg-bg-hover text-text-secondary transition-colors">
-                        <td className="p-4 font-semibold text-text-primary">{b.leave_type_name}</td>
-                        <td className="p-4 text-center font-mono">{b.year}</td>
-                        <td className="p-4 text-center font-mono">{b.total_days}</td>
-                        <td className="p-4 text-center font-mono text-accent-warning font-semibold">{b.used_days}</td>
-                        <td className="p-4 text-center font-mono text-accent-success font-semibold">{b.remaining_days}</td>
+                      <tr key={b.id} className="bom-row text-text-secondary">
+                        <td className="p-3 font-semibold text-text-primary">{b.leave_type_name}</td>
+                        <td className="p-3 text-center tabular-nums">{b.year}</td>
+                        <td className="p-3 text-center tabular-nums">{b.total_days}</td>
+                        <td className="p-3 text-center tabular-nums text-[var(--warning-text)] font-semibold">{b.used_days}</td>
+                        <td className="p-3 text-center tabular-nums text-[var(--success-text)] font-semibold">{b.remaining_days}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -396,27 +390,27 @@ export default function LeavePage() {
       >
         <form onSubmit={handleReject} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1.5">Provide Reason/Remark for Rejection *</label>
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Reason/Remark for Rejection *</label>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-3 text-text-primary focus:outline-none focus:border-accent-primary h-24 text-xs"
+              className="field h-24"
               placeholder="E.g., Operational requirements or insufficient staff coverage"
               required
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setShowRejectModal(false)}
-              className="px-4 py-2 bg-bg-secondary border border-border-color hover:bg-bg-hover rounded-xl text-text-secondary text-sm font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-accent-danger hover:opacity-90 rounded-xl text-white font-semibold text-sm shadow-sm"
+              className="btn-danger"
             >
               Confirm Rejection
             </button>

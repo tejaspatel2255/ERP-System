@@ -8,10 +8,7 @@ export const ThemeProvider = ({ children }) => {
     if (saved === 'dark' || saved === 'light') {
       return saved;
     }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'dark'; // Industrial dark default if un-specified
+    return 'light';
   });
 
   useEffect(() => {

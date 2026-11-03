@@ -7,6 +7,15 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)'],
+        display: ['var(--font-sans)'],
+        mono: ['var(--font-sans)'],
+        code: ['var(--font-code)'],
+      },
+      borderRadius: {
+        xs: '4px',
+      },
       colors: {
         'bg-primary': 'var(--bg-primary)',
         'bg-secondary': 'var(--bg-secondary)',
@@ -23,6 +32,10 @@ export default {
         'text-secondary': 'var(--text-secondary)',
         'text-muted': 'var(--text-muted)',
         'border-color': 'var(--border-color)',
+        'border-input': 'var(--border-input)',
+        'shell-bg': 'var(--shell-bg)',
+        'shell-text': 'var(--shell-text)',
+        'shell-accent': 'var(--shell-accent)',
         
         // Map blue default for automatic backwards compatibility
         blue: {
@@ -33,6 +46,8 @@ export default {
       boxShadow: {
         'brand': 'var(--shadow)',
         'modal': 'var(--shadow-modal)',
+        '2xs': '0 1px 2px rgba(16,24,40,.05)',
+        'press': 'none',
       }
     },
   },
@@ -40,4 +55,3 @@ export default {
     require("@tailwindcss/forms"),
   ],
 }
-

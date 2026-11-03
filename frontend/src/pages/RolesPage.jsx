@@ -277,10 +277,10 @@ const RolesPage = () => {
         if (editingRoleId === item.id) {
           const isSaving = savingRoleId === item.id;
           return (
-            <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+            <div className="flex items-center gap-1.5 animate-fadeIn">
               <input
                 type="text"
-                className="rounded-lg border border-blue-500 dark:border-blue-500 bg-white dark:bg-slate-950 px-3 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-48 font-medium shadow-xs"
+                className="field py-1 px-2.5 text-xs w-48 font-medium"
                 value={editingRoleName}
                 onChange={(e) => setEditingRoleName(e.target.value)}
                 onKeyDown={(e) => {
@@ -298,33 +298,33 @@ const RolesPage = () => {
                 type="button"
                 onClick={() => handleUpdateRoleSubmit(item.id)}
                 disabled={isSaving}
-                className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="btn btn-primary btn-sm btn-icon"
                 title="Save role name"
                 aria-label="Save role name"
               >
-                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
               </button>
               <button
                 type="button"
                 onClick={() => setEditingRoleId(null)}
                 disabled={isSaving}
-                className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+                className="btn btn-secondary btn-sm btn-icon"
                 title="Cancel edit"
                 aria-label="Cancel edit"
               >
-                <X size={14} />
+                <X size={13} />
               </button>
             </div>
           );
         }
-        return <span className="font-semibold text-slate-900 dark:text-white">{item.name}</span>;
+        return <span className="font-semibold text-text-primary">{item.name}</span>;
       }
     },
     {
       key: 'user_count',
       label: 'Assigned Users Count',
       render: (item) => (
-        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+        <span className="tb-cell text-[11px] px-2 py-0.5 rounded font-mono font-medium">
           {item.user_count || 0} users
         </span>
       )
@@ -333,14 +333,14 @@ const RolesPage = () => {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5">
           {hasPermission('auth', 'edit') && (
             <button
               onClick={() => handleEditPermissions(item)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
               title="Configure permissions matrix for this role"
             >
-              <Shield size={14} />
+              <Shield size={13} />
               <span>Configure Permissions</span>
             </button>
           )}
@@ -350,21 +350,21 @@ const RolesPage = () => {
                 setEditingRoleId(item.id);
                 setEditingRoleName(item.name);
               }}
-              className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="btn btn-ghost btn-sm btn-icon"
               title="Rename role"
               aria-label="Rename role"
             >
-              <Pencil size={14} />
+              <Pencil size={13} />
             </button>
           )}
           {hasPermission('auth', 'delete') && item.name !== 'Admin' && (
             <button
               onClick={() => handleDeleteRole(item.id)}
-              className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="btn btn-danger btn-sm btn-icon"
               title="Delete role"
               aria-label="Delete role"
             >
-              <Trash2 size={14} />
+              <Trash2 size={13} />
             </button>
           )}
         </div>
@@ -373,7 +373,7 @@ const RolesPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       <PageHeader
         title="Roles & Permissions"
         description="Define system roles and configure granularity of access permissions across modules."
@@ -381,9 +381,9 @@ const RolesPage = () => {
           hasPermission('auth', 'create') && (
             <button
               onClick={() => setIsRoleModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="btn btn-primary"
             >
-              Create New Role
+              <Plus className="w-4 h-4 mr-1.5" /> Create New Role
             </button>
           )
         }
@@ -394,38 +394,38 @@ const RolesPage = () => {
 
       {/* DEPARTMENTS MANAGEMENT SECTION */}
       {hasPermission('auth', 'create') && (
-        <div className="mt-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 animate-in fade-in duration-300">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800">
+        <div className="sheet p-5 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-color">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
-                <Building2 size={20} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--info-bg)] text-[var(--info-text)]">
+                <Building2 size={18} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Organization Departments</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">View and manage organizational structure departments.</p>
+                <h3 className="text-sm font-semibold text-text-primary">Organization Departments</h3>
+                <p className="text-xs text-text-secondary">View and manage organizational structure departments.</p>
               </div>
             </div>
             <form onSubmit={handleCreateDeptSubmit} className="flex items-center gap-2 w-full md:w-auto">
               <input
                 type="text"
                 placeholder="New Department Name"
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full md:w-64 shadow-xs"
+                className="field w-full md:w-64"
                 value={newDeptName}
                 onChange={(e) => setNewDeptName(e.target.value)}
               />
               <button
                 type="submit"
                 disabled={deptLoading}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="btn btn-primary btn-sm whitespace-nowrap"
               >
-                {deptLoading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                {deptLoading ? <Loader2 size={14} className="animate-spin mr-1" /> : <Plus size={14} className="mr-1" />}
                 <span>{deptLoading ? 'Adding...' : 'Add Department'}</span>
               </button>
             </form>
           </div>
 
           {departments.length === 0 ? (
-            <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="py-8 text-center text-xs text-text-muted">
               No departments defined yet — add one above.
             </div>
           ) : (
@@ -436,11 +436,11 @@ const RolesPage = () => {
                   return (
                     <div
                       key={dept.id}
-                      className="flex items-center justify-between gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 shadow-xs animate-in fade-in duration-150"
+                      className="flex items-center justify-between gap-2 p-2.5 rounded bg-bg-secondary border border-accent-primary animate-fadeIn"
                     >
                       <input
                         type="text"
-                        className="rounded-lg border border-blue-500 bg-white dark:bg-slate-950 px-2.5 py-1 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full"
+                        className="field py-1 px-2 text-xs font-medium w-full"
                         value={editingDeptName}
                         onChange={(e) => setEditingDeptName(e.target.value)}
                         onKeyDown={(e) => {
@@ -459,21 +459,21 @@ const RolesPage = () => {
                           type="button"
                           onClick={() => handleUpdateDeptSubmit(dept.id)}
                           disabled={isSaving}
-                          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="btn btn-primary btn-sm btn-icon"
                           title="Save department name"
                           aria-label="Save department name"
                         >
-                          {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                          {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingDeptId(null)}
                           disabled={isSaving}
-                          className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+                          className="btn btn-secondary btn-sm btn-icon"
                           title="Cancel edit"
                           aria-label="Cancel edit"
                         >
-                          <X size={13} />
+                          <X size={12} />
                         </button>
                       </div>
                     </div>
@@ -483,11 +483,11 @@ const RolesPage = () => {
                 return (
                   <div
                     key={dept.id}
-                    className="group flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-slate-800/40 transition-all shadow-xs"
+                    className="group flex items-center justify-between p-3 rounded bg-bg-secondary border border-border-color hover:border-text-muted transition-colors"
                   >
-                    <div className="flex items-center gap-2.5 truncate pr-2">
-                      <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    <div className="flex items-center gap-2 truncate pr-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent-primary shrink-0" />
+                      <span className="text-xs font-medium text-text-primary truncate">
                         {dept.name}
                       </span>
                     </div>
@@ -500,22 +500,22 @@ const RolesPage = () => {
                             setEditingDeptId(dept.id);
                             setEditingDeptName(dept.name);
                           }}
-                          className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="btn btn-ghost btn-xs btn-icon"
                           title="Rename department"
                           aria-label="Rename department"
                         >
-                          <Pencil size={13} />
+                          <Pencil size={12} />
                         </button>
                       )}
                       {hasPermission('auth', 'delete') && (
                         <button
                           type="button"
                           onClick={() => handleDeleteDept(dept.id)}
-                          className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                          className="btn btn-ghost btn-xs btn-icon text-[var(--danger-rail)] hover:bg-[var(--danger-soft)]"
                           title="Delete department"
                           aria-label="Delete department"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={12} />
                         </button>
                       )}
                     </div>
@@ -531,30 +531,30 @@ const RolesPage = () => {
       <Modal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} title="Create New Role">
         <form onSubmit={handleCreateRoleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="field-label block mb-1">
               Role Name
             </label>
             <input
               type="text"
               required
               placeholder="e.g. Sales Executive, QC Analyst"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field"
               value={newRoleName}
               onChange={(e) => setNewRoleName(e.target.value)}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsRoleModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary"
             >
               Create Role
             </button>
@@ -570,43 +570,44 @@ const RolesPage = () => {
         size="lg"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-text-secondary">
             Select the checkmarks at intersections to grant permissions to the role. Click save details to apply changes.
           </p>
 
-          <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm">
-            <table className="w-full text-left border-collapse min-w-[600px]">
+          <div className="sheet overflow-x-auto">
+            <table className="bom w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <tr>
+                  <th>
                     Module / Feature
                   </th>
                   {ACTIONS.map(action => (
                     <th 
                       key={action.key} 
-                      className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400"
+                      className="text-center"
                     >
                       {action.label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody>
                 {MODULES.map(module => (
                   <tr 
                     key={module.key}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                    className="bom-row"
                   >
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <td className="font-medium text-text-primary">
                       {module.label}
                     </td>
                     {ACTIONS.map(action => {
                       const isChecked = !!matrixState[`${module.key}:${action.key}`];
                       return (
-                        <td key={action.key} className="px-6 py-4 text-center">
+                        <td key={action.key} className="text-center">
                           <input
                             type="checkbox"
-                            className="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            style={{ accentColor: 'var(--accent-primary)' }}
+                            className="h-4 w-4 rounded border-border-color cursor-pointer"
                             checked={isChecked}
                             onChange={() => handleMatrixToggle(module.key, action.key)}
                           />
@@ -619,17 +620,17 @@ const RolesPage = () => {
             </table>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsPermModalOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="btn btn-secondary"
             >
               Discard Changes
             </button>
             <button
               onClick={handleSavePermissions}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary"
             >
               Save Permission Matrix
             </button>

@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getVendorInvoices, createVendorInvoice, updateVendorInvoiceStatus, getPurchaseOrders, getVendors } from '../../api/purchaseApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -68,11 +70,10 @@ const VendorInvoicesPage = () => {
       try {
         const [vendRes, poRes] = await Promise.all([
           getVendors({ page: 1, limit: 100 }),
-          getPurchaseOrders({ status: 'Ordered', limit: 100 }) // Only Ordered/Approved POs can be billed
+          getPurchaseOrders({ status: 'Ordered', limit: 100 })
         ]);
         if (vendRes.success) setVendors(vendRes.vendors);
         if (poRes.success) {
-          // Filter to make sure PO is Approved
           const approved = poRes.orders.filter(po => po.approval_status === 'Approved');
           setApprovedPOs(approved);
         }
@@ -119,9 +120,9 @@ const VendorInvoicesPage = () => {
       if (res.success) {
         if (res.hasWarning) {
           toast((t) => (
-            <span className="text-orange-700 font-semibold text-xs flex flex-col gap-1">
-              ⚠️ Warning: {res.warningMessage}
-              <button onClick={() => toast.dismiss(t.id)} className="text-right text-xs text-slate-500 font-semibold underline">Dismiss</button>
+            <span className="text-[var(--warning-text)] font-medium text-xs flex flex-col gap-1">
+              Warning: {res.warningMessage}
+              <button onClick={() => toast.dismiss(t.id)} className="text-right text-xs underline">Dismiss</button>
             </span>
           ), { duration: 6000 });
         } else {
@@ -151,21 +152,28 @@ const VendorInvoicesPage = () => {
 
   // Columns Configuration
   const columns = [
-    { key: 'invoice_no', label: 'Bill Invoice No' },
+    {
+      key: 'invoice_no',
+      label: 'Bill invoice no',
+      render: (item) => <span className="stamp">{item.invoice_no}</span>
+    },
     { key: 'vendor_name', label: 'Supplier' },
-    { key: 'po_no', label: 'PO Reference', render: (item) => item.po_no || 'N/A' },
-    { key: 'invoice_date', label: 'Billing Date', render: (item) => formatDate(item.invoice_date) },
-    { key: 'amount', label: 'Billed Amount', render: (item) => formatINR(item.amount) },
+    {
+      key: 'po_no',
+      label: 'PO reference',
+      render: (item) => item.po_no ? <span className="stamp">{item.po_no}</span> : '—'
+    },
+    { key: 'invoice_date', label: 'Billing date', render: (item) => formatDate(item.invoice_date) },
+    {
+      key: 'amount',
+      label: 'Billed amount',
+      isNumeric: true,
+      render: (item) => formatINR(item.amount)
+    },
     {
       key: 'status',
       label: 'Status',
-      render: (item) => (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-          item.status === 'Paid' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
-        }`}>
-          {item.status}
-        </span>
-      )
+      render: (item) => <StatusBadge status={item.status} />
     },
     {
       key: 'actions',
@@ -175,7 +183,7 @@ const VendorInvoicesPage = () => {
           {hasPermission('purchase', 'edit') && (
             <button
               onClick={() => handleToggleStatus(item)}
-              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost btn-sm"
             >
               Mark as {item.status === 'Paid' ? 'Unpaid' : 'Paid'}
             </button>
@@ -186,64 +194,67 @@ const VendorInvoicesPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Vendor Bills (Invoices)</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Record incoming invoices from suppliers, map billing to POs, and manage payment states.</p>
-        </div>
-
-        {hasPermission('purchase', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Record Vendor Invoice
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Vendor invoices"
+        description="Record incoming invoices from suppliers, map billing to POs, and manage payment states."
+        actions={
+          hasPermission('purchase', 'create') ? (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary"
+            >
+              Record vendor invoice
+            </button>
+          ) : null
+        }
+      />
 
       {/* Filter toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div>
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="w-48">
+          <label className="field-label">Supplier</label>
           <select
             value={selectedVendor}
             onChange={(e) => { setSelectedVendor(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           >
-            <option value="">All Suppliers</option>
+            <option value="">All suppliers</option>
             {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
           </select>
         </div>
 
-        <div>
+        <div className="w-48">
+          <label className="field-label">Status</label>
           <select
             value={selectedStatus}
             onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           >
-            <option value="">All Statuses</option>
+            <option value="">All statuses</option>
             <option value="Unpaid">Unpaid</option>
             <option value="Paid">Paid</option>
           </select>
         </div>
 
-        <div>
+        <div className="w-40">
+          <label className="field-label">Start date</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           />
         </div>
 
-        <div>
+        <div className="w-40">
+          <label className="field-label">End date</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-            className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 px-4 text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none"
+            className="field"
           />
         </div>
       </div>
@@ -252,17 +263,21 @@ const VendorInvoicesPage = () => {
       <Table columns={columns} data={invoices} loading={loading} emptyMessage="No vendor bills recorded." />
 
       {/* CREATE INVOICE FORM MODAL */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Record Supplier Invoice (Bill)">
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title="Record supplier invoice (Bill)"
+      >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Purchase Order *</label>
+            <label className="field-label">Select purchase order *</label>
             <select
               required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+              className="field"
               value={formData.po_id}
               onChange={handlePoSelection}
             >
-              <option value="" disabled>Select Approved PO</option>
+              <option value="" disabled>Select approved PO</option>
               {approvedPOs.map(po => (
                 <option key={po.id} value={po.id}>{po.po_no} ({po.vendor_name}) - {formatINR(po.total_amount)}</option>
               ))}
@@ -270,35 +285,35 @@ const VendorInvoicesPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Vendor's Invoice No *</label>
+            <label className="field-label">Vendor invoice no *</label>
             <input
               type="text"
               required
               placeholder="e.g. INV-9876"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field"
               value={formData.invoice_no}
               onChange={(e) => setFormData(prev => ({ ...prev, invoice_no: e.target.value }))}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Billing Date *</label>
+            <label className="field-label">Billing date *</label>
             <input
               type="date"
               required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+              className="field"
               value={formData.invoice_date}
               onChange={(e) => setFormData(prev => ({ ...prev, invoice_date: e.target.value }))}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Billed Amount (INR) *</label>
+            <label className="field-label">Billed amount (INR) *</label>
             <input
               type="number"
               step="0.01"
               required
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="field"
               value={formData.amount}
               onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
             />
@@ -306,17 +321,17 @@ const VendorInvoicesPage = () => {
 
           {/* Amount comparison box */}
           {selectedPoDetails && (
-            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 space-y-2 text-xs">
+            <div className="sheet p-3.5 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-500">Linked PO Reference Value:</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{formatINR(selectedPoDetails.total_amount)}</span>
+                <span className="text-text-secondary">Linked PO reference value:</span>
+                <span className="font-semibold text-text-primary tabular-nums">{formatINR(selectedPoDetails.total_amount)}</span>
               </div>
               
               {formData.amount && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Billed Amount entered:</span>
-                    <span className="font-semibold text-blue-650">{formatINR(formData.amount)}</span>
+                    <span className="text-text-secondary">Billed amount entered:</span>
+                    <span className="font-semibold text-accent-primary tabular-nums">{formatINR(formData.amount)}</span>
                   </div>
                   
                   {/* Variance calculations */}
@@ -327,20 +342,20 @@ const VendorInvoicesPage = () => {
                     
                     if (percent > 110) {
                       return (
-                        <div className="p-2.5 rounded bg-red-50 text-red-650 font-semibold border border-red-200">
-                          🚫 Amount exceeds PO total by { (percent - 100).toFixed(1) }%. The server will block submission (Limit: 110%).
+                        <div className="p-2 rounded border border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)] font-medium">
+                          Amount exceeds PO total by {(percent - 100).toFixed(1)}%. The server will block submission (Limit: 110%).
                         </div>
                       );
                     } else if (percent > 105) {
                       return (
-                        <div className="p-2.5 rounded bg-orange-50 text-orange-700 font-semibold border border-orange-200">
-                          ⚠️ Amount exceeds PO total by { (percent - 100).toFixed(1) }%. A warning flag will be generated.
+                        <div className="p-2 rounded border border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning-text)] font-medium">
+                          Amount exceeds PO total by {(percent - 100).toFixed(1)}%. A warning flag will be generated.
                         </div>
                       );
                     } else {
                       return (
-                        <div className="text-green-600 font-medium">
-                          ✓ Amount is within acceptable tolerance boundaries ({ percent.toFixed(1) }%).
+                        <div className="text-[var(--success-text)] font-medium">
+                          ✓ Amount is within acceptable tolerance boundaries ({percent.toFixed(1)}%).
                         </div>
                       );
                     }
@@ -350,19 +365,19 @@ const VendorInvoicesPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              className="btn"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary"
             >
-              Record Bill
+              Record bill
             </button>
           </div>
         </form>

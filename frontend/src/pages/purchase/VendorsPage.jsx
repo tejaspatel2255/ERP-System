@@ -4,6 +4,8 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import SearchBar from '../../components/SearchBar';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getVendors, createVendor, updateVendor, deleteVendor, getVendorById } from '../../api/purchaseApi';
 import { formatINR } from '../../utils/formatCurrency';
@@ -149,15 +151,16 @@ const VendorsPage = () => {
 
   // Column definitions
   const columns = [
-    { key: 'name', label: 'Vendor Name' },
-    { key: 'email', label: 'Email', render: (item) => item.email || 'N/A' },
-    { key: 'phone', label: 'Phone', render: (item) => item.phone || 'N/A' },
-    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || 'N/A' },
+    { key: 'name', label: 'Vendor name' },
+    { key: 'email', label: 'Email', render: (item) => item.email || '—' },
+    { key: 'phone', label: 'Phone', render: (item) => item.phone || '—' },
+    { key: 'gstin', label: 'GSTIN', render: (item) => item.gstin || '—' },
     { key: 'payment_terms', label: 'Terms', render: (item) => item.payment_terms || 'Net 30' },
-    { key: 'total_pos', label: 'Total POs', render: (item) => item.total_pos || 0 },
+    { key: 'total_pos', label: 'Total POs', isNumeric: true, render: (item) => item.total_pos || 0 },
     {
       key: 'total_spend',
-      label: 'Total Spend',
+      label: 'Total spend',
+      isNumeric: true,
       render: (item) => formatINR(item.total_spend)
     },
     {
@@ -167,14 +170,14 @@ const VendorsPage = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleViewVendor(item)}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 font-semibold text-xs bg-slate-50 dark:bg-slate-900/10 px-2 py-1 rounded-md"
+            className="btn btn-ghost btn-sm"
           >
             History
           </button>
           {hasPermission('purchase', 'edit') && (
             <button
               onClick={() => handleOpenEdit(item)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/10 px-2 py-1 rounded-md"
+              className="btn btn-ghost btn-sm"
             >
               Edit
             </button>
@@ -182,7 +185,7 @@ const VendorsPage = () => {
           {hasPermission('purchase', 'delete') && (
             <button
               onClick={() => handleDelete(item)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md"
+              className="btn btn-danger btn-sm"
             >
               Delete
             </button>
@@ -193,28 +196,31 @@ const VendorsPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Vendor Directory</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage supplier profiles, payment terms, and monitor total spend volume.</p>
-        </div>
-
-        {hasPermission('purchase', 'create') && (
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
-          >
-            Create Vendor
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Vendors"
+        description="Manage supplier profiles, payment terms, and monitor total spend volume."
+        actions={
+          hasPermission('purchase', 'create') ? (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary"
+            >
+              Create vendor
+            </button>
+          ) : null
+        }
+      />
 
       {/* Filter and search bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1">
-          <SearchBar value={search} onChange={(val) => { setSearch(val); setPage(1); }} placeholder="Search vendors by name, email, or GSTIN..." />
+      <div className="sheet p-3 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[260px] max-w-md">
+          <SearchBar
+            value={search}
+            onChange={(val) => { setSearch(val); setPage(1); }}
+            placeholder="Search vendors by name, email, or GSTIN…"
+          />
         </div>
       </div>
 
@@ -222,76 +228,78 @@ const VendorsPage = () => {
       <Table columns={columns} data={vendors} loading={loading} emptyMessage="No vendors found." />
 
       {/* Pagination */}
-      <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-      </div>
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {/* CREATE & EDIT FORM MODAL */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingVendor ? 'Modify Vendor Profile' : 'Create Vendor Profile'}>
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingVendor ? 'Edit vendor' : 'Create vendor'}
+      >
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Supplier / Vendor Name *</label>
+              <label className="field-label">Supplier / vendor name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.name}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">GSTIN (Optional)</label>
+              <label className="field-label">GSTIN (Optional)</label>
               <input
                 type="text"
                 name="gstin"
                 placeholder="15-digit code"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.gstin}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <label className="field-label">Email address</label>
               <input
                 type="email"
                 name="email"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+              <label className="field-label">Contact phone</label>
               <input
                 type="text"
                 name="phone"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field"
                 value={formData.phone}
                 onChange={handleInputChange}
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Address Details</label>
+            <div className="sm:col-span-2">
+              <label className="field-label">Address details</label>
               <textarea
                 name="address"
                 rows={2}
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                className="field"
                 value={formData.address}
                 onChange={handleInputChange}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Terms</label>
+              <label className="field-label">Payment terms</label>
               <select
                 name="payment_terms"
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none"
+                className="field"
                 value={formData.payment_terms}
                 onChange={handleInputChange}
               >
@@ -304,47 +312,52 @@ const VendorsPage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              className="btn"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="btn btn-primary"
             >
-              Save Vendor
+              Save vendor
             </button>
           </div>
         </form>
       </Modal>
 
       {/* VIEW VENDOR HISTORY DOSSIER */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} title="Vendor Profile & Ledger Dossier" size="lg">
+      <Modal
+        isOpen={isViewOpen}
+        onClose={() => setIsViewOpen(false)}
+        title="Vendor details"
+        size="lg"
+      >
         {viewingVendor && (
           <div className="space-y-6">
             {/* Summary details card */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-800">
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">Vendor Info</h4>
-                <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">{viewingVendor.name}</p>
-                <p className="text-xs text-slate-500">{viewingVendor.email || 'No email'}</p>
-                <p className="text-xs text-slate-500">{viewingVendor.phone || 'No phone'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Vendor info</h4>
+                <p className="text-sm font-semibold text-text-primary">{viewingVendor.name}</p>
+                <p className="text-xs text-text-secondary">{viewingVendor.email || 'No email'}</p>
+                <p className="text-xs text-text-secondary">{viewingVendor.phone || 'No phone'}</p>
               </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">GSTIN & Address</h4>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">GST: {viewingVendor.gstin || 'Unregistered'}</p>
-                <p className="text-xs text-slate-500 max-w-[200px] truncate">{viewingVendor.address || 'No Address'}</p>
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Tax & location</h4>
+                <p className="text-xs text-text-secondary"><span className="font-medium text-text-primary">GST:</span> {viewingVendor.gstin || 'Unregistered'}</p>
+                <p className="text-xs text-text-secondary line-clamp-2">{viewingVendor.address || 'No address'}</p>
               </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-400">Credit Terms & Balances</h4>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Terms: <span className="font-semibold">{viewingVendor.payment_terms || 'Net 30'}</span></p>
-                <p className="text-sm text-slate-650">
-                  Outstanding Due:{' '}
-                  <span className={`font-semibold ${viewingHistory.outstanding > 0 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
+              <div className="sheet p-3.5 space-y-1">
+                <h4 className="text-xs font-semibold text-text-muted">Terms & balance</h4>
+                <p className="text-xs text-text-secondary">Terms: <span className="font-semibold text-text-primary">{viewingVendor.payment_terms || 'Net 30'}</span></p>
+                <p className="text-xs text-text-secondary">
+                  Outstanding due:{' '}
+                  <span className={`font-semibold tabular-nums ${viewingHistory.outstanding > 0 ? 'text-[var(--danger-text)]' : 'text-[var(--success-text)]'}`}>
                     {formatINR(viewingHistory.outstanding)}
                   </span>
                 </p>
@@ -353,36 +366,26 @@ const VendorsPage = () => {
 
             {/* History ledgers */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Transaction Records</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Transaction records</h3>
               
               {historyLoading ? (
-                <div className="py-12 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                </div>
+                <div className="h-32 bg-bg-hover animate-pulse rounded" />
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Purchase Orders sub-table */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Purchase Orders Issued</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Purchase orders issued</h4>
                     <Table
                       columns={[
-                        { key: 'po_no', label: 'PO No' },
-                        { key: 'po_date', label: 'Order Date', render: (item) => formatDate(item.po_date) },
+                        { key: 'po_no', label: 'PO no', render: (item) => <span className="stamp">{item.po_no}</span> },
+                        { key: 'po_date', label: 'Order date', render: (item) => formatDate(item.po_date) },
                         {
                           key: 'approval_status',
                           label: 'Approval',
-                          render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              item.approval_status === 'Approved' ? 'bg-green-155 text-green-800' :
-                              item.approval_status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-orange-100 text-orange-850'
-                            }`}>
-                              {item.approval_status}
-                            </span>
-                          )
+                          render: (item) => <StatusBadge status={item.approval_status} />
                         },
-                        { key: 'status', label: 'Delivery Status' },
-                        { key: 'total_amount', label: 'PO Total', render: (item) => formatINR(item.total_amount) }
+                        { key: 'status', label: 'Delivery status', render: (item) => <StatusBadge status={item.status} /> },
+                        { key: 'total_amount', label: 'PO total', isNumeric: true, render: (item) => formatINR(item.total_amount) }
                       ]}
                       data={viewingHistory.pos}
                       emptyMessage="No purchase orders created for this supplier."
@@ -391,22 +394,16 @@ const VendorsPage = () => {
 
                   {/* Vendor Invoices sub-table */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Supplier Invoices (Bills)</h4>
+                    <h4 className="text-xs font-semibold text-text-secondary mb-2">Supplier invoices (Bills)</h4>
                     <Table
                       columns={[
-                        { key: 'invoice_no', label: 'Invoice Bill No' },
-                        { key: 'invoice_date', label: 'Bill Date', render: (item) => formatDate(item.invoice_date) },
-                        { key: 'amount', label: 'Billed Amount', render: (item) => formatINR(item.amount) },
+                        { key: 'invoice_no', label: 'Invoice bill no', render: (item) => <span className="stamp">{item.invoice_no}</span> },
+                        { key: 'invoice_date', label: 'Bill date', render: (item) => formatDate(item.invoice_date) },
+                        { key: 'amount', label: 'Billed amount', isNumeric: true, render: (item) => formatINR(item.amount) },
                         {
                           key: 'status',
                           label: 'Payment',
-                          render: (item) => (
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              item.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-850'
-                            }`}>
-                              {item.status}
-                            </span>
-                          )
+                          render: (item) => <StatusBadge status={item.status} />
                         }
                       ]}
                       data={viewingHistory.invoices}
@@ -417,13 +414,13 @@ const VendorsPage = () => {
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-border-color">
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}
-                className="rounded-lg border border-slate-350 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="btn"
               >
-                Close Ledger
+                Close
               </button>
             </div>
           </div>

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import { useRole } from '../../context/RoleContext';
 import { getFinalQC, approveFinalQC } from '../../api/qcApi';
 import { getWorkOrders } from '../../api/productionApi';
@@ -50,26 +52,25 @@ const FinalQCPage = () => {
   };
 
   const columns = [
-    { key: 'wo_no', label: 'Work Order' },
+    { key: 'wo_no', label: 'Work Order', render: i => <span className="stamp">{i.wo_no}</span> },
     { key: 'inspector_name', label: 'Inspector', render: i => i.inspector_name || '—' },
-    { key: 'inspection_date', label: 'Date', render: i => formatDate(i.inspection_date) },
+    { key: 'inspection_date', label: 'Date', render: i => <span className="tabular-nums">{formatDate(i.inspection_date)}</span> },
     { key: 'result', label: 'Final Result', render: i => {
-      const cls = i.wo_qc_status === 'Passed' ? 'bg-green-100 text-green-800 border-green-200' : i.wo_qc_status === 'Failed' ? 'bg-red-100 text-red-800 border-red-200 font-semibold' : 'bg-amber-100 text-amber-800 border-amber-200';
-      const label = i.wo_qc_status === 'Pending' ? 'Pending stock update' : i.result;
-      return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cls}`}>{label}</span>;
+      const status = i.wo_qc_status === 'Passed' ? 'Pass' : i.wo_qc_status === 'Failed' ? 'Fail' : 'Pending';
+      return <StatusBadge status={status} />;
     }},
     { key: 'notes', label: 'Notes', render: i => i.notes || '—' }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Final Product Inspection (QC)</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Perform final inspections on completed Work Orders. Approval is required prior to dispatch release.</p>
-        </div>
-        {hasPermission('qc', 'create') && <button onClick={openCreate} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Log Final QC</button>}
-      </div>
+    <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-fadeIn">
+      <PageHeader
+        title="Final Product Inspection (QC)"
+        subtitle="Perform final inspections on completed Work Orders. Approval is required prior to dispatch release."
+        actions={
+          hasPermission('qc', 'create') && <button onClick={openCreate} className="btn-primary">Log Final QC</button>
+        }
+      />
 
       <Table columns={columns} data={records} loading={loading} emptyMessage="No final product inspections logged." />
 
@@ -77,26 +78,26 @@ const FinalQCPage = () => {
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Log Final Product QC">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Completed Work Order *</label>
-            <select value={form.work_order_id} onChange={e => setForm(p => ({ ...p, work_order_id: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Completed Work Order *</label>
+            <select value={form.work_order_id} onChange={e => setForm(p => ({ ...p, work_order_id: e.target.value }))} className="field">
               <option value="" disabled>Select Work Order</option>
               {wos.map(w => <option key={w.id} value={w.id}>{w.wo_no} (item: {w.finished_item_name})</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Result *</label>
-            <select value={form.result} onChange={e => setForm(p => ({ ...p, result: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Result *</label>
+            <select value={form.result} onChange={e => setForm(p => ({ ...p, result: e.target.value }))} className="field">
               <option value="Pass">Pass (Add to stock)</option>
               <option value="Fail">Fail (Block release)</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Inspector Notes</label>
-            <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none" rows={2} placeholder="Verification checklist outcomes, final testing parameters..." />
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Inspector Notes</label>
+            <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="field" rows={2} placeholder="Verification checklist outcomes, final testing parameters..." />
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Submit QC Log</button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            <button type="button" onClick={() => setIsFormOpen(false)} className="btn-secondary">Cancel</button>
+            <button type="submit" className={form.result === 'Pass' ? 'btn-primary' : 'btn-danger'}>Submit QC Log</button>
           </div>
         </form>
       </Modal>

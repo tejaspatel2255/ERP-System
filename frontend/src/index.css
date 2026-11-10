@@ -129,8 +129,103 @@
   }
 
   @media print {
-    .no-print { display: none !important; }
-    body { background: #fff !important; color: #000 !important; }
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+
+    html, body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      font-size: 11pt !important;
+    }
+
+    /* Universal hide for non-printable UI chrome */
+    .no-print,
+    .topbar,
+    nav,
+    aside,
+    header {
+      display: none !important;
+    }
+
+    /* When printing from a modal dialog, completely hide the background app tree */
+    body:has(div[role="dialog"]) #root {
+      display: none !important;
+    }
+
+    /* Remove backdrop film and modal title/action chrome */
+    .fixed.inset-0.bg-black\/50,
+    div[role="dialog"] > div:first-child:has(button) {
+      display: none !important;
+    }
+
+    /* Flatten modal portal wrapper to flow seamlessly as document on paper */
+    .fixed.inset-0 {
+      position: static !important;
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: visible !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    div[role="dialog"] {
+      position: static !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: none !important;
+      height: auto !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      border-radius: 0 !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      transform: none !important;
+    }
+
+    div[role="dialog"] > div:last-child {
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+
+    /* Ensure printable document container fills full paper width */
+    .printable-document {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+
+    tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
   }
 }
 

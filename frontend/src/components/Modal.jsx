@@ -42,7 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop Overlay */}
       <div 
-        className="fixed inset-0 bg-black/50 transition-opacity duration-200"
+        className="fixed inset-0 bg-black/50 transition-opacity duration-200 no-print"
         onClick={onClose}
       />
 
@@ -55,7 +55,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           aria-modal="true"
         >
           {/* Integrated Header */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border-color shrink-0 select-none">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border-color shrink-0 select-none no-print">
             <h3 className="text-base font-semibold text-text-primary truncate mr-3">
               {title}
             </h3>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { Printer, ExternalLink } from 'lucide-react';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
@@ -242,13 +243,13 @@ const InvoicesPage = () => {
       <Modal
         isOpen={isViewOpen}
         onClose={() => setIsViewOpen(false)}
-        title="Invoice document"
-        size="lg"
+        title="Tax Invoice Document"
+        size="xl"
       >
         {viewingInvoice && (
           <div className="space-y-6">
             {/* Control Bar */}
-            <div className="sheet p-3 flex flex-wrap justify-between items-center gap-2">
+            <div className="sheet p-3 flex flex-wrap justify-between items-center gap-2 no-print">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-semibold text-text-secondary">Actions:</span>
                 {viewingInvoice.status !== 'Paid' && hasPermission('sales', 'create') && (
@@ -268,93 +269,163 @@ const InvoicesPage = () => {
                   </button>
                 )}
               </div>
-              <button
-                onClick={() => window.print()}
-                className="btn btn-ghost btn-sm"
-              >
-                Print PDF
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4" /> Print / Save PDF
+                </button>
+                <a
+                  href={`/print/invoice/${viewingInvoice.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost btn-sm inline-flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Full page
+                </a>
+              </div>
             </div>
 
-            {/* Invoice Printable View (Literal bg-white text-black allowed inside preview) */}
-            <div className="sheet p-6 bg-white text-black space-y-6 print:border-none print:shadow-none print:p-0">
+            {/* Invoice Printable View */}
+            <div className="printable-document bg-white text-slate-900 border border-slate-300 rounded-lg p-6 sm:p-8 shadow-sm print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
               {/* Header */}
-              <div className="flex justify-between items-start border-b border-gray-200 pb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-black">ERP ENTERPRISE</h2>
-                  <p className="text-xs text-gray-500">123 Industrial Area, Phase II, New Delhi, India</p>
-                  <p className="text-xs text-gray-500">GSTIN: 07AAAAA1111A1Z0</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start pb-5 border-b-2 border-slate-800 gap-4">
+                <div className="flex items-start gap-3.5">
+                  <img
+                    src="/logo.svg"
+                    alt="ERP Nexus Logo"
+                    className="h-12 w-12 object-contain rounded mt-0.5"
+                  />
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 uppercase">ERP NEXUS ENTERPRISE LTD.</h2>
+                    <p className="text-xs text-slate-600 mt-0.5 max-w-md leading-relaxed">123 Industrial Area, Phase II, New Delhi - 110020, India</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-600 mt-1 font-mono">
+                      <span><strong className="text-slate-800 font-sans font-medium">GSTIN:</strong> 07AAAAA1111A1Z0</span>
+                      <span><strong className="text-slate-800 font-sans font-medium">PAN:</strong> AAAAA1111A</span>
+                      <span><strong className="text-slate-800 font-sans font-medium">State:</strong> Delhi (07)</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <h3 className="text-lg font-semibold text-black">Tax Invoice</h3>
-                  <p className="text-sm font-semibold text-black">{viewingInvoice.invoice_no}</p>
-                  <p className="text-xs text-gray-500">Issue Date: {formatDate(viewingInvoice.invoice_date)}</p>
-                  <p className="text-xs text-red-600 font-semibold">Due Date: {formatDate(viewingInvoice.due_date)}</p>
+
+                <div className="text-left sm:text-right border-2 border-slate-800 rounded bg-slate-50 px-3.5 py-2.5 text-xs min-w-[220px]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Official Document
+                  </div>
+                  <div className="text-base font-bold text-slate-900 tracking-tight">
+                    ORIGINAL TAX INVOICE
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-slate-300 space-y-1">
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Invoice No:</span>
+                      <span className="font-mono font-bold text-slate-900">{viewingInvoice.invoice_no}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Issue Date:</span>
+                      <span className="font-mono text-slate-800">{formatDate(viewingInvoice.invoice_date)}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Due Date:</span>
+                      <span className="font-mono font-semibold text-rose-700">{formatDate(viewingInvoice.due_date)}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Status:</span>
+                      <span className="font-semibold uppercase text-emerald-700">{viewingInvoice.status}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Client and Order Reference */}
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <h4 className="font-semibold text-gray-500 mb-1">Billed To:</h4>
-                  <p className="font-semibold text-black">{viewingInvoice.customer_name}</p>
-                  <p className="text-gray-500">{viewingInvoice.customer_address}</p>
-                  <p className="text-gray-500">GSTIN: {viewingInvoice.customer_gstin || 'N/A'}</p>
-                  <p className="text-gray-500">Phone: {viewingInvoice.customer_phone || 'N/A'}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-5 text-xs">
+                <div className="border border-slate-300 rounded p-3 bg-slate-50/60">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 pb-1.5 border-b border-slate-200">
+                    Billed To / Buyer Details
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-sm font-bold text-slate-900">{viewingInvoice.customer_name}</p>
+                    <p className="text-slate-600 mt-1 leading-relaxed">{viewingInvoice.customer_address}</p>
+                    <div className="mt-2 space-y-0.5 font-mono text-slate-600">
+                      <p><span className="text-slate-500 font-sans">GSTIN:</span> <strong className="text-slate-800">{viewingInvoice.customer_gstin || 'N/A'}</strong></p>
+                      <p><span className="text-slate-500 font-sans">Phone:</span> {viewingInvoice.customer_phone || 'N/A'}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <h4 className="font-semibold text-gray-500 mb-1">Reference:</h4>
-                  <p className="text-gray-600">Sales Order No: <span className="font-semibold text-black">{viewingInvoice.order_no}</span></p>
+
+                <div className="border border-slate-300 rounded p-3 bg-slate-50/60">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 pb-1.5 border-b border-slate-200">
+                    Reference & Supply Details
+                  </div>
+                  <div className="pt-2 space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Sales Order Ref:</span>
+                      <span className="font-mono font-bold text-slate-900">{viewingInvoice.order_no || 'Direct'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Currency:</span>
+                      <span className="font-medium text-slate-800">Indian Rupee (INR - ₹)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Payment Terms:</span>
+                      <span className="font-medium text-slate-800">Due by {formatDate(viewingInvoice.due_date)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Itemized Table */}
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-gray-200 bg-gray-50">
-                    <th className="py-2 px-2 font-semibold text-gray-600">Item</th>
-                    <th className="py-2 px-2 font-semibold text-gray-600 text-center">Qty</th>
-                    <th className="py-2 px-2 font-semibold text-gray-600">Unit Price</th>
-                    <th className="py-2 px-2 font-semibold text-gray-600 text-right">Line Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {viewingItems.map((item, index) => (
-                    <tr key={index}>
-                      <td className="py-2 px-2">
-                        <div className="font-semibold text-black">{item.item_name}</div>
-                        <div className="text-xs text-gray-400">{item.item_code}</div>
-                      </td>
-                      <td className="py-2 px-2 text-center">{parseFloat(item.qty)}</td>
-                      <td className="py-2 px-2">{formatINR(item.unit_price)}</td>
-                      <td className="py-2 px-2 text-right font-semibold text-black">{formatINR(item.line_total)}</td>
+              <div className="my-5 overflow-x-auto border border-slate-300 rounded">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
+                      <th className="py-2 px-2 text-center w-8 border-r border-slate-300">#</th>
+                      <th className="py-2 px-3 text-left border-r border-slate-300">Item Description</th>
+                      <th className="py-2 px-2 text-center w-14 border-r border-slate-300">Qty</th>
+                      <th className="py-2 px-3 text-right w-24 border-r border-slate-300">Unit Price</th>
+                      <th className="py-2 px-3 text-right w-28">Line Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {viewingItems.map((item, index) => (
+                      <tr key={index} className="hover:bg-slate-50/50">
+                        <td className="py-2 px-2 text-center text-slate-500 font-mono border-r border-slate-200">{index + 1}</td>
+                        <td className="py-2 px-3 border-r border-slate-200">
+                          <div className="font-bold text-slate-900">{item.item_name}</div>
+                          {item.item_code && (
+                            <div className="text-[11px] font-mono text-slate-500">Code: {item.item_code}</div>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono font-medium text-slate-800 border-r border-slate-200">{parseFloat(item.qty)}</td>
+                        <td className="py-2 px-3 text-right font-mono text-slate-800 border-r border-slate-200">{formatINR(item.unit_price)}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">{formatINR(item.line_total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Totals Box */}
-              <div className="flex justify-end pt-4 border-t border-gray-200">
-                <div className="text-right text-xs space-y-2 w-64">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Total Amount:</span>
-                    <span className="font-semibold text-black">{formatINR(viewingInvoice.total_amount)}</span>
+              <div className="flex justify-end pt-2">
+                <div className="text-right text-xs space-y-1.5 w-72 border border-slate-300 rounded p-3 bg-slate-50/50">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Invoice Amount:</span>
+                    <span className="font-mono font-semibold text-slate-900">{formatINR(viewingInvoice.total_amount)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-emerald-700">
                     <span>Paid to Date:</span>
-                    <span className="font-semibold text-green-600">{formatINR(viewingInvoice.paid_amount)}</span>
+                    <span className="font-mono font-semibold">{formatINR(viewingInvoice.paid_amount)}</span>
                   </div>
-                  <div className="flex justify-between font-semibold text-sm text-black pt-1.5 border-t border-gray-200">
+                  <div className="flex justify-between font-bold text-sm text-slate-900 pt-2 border-t-2 border-slate-800">
                     <span>Outstanding Due:</span>
-                    <span className="text-red-600">{formatINR(parseFloat(viewingInvoice.total_amount) - parseFloat(viewingInvoice.paid_amount))}</span>
+                    <span className="font-mono text-rose-700">{formatINR(parseFloat(viewingInvoice.total_amount) - parseFloat(viewingInvoice.paid_amount))}</span>
                   </div>
                 </div>
               </div>
 
               {/* Transaction Payments history subtable */}
               {viewingPayments.length > 0 && (
-                <div className="pt-6 border-t border-gray-200 space-y-2">
-                  <h4 className="text-xs font-semibold text-gray-600">Payment History Ledger</h4>
+                <div className="pt-6 border-t border-slate-200 space-y-2 no-print">
+                  <h4 className="text-xs font-semibold text-slate-600">Payment History Ledger</h4>
                   <Table
                     columns={[
                       { key: 'payment_date', label: 'Payment date', render: (item) => formatDate(item.payment_date) },
@@ -370,7 +441,7 @@ const InvoicesPage = () => {
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-border-color">
+            <div className="flex justify-end pt-4 border-t border-border-color no-print">
               <button
                 type="button"
                 onClick={() => setIsViewOpen(false)}

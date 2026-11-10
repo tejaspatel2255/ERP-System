@@ -239,22 +239,38 @@ export const updateDesignTaskStatus = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// GET /api/design/reviews (List pending reviews)
+// GET /api/design/reviews (List pending reviews and history)
 export const getPendingReviews = async (req, res, next) => {
   try {
-    // Return design files/versions that haven't been approved yet
-    const result = await db.query(`
+    // Return design files/versions that haven't been reviewed yet
+    const pendingResult = await db.query(`
       SELECT dv.*, df.title AS design_file_title, df.project_ref, u.name AS uploaded_by_name
       FROM design_versions dv
       JOIN design_files df ON dv.design_file_id = df.id
       LEFT JOIN users u ON dv.uploaded_by = u.id
       WHERE NOT EXISTS (
         SELECT 1 FROM design_reviews dr 
-        WHERE dr.version_id = dv.id AND dr.status = 'Approved'
+        WHERE dr.version_id = dv.id
       )
       ORDER BY dv.uploaded_at ASC
     `);
-    return res.status(200).json({ success: true, pendingReviews: result.rows });
+
+    const historyResult = await db.query(`
+      SELECT dr.*, dv.version_number, df.title AS design_file_title, df.project_ref,
+             u.name AS reviewed_by_name, u2.name AS uploaded_by_name
+      FROM design_reviews dr
+      JOIN design_versions dv ON dr.version_id = dv.id
+      JOIN design_files df ON dr.design_file_id = df.id
+      LEFT JOIN users u ON dr.reviewed_by = u.id
+      LEFT JOIN users u2 ON dv.uploaded_by = u2.id
+      ORDER BY dr.review_date DESC
+    `);
+
+    return res.status(200).json({
+      success: true,
+      pendingReviews: pendingResult.rows,
+      reviewHistory: historyResult.rows
+    });
   } catch (e) { next(e); }
 };
 

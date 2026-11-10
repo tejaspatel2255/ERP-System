@@ -254,7 +254,22 @@ export const getAttendanceSummary = async (req, res, next) => {
       WHERE employee_id = $1 AND to_char(date, 'YYYY-MM') = $2
     `, [empId, formattedMonth]);
 
-    return res.status(200).json({ success: true, summary: result.rows[0] });
+    const summary = result.rows[0] || {};
+    const halfDays = summary.half_day_count || 0;
+    const leaves = summary.leave_count || 0;
+    const leaveDaysDeducted = (leaves * 1.0) + (halfDays * 0.5);
+    const leaveQuota = 20;
+    const remainingLeaves = Math.max(0, leaveQuota - leaveDaysDeducted);
+
+    return res.status(200).json({
+      success: true,
+      summary: {
+        ...summary,
+        leave_quota: leaveQuota,
+        leave_deducted: leaveDaysDeducted,
+        remaining_leaves: remainingLeaves
+      }
+    });
   } catch (e) { next(e); }
 };
 
@@ -454,7 +469,44 @@ export const getLeaveBalance = async (req, res, next) => {
       JOIN leave_types lt ON lb.leave_type_id = lt.id
       WHERE lb.employee_id = $1 AND lb.year = $2
     `, [empId, currentYear]);
-    return res.status(200).json({ success: true, balances: result.rows });
+
+    // Attendance leave deductions: Leave (L) = 1.0, Half Day (H) = 0.5
+    const attRes = await db.query(`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'Leave')::int AS leave_count,
+        COUNT(*) FILTER (WHERE status = 'Half Day')::int AS half_day_count
+      FROM attendance
+      WHERE employee_id = $1 AND EXTRACT(YEAR FROM date) = $2
+    `, [empId, currentYear]);
+
+    const lCount = attRes.rows[0]?.leave_count || 0;
+    const hCount = attRes.rows[0]?.half_day_count || 0;
+    const attDeducted = (lCount * 1.0) + (hCount * 0.5);
+
+    let rows = result.rows;
+    if (rows.length === 0) {
+      rows = [{
+        id: 'standard-annual',
+        employee_id: empId,
+        leave_type_name: 'Annual Leave Quota',
+        year: currentYear,
+        total_days: 20,
+        used_days: attDeducted,
+        remaining_days: Math.max(0, 20 - attDeducted)
+      }];
+    } else {
+      rows = rows.map((r) => {
+        const used = (parseFloat(r.used_days) || 0) + attDeducted;
+        return {
+          ...r,
+          total_days: 20,
+          used_days: used,
+          remaining_days: Math.max(0, 20 - used)
+        };
+      });
+    }
+
+    return res.status(200).json({ success: true, balances: rows });
   } catch (e) { next(e); }
 };
 
@@ -492,7 +544,43 @@ export const getSelfLeaveBalance = async (req, res, next) => {
       WHERE lb.employee_id = $1 AND lb.year = $2
     `, [empId, currentYear]);
 
-    return res.status(200).json({ success: true, balances: result.rows });
+    // Attendance leave deductions: Leave (L) = 1.0, Half Day (H) = 0.5
+    const attRes = await db.query(`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'Leave')::int AS leave_count,
+        COUNT(*) FILTER (WHERE status = 'Half Day')::int AS half_day_count
+      FROM attendance
+      WHERE employee_id = $1 AND EXTRACT(YEAR FROM date) = $2
+    `, [empId, currentYear]);
+
+    const lCount = attRes.rows[0]?.leave_count || 0;
+    const hCount = attRes.rows[0]?.half_day_count || 0;
+    const attDeducted = (lCount * 1.0) + (hCount * 0.5);
+
+    let rows = result.rows;
+    if (rows.length === 0) {
+      rows = [{
+        id: 'standard-annual',
+        employee_id: empId,
+        leave_type_name: 'Annual Leave Quota',
+        year: currentYear,
+        total_days: 20,
+        used_days: attDeducted,
+        remaining_days: Math.max(0, 20 - attDeducted)
+      }];
+    } else {
+      rows = rows.map((r) => {
+        const used = (parseFloat(r.used_days) || 0) + attDeducted;
+        return {
+          ...r,
+          total_days: 20,
+          used_days: used,
+          remaining_days: Math.max(0, 20 - used)
+        };
+      });
+    }
+
+    return res.status(200).json({ success: true, balances: rows });
   } catch (e) { next(e); }
 };
 

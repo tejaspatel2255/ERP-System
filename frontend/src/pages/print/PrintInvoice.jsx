@@ -56,11 +56,14 @@ export default function PrintInvoice() {
 
   const invoice = doc?.invoice;
   const items = doc?.items || [];
+  const payments = doc?.payments || [];
 
   const subtotal = items.reduce((acc, it) => acc + (parseFloat(it.qty || 0) * parseFloat(it.unit_price || 0)), 0);
   const totalDiscount = items.reduce((acc, it) => acc + parseFloat(it.discount || 0), 0);
   const grandTotal = parseFloat(invoice?.total_amount) || 0;
-  const totalTax = Math.max(0, grandTotal - (subtotal - totalDiscount));
+  const paidAmount = parseFloat(invoice?.paid_amount) || 0;
+  const outstandingDue = Math.max(0, grandTotal - paidAmount);
+  const isPaid = invoice?.status === 'Paid' || outstandingDue === 0;
 
   return (
     <div
@@ -264,33 +267,75 @@ export default function PrintInvoice() {
               </div>
             </div>
 
-            {/* Right: Financial Summary Box */}
+            {/* Right: Settlement Summary Box */}
             <div className="border border-slate-300 rounded overflow-hidden text-xs self-start">
               <div className="bg-slate-100 px-3 py-1.5 font-bold text-slate-700 border-b border-slate-300 uppercase tracking-wider text-[10px]">
-                Financial Summary
+                Invoice Settlement Summary
               </div>
               <div className="p-3 space-y-1.5">
                 <div className="flex justify-between text-slate-600">
-                  <span>Taxable Subtotal:</span>
-                  <span className="font-mono">{formatINR(subtotal)}</span>
+                  <span>Invoice Total Amount:</span>
+                  <span className="font-mono font-semibold text-slate-900">{formatINR(grandTotal)}</span>
                 </div>
-                {totalDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
-                    <span>Total Discount:</span>
-                    <span className="font-mono">-{formatINR(totalDiscount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-slate-600">
-                  <span>Total GST / Tax:</span>
-                  <span className="font-mono">{formatINR(totalTax)}</span>
+                <div className="flex justify-between text-emerald-700">
+                  <span>Less: Amount Paid to Date:</span>
+                  <span className="font-mono font-semibold">-{formatINR(paidAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t-2 border-slate-800 text-sm font-bold text-slate-900 bg-slate-50 -mx-3 -mb-3 p-3">
-                  <span className="uppercase tracking-tight">Total Invoice Amount:</span>
-                  <span className="font-mono text-base text-blue-700">{formatINR(grandTotal)}</span>
+                  <span className="uppercase tracking-tight">Outstanding Balance:</span>
+                  <span className={`font-mono text-base ${outstandingDue === 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                    {formatINR(outstandingDue)}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Payment Receipts Ledger - Crisp White Table for Light & Dark mode */}
+          {payments.length > 0 && (
+            <div className="mt-6 pt-5 border-t border-slate-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>Payment Receipts & Settlement Ledger</span>
+                  <span className="text-[10px] font-normal normal-case text-slate-500 font-mono">({payments.length} recorded)</span>
+                </h4>
+                <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Total Received: {formatINR(paidAmount)}
+                </span>
+              </div>
+
+              <div className="overflow-x-auto border border-slate-300 rounded">
+                <table className="w-full text-xs border-collapse bg-white">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
+                      <th className="py-2 px-2 text-center w-8 border-r border-slate-300">#</th>
+                      <th className="py-2 px-3 text-left border-r border-slate-300">Receipt Date</th>
+                      <th className="py-2 px-3 text-left border-r border-slate-300">Payment Mode</th>
+                      <th className="py-2 px-3 text-left border-r border-slate-300">Reference / UTR No</th>
+                      <th className="py-2 px-3 text-left border-r border-slate-300">Remarks / Notes</th>
+                      <th className="py-2 px-3 text-right w-32">Amount Received (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white">
+                    {payments.map((p, idx) => (
+                      <tr key={p.id || idx} className="hover:bg-slate-50/60 text-slate-800">
+                        <td className="py-2 px-2 text-center text-slate-500 font-mono border-r border-slate-200">{idx + 1}</td>
+                        <td className="py-2 px-3 font-mono border-r border-slate-200">{formatDate(p.payment_date)}</td>
+                        <td className="py-2 px-3 border-r border-slate-200 font-medium">
+                          <span className="inline-block px-2 py-0.5 rounded text-[11px] bg-slate-100 border border-slate-200 text-slate-700">
+                            {p.payment_mode || 'Bank Transfer'}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 font-mono text-slate-600 border-r border-slate-200">{p.reference_no || '—'}</td>
+                        <td className="py-2 px-3 text-slate-600 border-r border-slate-200">{p.notes || '—'}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-emerald-700">{formatINR(p.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Terms and Signatures */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 mt-3 border-t border-slate-300 text-xs">

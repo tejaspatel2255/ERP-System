@@ -63,7 +63,7 @@ const Table = ({ columns, data = [], loading = false, emptyMessage = 'No records
                         col.isNumeric ? 'text-right font-mono-tabular' : ''
                       } ${isMono ? 'font-mono-tabular text-accent-primary font-medium' : ''}`}
                     >
-                      {col.render ? col.render(item, rIdx) : (val ?? '—')}
+                      {col.render ? col.render(item, rIdx, rIdx) : (val ?? '—')}
                     </td>
                   );
                 })}

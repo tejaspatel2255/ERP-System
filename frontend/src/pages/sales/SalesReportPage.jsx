@@ -93,7 +93,38 @@ const SalesReportPage = () => {
     {
       key: 'rank',
       label: 'Rank',
-      render: (_, __, index) => <span className="font-semibold text-accent-primary"># {index + 1}</span>
+      render: (item, rIdx) => {
+        const rankNumber = Number.isFinite(item?.rank) ? item.rank : (Number.isFinite(rIdx) ? rIdx + 1 : 1);
+        if (rankNumber === 1) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+              #1 Top
+            </span>
+          );
+        }
+        if (rankNumber === 2) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-400/15 text-slate-300 border border-slate-400/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block" />
+              #2
+            </span>
+          );
+        }
+        if (rankNumber === 3) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-700/15 text-amber-600 border border-amber-700/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-700 inline-block" />
+              #3
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium text-text-secondary bg-bg-hover border border-border-color">
+            #{rankNumber}
+          </span>
+        );
+      }
     },
     { key: 'name', label: 'Customer name', render: (item) => <span className="font-medium text-text-primary">{item.name}</span> },
     {

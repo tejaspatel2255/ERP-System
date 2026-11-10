@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck } from 'lucide-react';
+import { Truck, Printer, ExternalLink } from 'lucide-react';
 import {
   getChallans,
   createChallan,
@@ -14,6 +14,18 @@ import Modal from '../../components/Modal';
 import Table from '../../components/Table';
 import StatusBadge from '../../components/StatusBadge';
 import { formatDate } from '../../utils/formatDate';
+
+const env = import.meta.env;
+const COMPANY_NAME = env.VITE_COMPANY_NAME || 'ERP Nexus Enterprise Ltd.';
+const COMPANY_ADDRESS = env.VITE_COMPANY_ADDRESS || '123 Industrial Area, Phase II, New Delhi - 110020, India';
+const COMPANY_GSTIN = env.VITE_COMPANY_GSTIN || '07AAAAA1111A1Z0';
+const COMPANY_PAN = 'AAAAA1111A';
+const COMPANY_STATE = 'Delhi (07)';
+
+const formatQty = (qty) => {
+  const num = parseFloat(qty) || 0;
+  return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
+};
 
 export default function DeliveryChallansPage() {
   const [challans, setChallans] = useState([]);
@@ -439,92 +451,226 @@ export default function DeliveryChallansPage() {
         isOpen={showPrintModal}
         onClose={() => setShowPrintModal(false)}
         title="Delivery Challan Document"
-        size="lg"
+        size="xl"
       >
         {selectedChallanDetails && (
-          <div className="space-y-6">
-            <div id="printable-challan" className="space-y-6 bg-white text-slate-900 p-6 rounded-lg border border-slate-200">
-              <div className="flex justify-between items-start border-b-2 border-slate-300 pb-4">
-                <div>
-                  <h2 className="text-2xl font-extrabold text-slate-800">ERP ENTERPRISE</h2>
-                  <p className="text-xs text-slate-500">123 Industrial Area, Block C</p>
-                  <p className="text-xs text-slate-500">GSTIN: 27AAAAA0000A1Z5</p>
+          <div className="space-y-4">
+            {/* Top Action Bar */}
+            <div className="sheet p-3 flex flex-wrap justify-between items-center gap-2 no-print">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-text-secondary">Challan status:</span>
+                <StatusBadge status={selectedChallanDetails.challan.status} />
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleTriggerPrint}
+                  className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4" /> Print / Save PDF
+                </button>
+                <a
+                  href={`/print/challan/${selectedChallanDetails.challan.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost btn-sm inline-flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Full page
+                </a>
+              </div>
+            </div>
+
+            {/* Document Frame */}
+            <div id="printable-challan" className="printable-document bg-white text-slate-900 border border-slate-300 rounded-lg p-6 sm:p-8 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start pb-5 border-b-2 border-slate-800 gap-4">
+                <div className="flex items-start gap-3.5">
+                  <img
+                    src="/logo.svg"
+                    alt="ERP Nexus Logo"
+                    className="h-12 w-12 object-contain rounded mt-0.5"
+                  />
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 uppercase">{COMPANY_NAME}</h2>
+                    <p className="text-xs text-slate-600 mt-0.5 max-w-md leading-relaxed">{COMPANY_ADDRESS}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-600 mt-1 font-mono">
+                      <span><strong className="text-slate-800 font-sans font-medium">GSTIN:</strong> {COMPANY_GSTIN}</span>
+                      <span><strong className="text-slate-800 font-sans font-medium">PAN:</strong> {COMPANY_PAN}</span>
+                      <span><strong className="text-slate-800 font-sans font-medium">State:</strong> {COMPANY_STATE}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <h3 className="text-lg font-semibold text-slate-700">DELIVERY CHALLAN</h3>
-                  <p className="text-sm font-mono font-semibold text-blue-600 mt-0.5">{selectedChallanDetails.challan.challan_no}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Date: {new Date(selectedChallanDetails.challan.challan_date).toLocaleDateString()}</p>
+
+                <div className="text-left sm:text-right border-2 border-slate-800 rounded bg-slate-50 px-3.5 py-2.5 text-xs min-w-[230px]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Official Dispatch / Transit
+                  </div>
+                  <div className="text-base font-bold text-slate-900 tracking-tight">
+                    DELIVERY CHALLAN
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-slate-300 space-y-1">
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Challan No:</span>
+                      <span className="font-mono font-bold text-slate-900">{selectedChallanDetails.challan.challan_no}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500">Challan Date:</span>
+                      <span className="font-mono text-slate-800">{formatDate(selectedChallanDetails.challan.challan_date)}</span>
+                    </div>
+                    {selectedChallanDetails.challan.packing_slip_no && (
+                      <div className="flex justify-between gap-2">
+                        <span className="text-slate-500">Packing Slip:</span>
+                        <span className="font-mono text-slate-800">{selectedChallanDetails.challan.packing_slip_no}</span>
+                      </div>
+                    )}
+                    {selectedChallanDetails.challan.sales_order_no && (
+                      <div className="flex justify-between gap-2">
+                        <span className="text-slate-500">Sales Order:</span>
+                        <span className="font-mono text-blue-700 font-semibold">{selectedChallanDetails.challan.sales_order_no}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded">
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-500">Consignee (Deliver To)</h4>
-                  <p className="font-semibold text-slate-800 text-sm mt-1">{selectedChallanDetails.challan.customer_name}</p>
-                  <p className="text-xs text-slate-600 whitespace-pre-wrap mt-0.5">{selectedChallanDetails.challan.customer_address}</p>
-                  <p className="text-xs text-slate-500 font-mono mt-1">GSTIN: {selectedChallanDetails.challan.customer_gstin || 'N/A'}</p>
+              {/* Consignee and Logistics Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Consignee Card */}
+                <div className="border border-slate-300 rounded-lg p-3.5 bg-slate-50/60">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1 mb-2">
+                    Consignee / Deliver To
+                  </div>
+                  <div className="space-y-1 text-xs text-slate-700">
+                    <p className="font-bold text-slate-900 text-sm">{selectedChallanDetails.challan.customer_name}</p>
+                    {selectedChallanDetails.challan.customer_address && (
+                      <p className="whitespace-pre-line leading-relaxed text-slate-600">
+                        {selectedChallanDetails.challan.customer_address}
+                      </p>
+                    )}
+                    <div className="pt-1 space-y-0.5 font-mono text-[11px] text-slate-600">
+                      <p><strong className="font-sans font-medium text-slate-700">GSTIN:</strong> {selectedChallanDetails.challan.customer_gstin || 'Unregistered / N/A'}</p>
+                      {selectedChallanDetails.challan.customer_email && (
+                        <p><strong className="font-sans font-medium text-slate-700">Email:</strong> {selectedChallanDetails.challan.customer_email}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-500">Transport & Dispatch Details</h4>
+
+                {/* Transport & Dispatch Details */}
+                <div className="border border-slate-300 rounded-lg p-3.5 bg-slate-50/60">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1 mb-2">
+                    Transport & Logistics Particulars
+                  </div>
                   {selectedChallanDetails.transport ? (
-                    <div className="text-xs text-slate-600 mt-1 space-y-0.5">
-                      <p><span className="font-semibold text-slate-700">Transporter:</span> {selectedChallanDetails.transport.transporter_name}</p>
-                      <p><span className="font-semibold text-slate-700">Vehicle No:</span> {selectedChallanDetails.transport.vehicle_no}</p>
-                      <p><span className="font-semibold text-slate-700">LR / Docket:</span> {selectedChallanDetails.transport.lr_number || '—'}</p>
-                      <p><span className="font-semibold text-slate-700">Dispatch Date:</span> {new Date(selectedChallanDetails.transport.dispatch_date).toLocaleDateString()}</p>
+                    <div className="space-y-1 text-xs text-slate-700">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Transporter:</span>
+                        <span className="font-semibold text-slate-900">{selectedChallanDetails.transport.transporter_name || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Vehicle Number:</span>
+                        <span className="font-mono font-semibold text-slate-900">{selectedChallanDetails.transport.vehicle_no || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">LR / Docket No:</span>
+                        <span className="font-mono text-slate-900">{selectedChallanDetails.transport.lr_number || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Dispatch Date:</span>
+                        <span className="font-mono text-slate-800">{formatDate(selectedChallanDetails.transport.dispatch_date)}</span>
+                      </div>
+                      {selectedChallanDetails.pod?.received_by && (
+                        <div className="flex justify-between pt-1 border-t border-slate-200 text-emerald-700 font-medium">
+                          <span>Delivered To:</span>
+                          <span>{selectedChallanDetails.pod.received_by} ({formatDate(selectedChallanDetails.pod.delivered_at)})</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 mt-1 italic">Transport info pending</p>
+                    <div className="py-4 text-center text-xs text-slate-400 italic">
+                      Transport & vehicle allocation pending dispatch confirmation
+                    </div>
                   )}
                 </div>
               </div>
 
-              <div>
+              {/* Items Table */}
+              <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse border border-slate-300 text-xs">
                   <thead>
-                    <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-300">
-                      <th className="p-2.5 border border-slate-300">Item Code</th>
+                    <tr className="bg-slate-100 text-slate-800 font-semibold border-b border-slate-300">
+                      <th className="p-2.5 border border-slate-300 w-10 text-center">#</th>
+                      <th className="p-2.5 border border-slate-300 w-28">Item Code</th>
                       <th className="p-2.5 border border-slate-300">Item Description</th>
-                      <th className="p-2.5 border border-slate-300">Batch No</th>
-                      <th className="p-2.5 border border-slate-300 text-right">Quantity</th>
+                      <th className="p-2.5 border border-slate-300 w-32">Batch / Lot No</th>
+                      <th className="p-2.5 border border-slate-300 w-28 text-right">Dispatched Qty</th>
+                      <th className="p-2.5 border border-slate-300 w-20 text-center">Unit</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-300 text-slate-700">
-                    {selectedChallanDetails.items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="p-2.5 border border-slate-300 font-mono">{item.item_code}</td>
-                        <td className="p-2.5 border border-slate-300 font-medium">{item.item_name}</td>
+                    {selectedChallanDetails.items.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50/50">
+                        <td className="p-2.5 border border-slate-300 text-center text-slate-500 tabular-nums">{idx + 1}</td>
+                        <td className="p-2.5 border border-slate-300 font-mono font-medium text-slate-900">{item.item_code || '—'}</td>
+                        <td className="p-2.5 border border-slate-300 font-medium text-slate-900">{item.item_name}</td>
                         <td className="p-2.5 border border-slate-300 font-mono text-xs">{item.batch_no || '—'}</td>
-                        <td className="p-2.5 border border-slate-300 text-right font-semibold">{item.qty} {item.unit}</td>
+                        <td className="p-2.5 border border-slate-300 text-right font-bold font-mono text-slate-900 tabular-nums">
+                          {formatQty(item.qty)}
+                        </td>
+                        <td className="p-2.5 border border-slate-300 text-center text-slate-600">{item.unit || 'Units'}</td>
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
+                      <td colSpan={4} className="p-2.5 border border-slate-300 text-right uppercase tracking-wider text-[11px] text-slate-600">
+                        Total Quantity Dispatched:
+                      </td>
+                      <td className="p-2.5 border border-slate-300 text-right font-mono text-sm tabular-nums text-blue-700">
+                        {formatQty(selectedChallanDetails.items.reduce((sum, it) => sum + (parseFloat(it.qty) || 0), 0))}
+                      </td>
+                      <td className="p-2.5 border border-slate-300 text-center text-xs text-slate-600">
+                        {selectedChallanDetails.items[0]?.unit || 'Units'}
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
 
-              <div className="flex justify-between items-end pt-8">
-                <div className="w-1/2">
-                  <p className="text-xs text-slate-500 italic">Declaration: Material received in good condition and order requirements satisfied.</p>
+              {/* Statutory Note & Dual Signatures */}
+              <div className="pt-2 space-y-6">
+                <div className="p-3 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
+                  <strong className="text-slate-800">Dispatch Declaration:</strong> This Delivery Challan is issued under relevant GST transit rules for delivery/transport of goods. The receiver acknowledges that goods described above have been checked and received intact in good condition.
                 </div>
-                <div className="text-center w-1/3 border-t border-slate-400 pt-2">
-                  <p className="text-xs font-semibold text-slate-600">Authorized Signatory</p>
+
+                <div className="grid grid-cols-2 gap-8 pt-8">
+                  <div className="text-left border-t border-slate-400 pt-2">
+                    <p className="text-xs font-semibold text-slate-800">Receiver's Signature & Company Stamp</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Name, Date & Contact Number</p>
+                  </div>
+                  <div className="text-right border-t border-slate-400 pt-2">
+                    <p className="text-xs font-semibold text-slate-800">For {COMPANY_NAME}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Authorized Dispatch Signatory / Warehouse In-Charge</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-border-color">
+            {/* Modal Bottom Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-border-color no-print">
               <button
                 type="button"
                 onClick={() => setShowPrintModal(false)}
-                className="btn-secondary"
+                className="btn btn-secondary"
               >
                 Close
               </button>
               <button
+                type="button"
                 onClick={handleTriggerPrint}
-                className="btn-primary"
+                className="btn btn-primary inline-flex items-center gap-1.5"
               >
-                Print Challan
+                <Printer className="w-4 h-4" /> Print Challan
               </button>
             </div>
           </div>

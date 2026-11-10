@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderPlus, FileCode } from 'lucide-react';
+import { FolderPlus, FileCode, RefreshCw } from 'lucide-react';
 import { getDesignFiles, uploadDesignFile, getDesignFileById, uploadNewVersion } from '../../api/designApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
@@ -10,6 +10,8 @@ import { formatDate } from '../../utils/formatDate';
 export default function DesignFilesPage() {
   const [designFiles, setDesignFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [versionUploading, setVersionUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -61,6 +63,7 @@ export default function DesignFilesPage() {
 
   const handleUploadFileSubmit = async (e) => {
     e.preventDefault();
+    if (uploading) return;
     setError('');
     setSuccess('');
 
@@ -69,6 +72,7 @@ export default function DesignFilesPage() {
       return;
     }
 
+    setUploading(true);
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -83,14 +87,17 @@ export default function DesignFilesPage() {
       setDescription('');
       setProjectRef('');
       setFile(null);
-      fetchFiles();
+      await fetchFiles();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload design file.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleUploadVersionSubmit = async (e) => {
     e.preventDefault();
+    if (versionUploading) return;
     setError('');
     setSuccess('');
 
@@ -99,6 +106,7 @@ export default function DesignFilesPage() {
       return;
     }
 
+    setVersionUploading(true);
     const formData = new FormData();
     formData.append('notes', versionNotes);
     formData.append('file', versionFile);
@@ -110,9 +118,11 @@ export default function DesignFilesPage() {
       setVersionNotes('');
       setVersionFile(null);
       handleSelectFile(selectedFile);
-      fetchFiles();
+      await fetchFiles();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload new version.');
+    } finally {
+      setVersionUploading(false);
     }
   };
 
@@ -318,15 +328,18 @@ export default function DesignFilesPage() {
             <button
               type="button"
               onClick={() => setShowUploadModal(false)}
-              className="btn-secondary"
+              className="btn btn-secondary"
+              disabled={uploading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              disabled={uploading}
+              className="btn btn-primary inline-flex items-center gap-1.5"
             >
-              Upload File
+              {uploading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+              <span>{uploading ? 'Uploading File...' : 'Upload File'}</span>
             </button>
           </div>
         </form>
@@ -348,6 +361,7 @@ export default function DesignFilesPage() {
               className="field h-24"
               placeholder="E.g., Added component dimensions, refined connectors"
               required
+              disabled={versionUploading}
             />
           </div>
 
@@ -360,6 +374,7 @@ export default function DesignFilesPage() {
                 className="w-full text-xs text-text-primary focus:outline-none file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-bg-card file:text-text-primary hover:file:bg-bg-hover"
                 accept=".pdf,.png,.jpg,.jpeg,.dwg"
                 required
+                disabled={versionUploading}
               />
             </div>
           </div>
@@ -368,15 +383,18 @@ export default function DesignFilesPage() {
             <button
               type="button"
               onClick={() => setShowNewVersionModal(false)}
-              className="btn-secondary"
+              className="btn btn-secondary"
+              disabled={versionUploading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              disabled={versionUploading}
+              className="btn btn-primary inline-flex items-center gap-1.5"
             >
-              Upload Version
+              {versionUploading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+              <span>{versionUploading ? 'Uploading Version...' : 'Upload Version'}</span>
             </button>
           </div>
         </form>

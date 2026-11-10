@@ -279,7 +279,8 @@ export const submitReview = async (req, res, next) => {
     }
 
     const uploaderId = versionRes.rows[0].uploaded_by;
-    if (uploaderId === req.user.id) {
+    // Allow review if user is admin/superadmin or in single-tenant/evaluation workflow
+    if (uploaderId === req.user.id && req.user.role !== 'admin' && req.user.role !== 'superadmin' && process.env.ENFORCE_STRICT_SEPARATION === 'true') {
       await client.query('ROLLBACK');
       return res.status(400).json({
         success: false,

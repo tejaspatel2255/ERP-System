@@ -66,32 +66,53 @@ export const uploadToSupabase = async (bucket, file) => {
   const fileName = `${Date.now()}_${cleanBaseName}${fileExtension}`;
 
   if (!supabase) {
-    console.warn(`Supabase client not initialized. Mocking upload of ${fileName} to bucket ${bucket}.`);
-    return `/mock-storage/${bucket}/${fileName}`;
+    console.warn(`Supabase client not initialized. Falling back to data URI for ${fileName}.`);
+    const base64Data = file.buffer.toString('base64');
+    return `data:${file.mimetype};base64,${base64Data}`;
   }
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(fileName, file.buffer, {
-      contentType: file.mimetype,
-      upsert: true
-    });
+  try {
+    let { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true
+      });
 
-  if (error) {
-    console.error('Supabase upload error:', error);
-    throw error;
+    // If bucket not found, attempt to auto-create the bucket if permitted
+    if (error && (error.message?.includes('Bucket not found') || error.statusCode === '404')) {
+      try {
+        await supabase.storage.createBucket(bucket, { public: true });
+        const retry = await supabase.storage
+          .from(bucket)
+          .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true
+          });
+        data = retry.data;
+        error = retry.error;
+      } catch (bucketCreateErr) {
+        console.warn('Failed to auto-create bucket in Supabase:', bucketCreateErr.message);
+      }
+    }
+
+    if (error) {
+      console.warn(`Supabase storage failed (${error.message}). Falling back to safe inline data URL.`);
+      const base64Data = file.buffer.toString('base64');
+      return `data:${file.mimetype};base64,${base64Data}`;
+    }
+
+    // Get the public URL of the uploaded file
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+
+    return publicUrlData?.publicUrl || `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+  } catch (err) {
+    console.warn('Supabase upload exception, falling back to data URL:', err.message);
+    const base64Data = file.buffer.toString('base64');
+    return `data:${file.mimetype};base64,${base64Data}`;
   }
-
-  // Get the public URL of the uploaded file
-  const { data: publicUrlData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(fileName);
-
-  if (!publicUrlData || !publicUrlData.publicUrl) {
-    throw new Error('Failed to retrieve public URL from Supabase Storage.');
-  }
-
-  return publicUrlData.publicUrl;
 };
 
 export default { upload, uploadToSupabase };

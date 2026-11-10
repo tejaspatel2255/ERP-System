@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FolderPlus, FileCode, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FolderPlus, FileCode, RefreshCw, Search, CheckCircle2, XCircle, Clock, FileText } from 'lucide-react';
 import { getDesignFiles, uploadDesignFile, getDesignFileById, uploadNewVersion } from '../../api/designApi';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
@@ -14,6 +14,10 @@ export default function DesignFilesPage() {
   const [versionUploading, setVersionUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Selected File details
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,7 +46,12 @@ export default function DesignFilesPage() {
     try {
       setLoading(true);
       const res = await getDesignFiles();
-      setDesignFiles(res.designFiles || []);
+      const files = res.designFiles || [];
+      setDesignFiles(files);
+      if (selectedFile) {
+        const updated = files.find(f => f.id === selectedFile.id);
+        if (updated) setSelectedFile(prev => ({ ...prev, ...updated }));
+      }
     } catch (err) {
       setError('Failed to fetch design files.');
     } finally {
@@ -52,14 +61,47 @@ export default function DesignFilesPage() {
 
   const handleSelectFile = async (df) => {
     try {
+      setSelectedFile(df);
       const res = await getDesignFileById(df.id);
-      setSelectedFile(res.designFile);
+      setSelectedFile({ ...df, ...(res.designFile || {}) });
       setVersions(res.versions || []);
       setReviews(res.reviews || []);
     } catch (err) {
       setError('Failed to fetch design file versions.');
     }
   };
+
+  // Status counts
+  const counts = useMemo(() => {
+    const res = { all: designFiles.length, approved: 0, rejected: 0, pending: 0 };
+    designFiles.forEach((df) => {
+      const s = (df.latest_status || 'pending').toLowerCase();
+      if (s === 'approved') res.approved++;
+      else if (s === 'rejected' || s === 'changes requested') res.rejected++;
+      else res.pending++;
+    });
+    return res;
+  }, [designFiles]);
+
+  // Filtered files by search & status
+  const filteredFiles = useMemo(() => {
+    return designFiles.filter((df) => {
+      const matchesSearch =
+        !searchQuery ||
+        df.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        df.project_ref?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        df.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      const s = (df.latest_status || 'pending').toLowerCase();
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'approved') return s === 'approved';
+      if (statusFilter === 'rejected') return s === 'rejected' || s === 'changes requested';
+      if (statusFilter === 'pending') return s === 'pending' || !df.latest_status;
+      return true;
+    });
+  }, [designFiles, searchQuery, statusFilter]);
 
   const handleUploadFileSubmit = async (e) => {
     e.preventDefault();
@@ -144,19 +186,77 @@ export default function DesignFilesPage() {
       {error && <div className="rounded-md border px-3 py-2 text-sm border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger-text)]">{error}</div>}
       {success && <div className="rounded-md border px-3 py-2 text-sm border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success-text)]">{success}</div>}
 
+      {/* Filter Tabs & Search Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setStatusFilter('all')}
+            className={`btn btn-xs ${statusFilter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+          >
+            All ({counts.all})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('approved')}
+            className={`btn btn-xs inline-flex items-center gap-1.5 ${
+              statusFilter === 'approved' ? 'btn-primary' : 'btn-ghost'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span>Approved ({counts.approved})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('rejected')}
+            className={`btn btn-xs inline-flex items-center gap-1.5 ${
+              statusFilter === 'rejected' ? 'btn-primary' : 'btn-ghost'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+            <span>Rejected ({counts.rejected})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('pending')}
+            className={`btn btn-xs inline-flex items-center gap-1.5 ${
+              statusFilter === 'pending' ? 'btn-primary' : 'btn-ghost'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+            <span>Pending ({counts.pending})</span>
+          </button>
+        </div>
+
+        <div className="relative min-w-[240px]">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search title, ref, details..."
+            className="field pl-8 py-1.5 text-xs w-full"
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         {/* Files Directory Left Panel */}
         <div className="lg:col-span-2 min-w-0 sheet overflow-hidden">
           {loading ? (
             <div className="p-12 text-center text-text-muted text-sm">Loading design files...</div>
-          ) : designFiles.length === 0 ? (
+          ) : filteredFiles.length === 0 ? (
             <div className="p-6">
               <EmptyState
                 icon={FolderPlus}
                 title="No Design Files Found"
-                description="Upload CAD schematics, engineering drawings, or PDFs to begin version control and review workflows."
-                actionLabel="Upload Design File"
-                onAction={() => setShowUploadModal(true)}
+                description={
+                  searchQuery || statusFilter !== 'all'
+                    ? 'No design files match the selected filter or search keyword.'
+                    : 'Upload CAD schematics, engineering drawings, or PDFs to begin version control and review workflows.'
+                }
+                actionLabel={searchQuery || statusFilter !== 'all' ? undefined : 'Upload Design File'}
+                onAction={searchQuery || statusFilter !== 'all' ? undefined : () => setShowUploadModal(true)}
               />
             </div>
           ) : (
@@ -166,13 +266,14 @@ export default function DesignFilesPage() {
                   <tr>
                     <th className="p-3">Design Title</th>
                     <th className="p-3">Project Ref</th>
-                    <th className="p-3">Latest Version</th>
+                    <th className="p-3 text-center">Version</th>
+                    <th className="p-3">Review Status</th>
                     <th className="p-3">Uploaded By</th>
                     <th className="p-3">Upload Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-color text-sm">
-                  {designFiles.map((df) => (
+                  {filteredFiles.map((df) => (
                     <tr
                       key={df.id}
                       onClick={() => handleSelectFile(df)}
@@ -181,11 +282,26 @@ export default function DesignFilesPage() {
                       }`}
                     >
                       <td className="p-3 font-semibold text-text-primary">
-                        <p>{df.title}</p>
-                        <p className="text-xs text-text-muted font-normal max-w-xs truncate">{df.description || 'No description'}</p>
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-accent-primary shrink-0" />
+                          <p>{df.title}</p>
+                        </div>
+                        <p className="text-xs text-text-muted font-normal max-w-xs truncate ml-6">
+                          {df.description || 'No description'}
+                        </p>
                       </td>
-                      <td className="p-3 font-mono text-text-secondary">{df.project_ref ? <span className="stamp">{df.project_ref}</span> : '—'}</td>
-                      <td className="p-3 font-mono font-semibold text-accent-primary"><span className="tb-cell">v{df.latest_version}</span></td>
+                      <td className="p-3 font-mono text-text-secondary">
+                        {df.project_ref ? <span className="stamp">{df.project_ref}</span> : '—'}
+                      </td>
+                      <td className="p-3 font-mono font-semibold text-accent-primary text-center">
+                        <span className="tb-cell">v{df.latest_version}</span>
+                      </td>
+                      <td className="p-3">
+                        <StatusBadge
+                          status={df.latest_status || 'Pending'}
+                          label={df.latest_status || 'Pending Review'}
+                        />
+                      </td>
                       <td className="p-3 text-text-muted text-xs">{df.uploaded_by_name || 'System'}</td>
                       <td className="p-3 text-xs text-text-muted tabular-nums">{formatDate(df.created_at)}</td>
                     </tr>
@@ -202,12 +318,20 @@ export default function DesignFilesPage() {
             <div className="space-y-5">
               <div className="flex justify-between items-start gap-2 border-b border-border-color pb-3">
                 <div className="truncate">
-                  <h3 className="text-base font-semibold text-text-primary truncate">{selectedFile.title}</h3>
-                  <p className="text-xs text-text-muted mt-0.5">Ref: {selectedFile.project_ref ? <span className="stamp">{selectedFile.project_ref}</span> : 'N/A'}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-semibold text-text-primary truncate">{selectedFile.title}</h3>
+                    <StatusBadge
+                      status={selectedFile.latest_status || 'Pending'}
+                      label={selectedFile.latest_status || 'Pending Review'}
+                    />
+                  </div>
+                  <p className="text-xs text-text-muted mt-1">
+                    Ref: {selectedFile.project_ref ? <span className="stamp">{selectedFile.project_ref}</span> : 'N/A'}
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowNewVersionModal(true)}
-                  className="btn-secondary btn-xs"
+                  className="btn-secondary btn-xs shrink-0"
                 >
                   + New Ver.
                 </button>
@@ -240,18 +364,24 @@ export default function DesignFilesPage() {
               {/* Reviews List */}
               <div>
                 <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Review Status</h4>
-                <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                <div className="space-y-2 max-h-[220px] overflow-y-auto">
                   {reviews.length === 0 ? (
-                    <p className="text-text-muted text-xs italic">No reviews submitted for this file.</p>
+                    <div className="p-3 bg-bg-subtle border border-border-color rounded text-xs flex items-center justify-between">
+                      <span className="text-text-muted italic">Awaiting engineering review</span>
+                      <StatusBadge status="Pending" label="Pending Review" />
+                    </div>
                   ) : (
                     reviews.map(r => (
-                      <div key={r.id} className="p-2.5 bg-bg-subtle border border-border-color rounded text-xs space-y-1">
+                      <div key={r.id} className="p-3 bg-bg-subtle border border-border-color rounded text-xs space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="tb-cell">v{r.version_number}</span>
+                          <span className="tb-cell font-bold">v{r.version_number}</span>
                           <StatusBadge status={r.status} />
                         </div>
-                        <p className="text-text-primary italic">{r.remarks || 'No remarks.'}</p>
-                        <p className="text-xs text-text-muted text-right">By: {r.reviewer_name}</p>
+                        <p className="text-text-primary italic leading-relaxed">{r.remarks || 'No remarks provided.'}</p>
+                        <div className="flex justify-between items-center text-[11px] text-text-muted pt-1 border-t border-border-color/40">
+                          <span>Reviewed by <strong className="text-text-secondary">{r.reviewer_name || 'System'}</strong></span>
+                          <span className="tabular-nums">{formatDate(r.review_date)}</span>
+                        </div>
                       </div>
                     ))
                   )}

@@ -28,7 +28,7 @@ const mapStatusTheme = (status = '') => {
   }
 
   // Danger / Rejected / Overdue / Fail / Cancelled / Critical / Out of Stock / Void
-  if (['danger', 'rejected', 'overdue', 'fail', 'cancelled', 'critical', 'out of stock', 'expired', 'void'].includes(value)) {
+  if (['danger', 'rejected', 'changes requested', 'changes_requested', 'overdue', 'fail', 'cancelled', 'critical', 'out of stock', 'expired', 'void'].includes(value)) {
     return {
       style: {
         '--tag-bg': 'var(--danger-bg)',
@@ -50,7 +50,7 @@ const mapStatusTheme = (status = '') => {
   };
 };
 
-export default function StatusBadge({ status, className = '' }) {
+export default function StatusBadge({ status, label, className = '' }) {
   const theme = mapStatusTheme(status);
 
   return (
@@ -59,7 +59,7 @@ export default function StatusBadge({ status, className = '' }) {
       className={`andon-tag font-mono-tabular ${className}`}
     >
       <span className="lamp" />
-      <span>{status || 'Unknown'}</span>
+      <span>{label || status || 'Unknown'}</span>
     </span>
   );
 }

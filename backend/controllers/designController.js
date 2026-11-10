@@ -9,7 +9,9 @@ export const getDesignFiles = async (req, res, next) => {
     const result = await db.query(`
       SELECT df.*, u.name AS uploaded_by_name,
              (SELECT COUNT(*)::int FROM design_versions dv WHERE dv.design_file_id = df.id) AS versions_count,
-             (SELECT COALESCE(MAX(version_number), 1) FROM design_versions dv WHERE dv.design_file_id = df.id) AS latest_version
+             (SELECT COALESCE(MAX(version_number), 1) FROM design_versions dv WHERE dv.design_file_id = df.id) AS latest_version,
+             (SELECT dr.status FROM design_reviews dr WHERE dr.design_file_id = df.id ORDER BY dr.review_date DESC LIMIT 1) AS latest_status,
+             (SELECT dr.remarks FROM design_reviews dr WHERE dr.design_file_id = df.id ORDER BY dr.review_date DESC LIMIT 1) AS latest_remarks
       FROM design_files df
       LEFT JOIN users u ON df.uploaded_by = u.id
       ORDER BY df.created_at DESC
@@ -67,7 +69,8 @@ export const getDesignFileById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const fileRes = await db.query(`
-      SELECT df.*, u.name AS uploaded_by_name
+      SELECT df.*, u.name AS uploaded_by_name,
+             (SELECT dr.status FROM design_reviews dr WHERE dr.design_file_id = df.id ORDER BY dr.review_date DESC LIMIT 1) AS latest_status
       FROM design_files df
       LEFT JOIN users u ON df.uploaded_by = u.id
       WHERE df.id = $1

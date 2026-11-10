@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { formatINR } from '../../utils/formatCurrency';
-import { Printer } from 'lucide-react';
+import { formatDate } from '../../utils/formatDate';
+import { Printer, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const env = import.meta.env;
 
@@ -48,15 +50,74 @@ const numberToIndianWords = (num) => {
 
 export default function PrintInvoice() {
   const { id } = useParams();
+  const { isLoading: authLoading } = useAuth();
   const [doc, setDoc] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    axiosInstance.get(`/sales/invoices/${id}`).then((r) => setDoc(r.data));
+  const fetchInvoice = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axiosInstance.get(`/sales/invoices/${id}`);
+      if (res.data?.success) {
+        setDoc(res.data);
+      } else {
+        setError(res.data?.message || 'Invoice not found.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to load invoice document.');
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  const invoice = doc?.invoice;
-  const items = doc?.items || [];
-  const payments = doc?.payments || [];
+  useEffect(() => {
+    if (!authLoading) {
+      fetchInvoice();
+    }
+  }, [authLoading, fetchInvoice]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-6 text-slate-700">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3" />
+        <p className="text-sm font-medium">Loading Tax Invoice document...</p>
+      </div>
+    );
+  }
+
+  if (error || !doc?.invoice) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-6 text-slate-800">
+        <div className="bg-white border border-slate-300 rounded-lg p-6 max-w-md w-full shadow-sm text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Failed to load invoice</h3>
+            <p className="text-xs text-slate-500 mt-1">{error || 'Invoice not found or access denied.'}</p>
+          </div>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={fetchInvoice}
+              className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Try again
+            </button>
+            <Link to="/sales/invoices" className="btn btn-ghost btn-sm inline-flex items-center gap-1.5">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Invoices
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const invoice = doc.invoice;
+  const items = doc.items || [];
+  const payments = doc.payments || [];
 
   const subtotal = items.reduce((acc, it) => acc + (parseFloat(it.qty || 0) * parseFloat(it.unit_price || 0)), 0);
   const totalDiscount = items.reduce((acc, it) => acc + parseFloat(it.discount || 0), 0);
